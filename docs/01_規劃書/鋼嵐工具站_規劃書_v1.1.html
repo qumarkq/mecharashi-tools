@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鋼嵐工具站 — 專案規劃書 v1.2</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #0a0c10;
+  --bg-card: #12151c;
+  --bg-card-hover: #181c26;
+  --accent-orange: #ff6b2b;
+  --accent-blue: #3b82f6;
+  --accent-cyan: #06b6d4;
+  --accent-green: #22c55e;
+  --accent-yellow: #eab308;
+  --accent-red: #ef4444;
+  --accent-purple: #a855f7;
+  --accent-pink: #ec4899;
+  --text-primary: #e8eaed;
+  --text-secondary: #9ca3af;
+  --text-dim: #6b7280;
+  --border: #1e2330;
+  --border-accent: #2a3040;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: 'Noto Sans TC', sans-serif;
+  line-height: 1.8;
+  overflow-x: hidden;
+}
+
+.hero {
+  position: relative;
+  min-height: 50vh;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  text-align: center;
+  padding: 80px 24px 60px;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255,107,43,0.12) 0%, transparent 60%),
+    var(--bg-dark);
+  border-bottom: 1px solid var(--border);
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,0.015) 60px, rgba(255,255,255,0.015) 61px);
+  pointer-events: none;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 16px;
+  border: 1px solid var(--accent-orange);
+  border-radius: 100px;
+  font-size: 12px;
+  font-family: 'Orbitron', sans-serif;
+  color: var(--accent-orange);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 32px;
+  background: rgba(255,107,43,0.06);
+}
+.hero h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(28px, 5vw, 56px);
+  font-weight: 900;
+  letter-spacing: 4px;
+  background: linear-gradient(135deg, #fff 0%, var(--accent-orange) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+}
+.hero h1 span {
+  display: block;
+  font-size: 0.4em;
+  letter-spacing: 8px;
+  -webkit-text-fill-color: var(--text-secondary);
+  margin-top: 8px;
+}
+.hero-sub {
+  font-size: 15px;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin-top: 8px;
+}
+.version-badge {
+  display: inline-block;
+  background: var(--accent-orange);
+  color: #000;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-family: 'Orbitron', sans-serif;
+  margin-top: 16px;
+}
+
+.container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+.section {
+  padding: 72px 0;
+  border-bottom: 1px solid var(--border);
+}
+.section-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--accent-orange);
+  margin-bottom: 12px;
+}
+.section-title {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.section-desc {
+  color: var(--text-secondary);
+  font-size: 15px;
+  margin-bottom: 36px;
+  max-width: 700px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 18px;
+}
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-accent);
+  transform: translateY(-2px);
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.card-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  margin-bottom: 14px;
+}
+.card h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.card p { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+
+.card.orange::before { background: var(--accent-orange); }
+.card.orange .card-icon { background: rgba(255,107,43,0.12); color: var(--accent-orange); }
+.card.blue::before { background: var(--accent-blue); }
+.card.blue .card-icon { background: rgba(59,130,246,0.12); color: var(--accent-blue); }
+.card.cyan::before { background: var(--accent-cyan); }
+.card.cyan .card-icon { background: rgba(6,182,212,0.12); color: var(--accent-cyan); }
+.card.green::before { background: var(--accent-green); }
+.card.green .card-icon { background: rgba(34,197,94,0.12); color: var(--accent-green); }
+.card.yellow::before { background: var(--accent-yellow); }
+.card.yellow .card-icon { background: rgba(234,179,8,0.12); color: var(--accent-yellow); }
+.card.purple::before { background: var(--accent-purple); }
+.card.purple .card-icon { background: rgba(168,85,247,0.12); color: var(--accent-purple); }
+.card.red::before { background: var(--accent-red); }
+.card.red .card-icon { background: rgba(239,68,68,0.12); color: var(--accent-red); }
+.card.pink::before { background: var(--accent-pink); }
+.card.pink .card-icon { background: rgba(236,72,153,0.12); color: var(--accent-pink); }
+
+.tech-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.tech-tag {
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+.tech-tag.primary { border-color: var(--accent-orange); color: var(--accent-orange); background: rgba(255,107,43,0.06); }
+.tech-tag.secondary { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(59,130,246,0.06); }
+.tech-tag.tertiary { border-color: var(--accent-cyan); color: var(--accent-cyan); background: rgba(6,182,212,0.06); }
+
+.arch-diagram {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 36px;
+  margin: 28px 0;
+  overflow-x: auto;
+}
+.arch-flow {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; flex-wrap: wrap; min-width: 600px;
+}
+.arch-node {
+  padding: 14px 20px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 130px;
+}
+.arch-node.user { background: rgba(59,130,246,0.15); border: 1px solid var(--accent-blue); color: var(--accent-blue); }
+.arch-node.frontend { background: rgba(255,107,43,0.15); border: 1px solid var(--accent-orange); color: var(--accent-orange); }
+.arch-node.data { background: rgba(34,197,94,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); }
+.arch-node.auth { background: rgba(168,85,247,0.15); border: 1px solid var(--accent-purple); color: var(--accent-purple); }
+.arch-arrow { font-size: 20px; color: var(--text-dim); }
+
+.data-table-wrap { overflow-x: auto; margin: 20px 0; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+  text-align: left; padding: 10px 14px;
+  font-weight: 600; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--accent-orange);
+  border-bottom: 2px solid var(--border-accent);
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.data-table td:first-child {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-cyan);
+  font-size: 12px;
+}
+.data-table td:nth-child(2) {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+.data-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.formula-block {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-orange);
+  border-radius: 0 12px 12px 0;
+  padding: 20px 24px;
+  margin: 16px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 2;
+  overflow-x: auto;
+}
+.formula-block .label {
+  color: var(--accent-orange);
+  font-weight: 700; font-size: 12px;
+  letter-spacing: 1px; text-transform: uppercase;
+  display: block; margin-bottom: 6px;
+}
+.formula-block .formula { color: var(--accent-cyan); }
+.formula-block .note { color: var(--text-dim); font-size: 11px; margin-top: 6px; }
+
+.timeline { position: relative; padding-left: 36px; }
+.timeline::before {
+  content: '';
+  position: absolute; left: 14px; top: 0; bottom: 0;
+  width: 2px; background: var(--border);
+}
+.timeline-item { position: relative; padding-bottom: 36px; }
+.timeline-item::before {
+  content: '';
+  position: absolute; left: -26px; top: 6px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-orange);
+  background: var(--bg-dark);
+}
+.timeline-phase {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px; letter-spacing: 3px;
+  color: var(--accent-orange);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.timeline-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+.timeline-desc { color: var(--text-secondary); font-size: 13px; }
+.timeline-tasks { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.timeline-task {
+  padding: 3px 10px; border-radius: 6px;
+  font-size: 11px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.page-map {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px; margin: 20px 0;
+}
+.page-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+}
+.page-item h4 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+.page-item .route {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--accent-cyan);
+  margin-bottom: 6px;
+}
+.page-item p { font-size: 12px; color: var(--text-dim); line-height: 1.6; }
+
+.note-block {
+  background: rgba(234,179,8,0.06);
+  border: 1px solid rgba(234,179,8,0.2);
+  border-radius: 10px;
+  padding: 18px 22px;
+  margin: 20px 0;
+  font-size: 13px;
+  color: var(--accent-yellow);
+}
+.note-block strong { display: block; margin-bottom: 4px; }
+
+.changed-block {
+  background: rgba(34,197,94,0.06);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: 10px;
+  padding: 18px 22px;
+  margin: 20px 0;
+  font-size: 13px;
+  color: var(--accent-green);
+}
+.changed-block strong { display: block; margin-bottom: 4px; }
+
+.sub-h { font-size: 15px; font-weight: 700; margin: 28px 0 10px; display: flex; align-items: center; gap: 8px; }
+.sub-h .tag {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 1px;
+}
+.tag-new { background: var(--accent-green); color: #000; }
+.tag-updated { background: var(--accent-yellow); color: #000; }
+
+.footer {
+  padding: 40px 0;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+@media (max-width: 768px) {
+  .section { padding: 44px 0; }
+  .arch-flow { flex-direction: column; min-width: unset; }
+  .arch-arrow { transform: rotate(90deg); }
+  .card-grid { grid-template-columns: 1fr; }
+  .arch-diagram { padding: 20px 14px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-badge">◆ PROJECT BLUEPRINT</div>
+  <h1>
+    鋼嵐工具站
+    <span>METAL STORM COMMUNITY TOOLKIT</span>
+  </h1>
+  <p class="hero-sub">
+    傷害模擬器 · 配裝計算器 · 角色資料庫 · 攻略百科
+  </p>
+  <div class="version-badge">V1.2 — 武器改裝 / 元件系統 / 背包 / 科研系統修正</div>
+</header>
+
+<main class="container">
+
+<!-- ═══ 1. 架構 ═══ -->
+<section class="section">
+  <div class="section-label">01 — Architecture</div>
+  <div class="section-title">系統架構概覽</div>
+  <div class="section-desc">前端部署於 GitHub Pages，搭配 Firebase 處理用戶登入與資料儲存，遊戲數據由管理者透過 Google Sheets 維護。</div>
+
+  <div class="arch-diagram">
+    <div class="arch-flow">
+      <div class="arch-node user"><strong>👤 玩家</strong><br>瀏覽 / 模擬 / 儲存配裝</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node frontend"><strong>🌐 GitHub Pages</strong><br>React + TypeScript</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node auth"><strong>🔐 Firebase</strong><br>登入 + Firestore</div>
+    </div>
+    <br>
+    <div class="arch-flow">
+      <div class="arch-node data"><strong>📊 Google Sheets</strong><br>管理者維護遊戲數據</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node frontend"><strong>⚙️ GitHub Actions</strong><br>定期拉取 → 轉 JSON</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node frontend"><strong>📦 Static JSON</strong><br>10+ 資料檔案</div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top:36px;">技術選型</div>
+  <div class="tech-row">
+    <span class="tech-tag primary">React 18</span>
+    <span class="tech-tag primary">TypeScript</span>
+    <span class="tech-tag primary">Vite</span>
+    <span class="tech-tag secondary">Tailwind CSS</span>
+    <span class="tech-tag secondary">React Router</span>
+    <span class="tech-tag tertiary">Firebase Auth</span>
+    <span class="tech-tag tertiary">Cloud Firestore</span>
+    <span class="tech-tag tertiary">html2canvas</span>
+  </div>
+</section>
+
+<!-- ═══ 2. 功能模組 ═══ -->
+<section class="section">
+  <div class="section-label">02 — Feature Modules</div>
+  <div class="section-title">網站功能模組</div>
+  <div class="section-desc">八大核心模組，涵蓋完整的配裝系統、科研系統與用戶管理。</div>
+
+  <div class="card-grid">
+    <div class="card orange">
+      <div class="card-icon">⚔️</div>
+      <h3>傷害模擬器</h3>
+      <p>基於傷害公式計算期望值，支援 A/B 組合對比，整合所有加成來源（模組/元件/背包/科研/武器技能/天賦/神經驅動）。</p>
+    </div>
+    <div class="card blue">
+      <div class="card-icon">🔧</div>
+      <h3>配裝模擬器</h3>
+      <p>選機師 → 機甲 → 武器（含專武技能）→ 背包（含裝配限制）→ 模組 → 元件。即時計算，支援匯出分享圖。</p>
+    </div>
+    <div class="card cyan">
+      <div class="card-icon">👤</div>
+      <h3>機師資料庫</h3>
+      <p>六維屬性、AP 系統、天賦、技能、神經驅動、個人科研配置、角色故事。</p>
+    </div>
+    <div class="card green">
+      <div class="card-icon">🤖</div>
+      <h3>機甲資料庫</h3>
+      <p>部件耐久、火力/閃避/移動、重量/出力、自帶模組效果、裝甲分類。</p>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">🔫</div>
+      <h3>武器資料庫</h3>
+      <p>所有武器種類與專屬武器，含技能效果（三種生效方式）、元件插槽配置、固定/浮動改裝、攻擊力/命中/暴擊/射程/重量。</p>
+    </div>
+    <div class="card pink">
+      <div class="card-icon">🎒</div>
+      <h3>背包資料庫</h3>
+      <p>所有背包裝備，含技能效果、重量、裝配限制（輕甲限定等）、裝配位置。</p>
+    </div>
+    <div class="card yellow">
+      <div class="card-icon">📰</div>
+      <h3>改版資訊 + 攻略</h3>
+      <p>改版預告、關卡攻略，管理者後台更新。</p>
+    </div>
+    <div class="card red">
+      <div class="card-icon">🔐</div>
+      <h3>用戶系統</h3>
+      <p>Google 登入、個人配裝紀錄、歷史記錄、科研設定、匯出分享圖。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 3. 傷害公式 ═══ -->
+<section class="section">
+  <div class="section-label">03 — Damage Formula</div>
+  <div class="section-title">傷害公式分析</div>
+  <div class="section-desc">根據試算表與 NGA 社群研究整理。</div>
+
+  <div class="formula-block">
+    <span class="label">核心傷害公式</span>
+    <span class="formula">最終傷害 = (總攻擊 - 敵方裝甲) × 增傷係數 × 爆擊係數 × 最終傷害係數</span>
+  </div>
+  <div class="formula-block">
+    <span class="label">總攻擊展開</span>
+    <span class="formula">總攻擊 = (武器基礎攻擊力 + 固定改裝攻擊 + 浮動改裝攻擊) × 火力係數 + 科研火力 + 改造火力) × 五維係數 × 敵等級係數 × 駕駛等級係數</span>
+    <span class="note">
+      · 火力係數：每 3650 點火力 = 武器基礎攻擊力 ×100%（70EX 等級基準）<br>
+      · 五維係數：近似三次方曲線，中心點約 8200-8400<br>
+      · 敵等級係數：三次方曲線，Lv0 無衰減，Lv55 衰減 12.5%，Lv71 衰減 25%<br>
+      · 固定改裝攻擊：基礎改裝提供的固定攻擊加成<br>
+      · 浮動改裝攻擊：高級改裝的隨機攻擊加成（含條件觸發加成）
+    </span>
+  </div>
+  <div class="formula-block">
+    <span class="label">傷害期望值</span>
+    <span class="formula">期望值 = 基礎傷害 × (1 + 增傷%) × [ 爆率% × (1 + 爆傷%) + (1 - 爆率%) ] × 命中率% × 連擊數 × 技能倍率</span>
+  </div>
+  <div class="formula-block">
+    <span class="label">增傷%來源匯總 (v1.2 更新)</span>
+    <span class="formula">
+      增傷% = 機甲模組(四模/八模/固定) + 應元件(增傷型) + 背包技能 + 武器技能(攜帶即生效/裝備中生效)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ 武器改裝(浮動改裝條件觸發) + 機師技能 + 天賦 + 神經驅動 + 機師個別科研 + 全域科研(增傷項)
+    </span>
+    <span class="note">爆率%、爆傷%、命中% 亦各自匯總上述所有來源中對應的加成；子彈數/倍率/破甲/AP增傷/軀幹增傷由元件額外計算</span>
+  </div>
+
+  <div class="note-block">
+    <strong>⚠️ 待確認</strong>
+    重甲單位 &lt;1% 傷害偏差原因未知。五維係數精確曲線參數、敵等級 Lv71+ 外推準確度待驗證。建議模擬器提供進階選項讓使用者自行微調。
+  </div>
+</section>
+
+<!-- ═══ 4. 資料模型（重點修改） ═══ -->
+<section class="section">
+  <div class="section-label">04 — Data Model</div>
+  <div class="section-title">資料結構設計</div>
+  <div class="section-desc">v1.2 根據截圖反饋，大幅修正武器改裝、元件、背包、科研四大系統的資料結構。</div>
+
+  <!-- ── pilots.json ── -->
+  <div class="sub-h">📁 pilots.json — 機師資料</div>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>id</td><td>string</td><td>唯一識別</td></tr>
+      <tr><td>name</td><td>string</td><td>顯示名稱</td></tr>
+      <tr><td>rarity</td><td>string</td><td>稀有度</td></tr>
+      <tr><td>class</td><td>string</td><td>職業 (突擊手/狙擊手/戰術家/格鬥家/守護者/機械師)</td></tr>
+      <tr><td>stats</td><td>object</td><td>六維 { melee, assault, shooting, tactics, defense, engineering }</td></tr>
+      <tr><td>ap</td><td>object</td><td>{ init, max, recovery }</td></tr>
+      <tr><td>license</td><td>string</td><td>駕駛許可 (輕型/中型/重型)</td></tr>
+      <tr><td>masterLevel</td><td>string</td><td>駕駛等級</td></tr>
+      <tr><td>skills[]</td><td>array</td><td>技能列表 { name, dmg, crit, critDmg, acc }</td></tr>
+      <tr><td>talents[]</td><td>array</td><td>天賦列表 { name, dmg, crit, critDmg, acc }</td></tr>
+      <tr><td>neuralDrive[]</td><td>array</td><td>神經驅動選項 { name, dmg, crit, critDmg, acc }</td></tr>
+      <tr><td>attack / defense</td><td>number</td><td>攻擊/防禦素質</td></tr>
+      <tr><td>lore</td><td>string</td><td>角色故事 (Markdown)</td></tr>
+      <tr><td>portrait</td><td>string</td><td>立繪圖片路徑</td></tr>
+    </table>
+  </div>
+
+  <!-- ── mechs.json ── -->
+  <div class="sub-h">📁 mechs.json — 機甲資料</div>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>id / name</td><td>string</td><td>識別與名稱</td></tr>
+      <tr><td>armorType</td><td>string</td><td>輕甲 / 中甲 / 重甲</td></tr>
+      <tr><td>firepower</td><td>number</td><td>火力值</td></tr>
+      <tr><td>armor</td><td>number</td><td>裝甲平均值</td></tr>
+      <tr><td>evasion</td><td>number</td><td>閃避值</td></tr>
+      <tr><td>mobility</td><td>number</td><td>移動力</td></tr>
+      <tr><td>weight / output</td><td>number</td><td>重量 / 出力（決定能裝什麼武器與背包）</td></tr>
+      <tr><td>parts</td><td>object</td><td>{ torso, leftArm, rightArm, legs } 各部件耐久值</td></tr>
+      <tr><td>module4</td><td>object</td><td>四模組 { name, dmg, crit, critDmg, acc, description }</td></tr>
+      <tr><td>module8</td><td>object</td><td>八模組</td></tr>
+      <tr><td>moduleFixed</td><td>object</td><td>固定模組</td></tr>
+    </table>
+  </div>
+
+  <!-- ── weapons.json ── -->
+  <div class="sub-h">📁 weapons.json — 武器資料 <span class="tag tag-updated">UPDATED</span></div>
+  <div class="changed-block">
+    <strong>🔄 v1.2 修正：武器系統大幅擴充</strong>
+    武器有類型、元件插槽（觸元件/應元件數量不同）、固定改裝、浮動改裝。專武不限制使用者，但會有「加強特定機師天賦」的技能。
+  </div>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>id / name</td><td>string</td><td>武器識別與名稱 (如 "昏星繼光")</td></tr>
+      <tr><td>category</td><td>string</td><td>武器大類 (射擊/格鬥/突擊/戰術)</td></tr>
+      <tr><td>type</td><td>string</td><td>武器種類 (機槍/狙擊步槍/重機槍/拳套...)</td></tr>
+      <tr><td>typeCoefficient</td><td>number</td><td>武器種類係數 (狙擊步槍=5.92)</td></tr>
+      <tr><td>attack</td><td>string</td><td>攻擊力 (如 "766×1")</td></tr>
+      <tr><td>accuracy</td><td>number</td><td>命中值 (如 1560)</td></tr>
+      <tr><td>critValue</td><td>number</td><td>暴擊值 (如 4603)</td></tr>
+      <tr><td>range</td><td>string</td><td>射程 (如 "2-4")</td></tr>
+      <tr><td>weight</td><td>number</td><td>重量 (如 850)，影響機甲能否裝備</td></tr>
+      <tr><td>rarity</td><td>string</td><td>稀有度 (金/紫/藍...)</td></tr>
+      <tr><td>isExclusive</td><td>boolean</td><td>是否為專屬武器</td></tr>
+      <tr><td>exclusiveFor</td><td>string?</td><td>主要對應機師 ID (專武天賦加強對象)</td></tr>
+      <tr><td colspan="3" style="color:var(--accent-orange);font-weight:700;">▎元件插槽</td></tr>
+      <tr><td>triggerSlots</td><td>number</td><td>觸元件插槽數量 (不同武器不同，如 3)</td></tr>
+      <tr><td>effectSlots</td><td>number</td><td>應元件插槽數量 (不同武器不同，如 4)</td></tr>
+      <tr><td colspan="3" style="color:var(--accent-orange);font-weight:700;">▎固定改裝（基礎改裝）</td></tr>
+      <tr><td>fixedMod</td><td>object</td><td>固定改裝方案（依武器等級解鎖，效果固定）↓</td></tr>
+      <tr><td>&nbsp;├ planName</td><td>string</td><td>改進方案名稱 (如 "機槍VIII")</td></tr>
+      <tr><td>&nbsp;├ maxLevel</td><td>number</td><td>可改裝等級上限 (如 70)</td></tr>
+      <tr><td>&nbsp;└ effects[]</td><td>array</td><td>固定效果列表 { stat, value }<br>stat: "attack"/"crit"/"accuracy"<br>如 { stat: "attack", value: 107 }</td></tr>
+      <tr><td colspan="3" style="color:var(--accent-orange);font-weight:700;">▎浮動改裝（高級改裝）</td></tr>
+      <tr><td>floatingMod</td><td>object</td><td>浮動改裝方案（效果隨機，有範圍）↓</td></tr>
+      <tr><td>&nbsp;├ planName</td><td>string</td><td>進階方案名稱 (如 "機槍IV")</td></tr>
+      <tr><td>&nbsp;├ slots</td><td>number</td><td>可裝填效果欄位數 (如 3)</td></tr>
+      <tr><td>&nbsp;└ possibleEffects[]</td><td>array</td><td>所有可能獲得的效果 ↓</td></tr>
+      <tr><td>&nbsp;&nbsp;├ stat</td><td>string</td><td>效果類型：attack / crit / accuracy / firepower</td></tr>
+      <tr><td>&nbsp;&nbsp;├ condition</td><td>string?</td><td>觸發條件 (null=無條件)<br>"targetHP&lt;50%" / "targetHP&gt;50%"<br>"vsLight" / "vsMedium" / "vsHeavy"</td></tr>
+      <tr><td>&nbsp;&nbsp;├ min</td><td>number</td><td>數值下限 (如 53)</td></tr>
+      <tr><td>&nbsp;&nbsp;└ max</td><td>number</td><td>數值上限 (如 160)</td></tr>
+      <tr><td colspan="3" style="color:var(--accent-orange);font-weight:700;">▎武器技能</td></tr>
+      <tr><td>skills[]</td><td>array</td><td>武器技能列表 ↓</td></tr>
+      <tr><td>&nbsp;├ name</td><td>string</td><td>技能名稱 (如 "白鶴之眺")</td></tr>
+      <tr><td>&nbsp;├ type</td><td>string</td><td>技能類型 (被動技能/主動技能)</td></tr>
+      <tr><td>&nbsp;├ activation</td><td>string</td><td>生效方式：<br>
+        "carry" = 攜帶即生效<br>
+        "equip" = 裝備中生效<br>
+        "use" = 僅使用時生效</td></tr>
+      <tr><td>&nbsp;├ description</td><td>string</td><td>技能效果描述</td></tr>
+      <tr><td>&nbsp;├ dmg / crit / critDmg / acc</td><td>number</td><td>可量化的加成數值</td></tr>
+      <tr><td>&nbsp;└ enhancesTalent</td><td>string?</td><td>加強的特定機師天賦名稱 (專武專用)</td></tr>
+    </table>
+  </div>
+
+  <div class="note-block">
+    <strong>💡 固定改裝 vs 浮動改裝</strong>
+    固定改裝（基礎改裝）：效果確定，達到等級即解鎖。浮動改裝（高級改裝）：效果從可能池中隨機獲得，數值有範圍。模擬器中由使用者手動輸入自己已改裝的浮動效果。管理者在 Google Sheets 中針對各武器種類設定浮動範圍。
+  </div>
+
+  <!-- ── backpacks.json ── -->
+  <div class="sub-h">📁 backpacks.json — 背包資料 <span class="tag tag-new">NEW</span></div>
+  <div class="changed-block">
+    <strong>🆕 v1.1 新增：背包獨立資料庫</strong>
+    根據截圖2，背包是獨立裝備，有自己的技能效果、重量，且部分背包有機甲種類限制（如「僅限輕型機甲裝配」）。
+  </div>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>id / name</td><td>string</td><td>背包識別與名稱 (如 "侵獵者背包")</td></tr>
+      <tr><td>type</td><td>string</td><td>效果分類標籤 (增傷/護甲/再攻擊/首攻...)</td></tr>
+      <tr><td>weight</td><td>number</td><td>重量 (如 150)</td></tr>
+      <tr><td>slot</td><td>string</td><td>裝配位置 (如 "背部")</td></tr>
+      <tr><td>mechRestriction</td><td>string?</td><td>機甲限制 (null=無限制, "light"=僅輕甲, "heavy"=僅重甲)</td></tr>
+      <tr><td>skill</td><td>object</td><td>背包技能 ↓</td></tr>
+      <tr><td>&nbsp;├ name</td><td>string</td><td>技能名稱 (如 "侵獵者驅動·增傷")</td></tr>
+      <tr><td>&nbsp;├ type</td><td>string</td><td>技能類型 (被動技能)</td></tr>
+      <tr><td>&nbsp;├ description</td><td>string</td><td>完整效果描述</td></tr>
+      <tr><td>&nbsp;├ dmg / crit / critDmg / acc</td><td>number</td><td>可量化的加成</td></tr>
+      <tr><td>&nbsp;└ specialEffects[]</td><td>array?</td><td>非數值效果 (如 "移動方式變為漂浮")</td></tr>
+    </table>
+  </div>
+
+  <!-- ── pilotResearch.json ── -->
+  <div class="sub-h">📁 pilotResearch.json — 機師個別科研 <span class="tag tag-new">NEW</span></div>
+  <div class="changed-block">
+    <strong>🆕 v1.1 新增：機師個別科研系統</strong>
+    根據截圖3，每位機師有三種科研：機師特質 (I/II/III)、機甲特質 (I/II/III)、武裝特質 (I/II/III)。每個欄位可從多個選項中選一個安裝，存在互斥關係（待你後續補充具體規則）。
+  </div>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>pilotId</td><td>string</td><td>對應機師</td></tr>
+      <tr><td>pilotTraits[]</td><td>array</td><td>機師特質選項 ↓</td></tr>
+      <tr><td>&nbsp;├ slot</td><td>number</td><td>欄位 (I / II / III)</td></tr>
+      <tr><td>&nbsp;├ options[]</td><td>array</td><td>該欄位可選的能力列表</td></tr>
+      <tr><td>&nbsp;&nbsp;├ name</td><td>string</td><td>能力名稱</td></tr>
+      <tr><td>&nbsp;&nbsp;├ description</td><td>string</td><td>效果描述</td></tr>
+      <tr><td>&nbsp;&nbsp;└ dmg/crit/critDmg/acc</td><td>number</td><td>加成數值</td></tr>
+      <tr><td>mechTraits[]</td><td>array</td><td>機甲特質選項 (結構同上，I/II/III)</td></tr>
+      <tr><td>weaponTraits[]</td><td>array</td><td>武裝特質選項 (結構同上，I/II/III)</td></tr>
+      <tr><td>exclusionRules[]</td><td>array</td><td>互斥規則 (待補充) { slotA, optionA, slotB, optionB }</td></tr>
+    </table>
+  </div>
+
+  <!-- ── globalResearch.json ── -->
+  <div class="sub-h">📁 globalResearch.json — 全域科研 <span class="tag tag-new">NEW</span></div>
+  <div class="changed-block">
+    <strong>🆕 v1.1 新增：全域科研系統（玩家自行輸入）</strong>
+    根據截圖4/5/6，全域科研分三大類，由玩家自行輸入自己的研究等級，網站計算對應加成。
+  </div>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td colspan="3" style="color:var(--accent-orange);font-weight:700;">▎機師科研 (依職業分類)</td></tr>
+      <tr><td>pilotResearchByClass</td><td>object</td><td>各職業的屬性強化</td></tr>
+      <tr><td>&nbsp;├ className</td><td>string</td><td>職業名 (格鬥家/突擊手/狙擊手...)</td></tr>
+      <tr><td>&nbsp;├ flatBonus</td><td>object</td><td>固定值加成 { melee: +2244, defense: +2244, assault: +1800, ... }</td></tr>
+      <tr><td>&nbsp;└ percentBonus</td><td>object</td><td>百分比加成 { melee: +20%, assault: +20%, ... }</td></tr>
+      <tr><td colspan="3" style="color:var(--accent-orange);font-weight:700;">▎機甲科研 (依裝甲類型分類)</td></tr>
+      <tr><td>mechResearchByType</td><td>object</td><td>各裝甲類型的屬性強化</td></tr>
+      <tr><td>&nbsp;├ armorType</td><td>string</td><td>裝甲類型 (輕型/中型/重型)</td></tr>
+      <tr><td>&nbsp;├ flatBonus</td><td>object</td><td>固定值: { torsoHP: +6029, legHP: +4529, leftArmHP: +3035, rightArmHP: +3035, antiCrit: +2164, evasion: +2544, accuracy: +1698, firepower: +2944, torsoArmor: +294, legArmor: +196, ... }</td></tr>
+      <tr><td>&nbsp;└ percentBonus</td><td>object</td><td>百分比: { torsoHP: +19%, legHP: +19%, ..., firepower: +9%, antiCrit: +9%, evasion: +9%, accuracy: +9% }</td></tr>
+      <tr><td colspan="3" style="color:var(--accent-orange);font-weight:700;">▎武器科研 (依武器種類分類)</td></tr>
+      <tr><td>weaponResearchByType</td><td>object</td><td>各武器種類的屬性強化</td></tr>
+      <tr><td>&nbsp;├ weaponType</td><td>string</td><td>武器種類 (刀劍/拳套/重機槍...)</td></tr>
+      <tr><td>&nbsp;└ bonus</td><td>object</td><td>加成 { attack: +462, accuracy: +1900, crit: +2598, ... }</td></tr>
+    </table>
+  </div>
+
+  <div class="note-block">
+    <strong>💡 玩家自行輸入機制</strong>
+    全域科研不是每個人都一樣，所以網站會提供「科研設定」頁面，讓玩家手動輸入自己各項科研的等級。登入用戶的科研設定會存在 Firestore 個人資料中，下次登入自動帶入。未登入用戶則存在 localStorage。
+  </div>
+
+  <!-- ── components.json ── -->
+  <div class="sub-h">📁 components.json — 元件資料庫 <span class="tag tag-updated">UPDATED</span></div>
+  <div class="changed-block">
+    <strong>🔄 v1.2 修正：元件系統完整建模</strong>
+    元件分為「觸元件」(觸發條件) 和「應元件」(觸發後效果)。每個元件有等級與概率屬性。模擬器僅計算以下效果類型：增傷、增加子彈、增加倍率、破甲、每消耗N點AP增傷、對軀幹增傷。
+  </div>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td colspan="3" style="color:var(--accent-orange);font-weight:700;">▎觸元件（觸發條件）</td></tr>
+      <tr><td>id / name</td><td>string</td><td>元件名稱 (如 "觸元件-共力")</td></tr>
+      <tr><td>slot</td><td>"trigger"</td><td>固定為 "trigger"，表示觸元件</td></tr>
+      <tr><td>level</td><td>number</td><td>元件等級 (如 Lv.4)</td></tr>
+      <tr><td>probability</td><td>string</td><td>觸發概率類型："概率" / "必定"</td></tr>
+      <tr><td>condition</td><td>string</td><td>觸發條件描述 (如 "同時使用兩把武器攻擊時")</td></tr>
+      <tr><td>conditionType</td><td>string</td><td>條件分類：<br>
+        "dualWield" = 同時使用兩把武器<br>
+        "singleWield" = 使用單把武器<br>
+        "firstAttack" = 首次攻擊<br>
+        "apCost" = 每消耗N點AP<br>
+        "targetTorso" = 攻擊軀幹<br>
+        "always" = 每次攻擊</td></tr>
+      <tr><td>conditionValue</td><td>number?</td><td>條件參數 (如 apCost 類型填 AP 數值)</td></tr>
+      <tr><td colspan="3" style="color:var(--accent-orange);font-weight:700;">▎應元件（觸發後效果）</td></tr>
+      <tr><td>id / name</td><td>string</td><td>元件名稱 (如 "應元件-強擊")</td></tr>
+      <tr><td>slot</td><td>"effect"</td><td>固定為 "effect"，表示應元件</td></tr>
+      <tr><td>level</td><td>number</td><td>元件等級 (如 Lv.5)</td></tr>
+      <tr><td>probability</td><td>string</td><td>觸發概率類型："概率" / "必定"</td></tr>
+      <tr><td>effectType</td><td>string</td><td>效果分類（僅收錄模擬器需要的）：<br>
+        "dmgBoost" = 增傷 (如 傷害提升20%)<br>
+        "bulletAdd" = 增加子彈 (如 發射子彈數+1)<br>
+        "multiplierBoost" = 增加倍率 (如 攻擊倍率提升0.1)<br>
+        "armorBreak" = 破甲 (降低敵方裝甲)<br>
+        "apDmgBoost" = 每消耗N點AP增傷<br>
+        "torsoDmgBoost" = 對軀幹增傷</td></tr>
+      <tr><td>value</td><td>number</td><td>效果數值 (如 20 代表 20%，或 1 代表 +1 子彈)</td></tr>
+      <tr><td>description</td><td>string</td><td>完整效果描述文字</td></tr>
+      <tr><td>rarity</td><td>string</td><td>稀有度 (金/紫/藍)</td></tr>
+    </table>
+  </div>
+
+  <div class="note-block">
+    <strong>⚡ 元件模擬範圍限定</strong>
+    遊戲中元件效果種類繁多，但本站模擬器僅計算以下 6 類對傷害有直接影響的效果：<br>
+    ① 增傷（傷害提升%）② 增加子彈（發射子彈數+N）③ 增加倍率（攻擊倍率提升）④ 破甲（降低敵方裝甲值）⑤ 每消耗N點AP增傷（與技能AP消耗關聯）⑥ 對軀幹增傷<br>
+    其他效果（如移動力、防禦相關）不在傷害模擬範圍內。
+  </div>
+
+  <!-- ── Firestore userBuilds ── -->
+  <div class="sub-h">📁 Firestore — 用戶資料</div>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td colspan="3" style="color:var(--accent-orange);font-weight:700;">▎users/{uid}/profile</td></tr>
+      <tr><td>globalResearch</td><td>object</td><td>玩家的全域科研等級設定</td></tr>
+      <tr><td>pilotResearchSelections</td><td>object</td><td>各機師的個別科研選擇</td></tr>
+      <tr><td colspan="3" style="color:var(--accent-orange);font-weight:700;">▎users/{uid}/builds/{buildId}</td></tr>
+      <tr><td>buildName</td><td>string</td><td>配裝名稱</td></tr>
+      <tr><td>pilotId</td><td>string</td><td>機師</td></tr>
+      <tr><td>mechId</td><td>string</td><td>機甲</td></tr>
+      <tr><td>weaponId</td><td>string</td><td>武器</td></tr>
+      <tr><td>backpackId</td><td>string</td><td>背包</td></tr>
+      <tr><td>modules</td><td>object</td><td>模組選擇</td></tr>
+      <tr><td>weaponFixedMod</td><td>object</td><td>武器固定改裝效果</td></tr>
+      <tr><td>weaponFloatingMod[]</td><td>array</td><td>武器浮動改裝已選效果 { stat, condition, value }</td></tr>
+      <tr><td>triggerComponents[]</td><td>string[]</td><td>觸元件 ID 列表（依武器插槽數量）</td></tr>
+      <tr><td>effectComponents[]</td><td>string[]</td><td>應元件 ID 列表（依武器插槽數量）</td></tr>
+      <tr><td>pilotResearch</td><td>object</td><td>此配裝對應的個別科研選擇</td></tr>
+      <tr><td>result</td><td>object</td><td>計算結果快照</td></tr>
+      <tr><td>createdAt</td><td>timestamp</td><td>建立時間</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ 5. 頁面架構 ═══ -->
+<section class="section">
+  <div class="section-label">05 — Site Map</div>
+  <div class="section-title">頁面架構</div>
+  <div class="section-desc">深色主題搭配橘色/藍色強調色，貼近鋼嵐遊戲介面。</div>
+
+  <div class="page-map">
+    <div class="page-item">
+      <h4>🏠 首頁</h4>
+      <div class="route">/</div>
+      <p>最新改版資訊、快速入口、公告欄</p>
+    </div>
+    <div class="page-item">
+      <h4>👤 機師圖鑑</h4>
+      <div class="route">/pilots</div>
+      <p>卡片列表，依職業/稀有度篩選</p>
+    </div>
+    <div class="page-item">
+      <h4>👤 機師詳情</h4>
+      <div class="route">/pilots/:id</div>
+      <p>仿遊戲介面：立繪 + 六維 + AP + 技能 + 個別科研配置</p>
+    </div>
+    <div class="page-item">
+      <h4>🤖 機甲圖鑑</h4>
+      <div class="route">/mechs</div>
+      <p>機甲列表，依裝甲類型篩選</p>
+    </div>
+    <div class="page-item">
+      <h4>🤖 機甲詳情</h4>
+      <div class="route">/mechs/:id</div>
+      <p>仿「機甲整備」介面：部件 + 模組 + 屬性</p>
+    </div>
+    <div class="page-item">
+      <h4>🔫 武器圖鑑</h4>
+      <div class="route">/weapons</div>
+      <p>所有武器列表，含專武標記與技能預覽</p>
+    </div>
+    <div class="page-item">
+      <h4>🎒 背包圖鑑</h4>
+      <div class="route">/backpacks</div>
+      <p>所有背包列表，顯示裝配限制與效果</p>
+    </div>
+    <div class="page-item">
+      <h4>⚔️ 配裝模擬器</h4>
+      <div class="route">/simulator</div>
+      <p>核心工具頁：選配裝 → 計算 → A/B 對比 → 匯出</p>
+    </div>
+    <div class="page-item">
+      <h4>🔬 科研設定</h4>
+      <div class="route">/research</div>
+      <p>玩家輸入自己的全域科研等級（機師/機甲/武器）</p>
+    </div>
+    <div class="page-item">
+      <h4>📰 改版資訊</h4>
+      <div class="route">/news</div>
+      <p>時間軸式改版預告</p>
+    </div>
+    <div class="page-item">
+      <h4>📚 攻略專區</h4>
+      <div class="route">/guides</div>
+      <p>關卡攻略文章列表與詳情</p>
+    </div>
+    <div class="page-item">
+      <h4>🔐 個人中心</h4>
+      <div class="route">/profile</div>
+      <p>我的配裝紀錄 / 科研設定 / 匯出管理</p>
+    </div>
+    <div class="page-item">
+      <h4>🛠️ 管理後台</h4>
+      <div class="route">/admin</div>
+      <p>管理者：Sheets 連結、攻略編輯、公告管理</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 6. 配裝模擬器流程 ═══ -->
+<section class="section">
+  <div class="section-label">06 — Simulator Flow</div>
+  <div class="section-title">配裝模擬器操作流程</div>
+  <div class="section-desc">v1.2 更新：加入武器改裝、元件插槽（觸/應元件）、背包限制、科研選擇的完整流程。</div>
+
+  <div class="card-grid" style="grid-template-columns: 1fr;">
+    <div class="card orange" style="padding:28px;">
+      <h3 style="margin-bottom:16px;">模擬器步驟流程</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+        <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;">
+          <div style="color:var(--accent-orange);font-family:'Orbitron',sans-serif;font-size:11px;margin-bottom:6px;">STEP 1</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px;">選擇機師</div>
+          <div style="font-size:12px;color:var(--text-dim);">自動帶入六維、技能、天賦、神經驅動、駕駛等級</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;">
+          <div style="color:var(--accent-orange);font-family:'Orbitron',sans-serif;font-size:11px;margin-bottom:6px;">STEP 2</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px;">選擇機甲</div>
+          <div style="font-size:12px;color:var(--text-dim);">自動帶入火力、模組、裝甲類型。根據駕駛許可篩選可選機甲</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;">
+          <div style="color:var(--accent-orange);font-family:'Orbitron',sans-serif;font-size:11px;margin-bottom:6px;">STEP 3</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px;">選擇武器</div>
+          <div style="font-size:12px;color:var(--text-dim);">根據機甲出力篩選（重量限制），顯示所有技能與生效方式。專武天賦加強自動標記</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;">
+          <div style="color:var(--accent-orange);font-family:'Orbitron',sans-serif;font-size:11px;margin-bottom:6px;">STEP 4</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px;">選擇背包</div>
+          <div style="font-size:12px;color:var(--text-dim);">根據機甲裝甲類型篩選（如「僅限輕型」），根據剩餘出力篩選重量</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;">
+          <div style="color:var(--accent-orange);font-family:'Orbitron',sans-serif;font-size:11px;margin-bottom:6px;">STEP 5</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px;">配置機師個別科研</div>
+          <div style="font-size:12px;color:var(--text-dim);">機師/機甲/武裝特質各 I/II/III 欄位，有互斥提示</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;">
+          <div style="color:var(--accent-orange);font-family:'Orbitron',sans-serif;font-size:11px;margin-bottom:6px;">STEP 6</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px;">配置武器改裝</div>
+          <div style="font-size:12px;color:var(--text-dim);">固定改裝自動帶入；浮動改裝由使用者選擇已解鎖的效果（含條件觸發效果）</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;">
+          <div style="color:var(--accent-orange);font-family:'Orbitron',sans-serif;font-size:11px;margin-bottom:6px;">STEP 7</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px;">配置元件（觸/應）</div>
+          <div style="font-size:12px;color:var(--text-dim);">根據武器的觸元件/應元件插槽數量，選擇觸發條件與效果。僅計算：增傷/增彈/增倍率/破甲/AP增傷/軀幹增傷</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;">
+          <div style="color:var(--accent-orange);font-family:'Orbitron',sans-serif;font-size:11px;margin-bottom:6px;">STEP 8</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px;">設定敵方 + 戰鬥參數</div>
+          <div style="font-size:12px;color:var(--text-dim);">敵方機師/機甲、技能倍率、連擊數、是否最佳射程、AP 消耗量</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;">
+          <div style="color:var(--accent-orange);font-family:'Orbitron',sans-serif;font-size:11px;margin-bottom:6px;">RESULT</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px;">即時計算結果</div>
+          <div style="font-size:12px;color:var(--text-dim);">增傷%/爆率%/爆傷%/命中%/期望值，支援 A/B 對比與匯出圖片</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-block" style="margin-top:20px;">
+    <strong>⚡ 自動篩選邏輯</strong>
+    選了機甲後，武器和背包會自動根據「重量 ≤ 剩餘出力」和「裝甲類型限制」過濾不可裝備的選項。使用者不需要自己判斷能不能裝，介面直接幫他過濾。
+  </div>
+</section>
+
+<!-- ═══ 7. 管理者 ═══ -->
+<section class="section">
+  <div class="section-label">07 — Admin System</div>
+  <div class="section-title">管理者維護方案</div>
+
+  <div class="card-grid">
+    <div class="card green">
+      <div class="card-icon">📊</div>
+      <h3>遊戲數據：Google Sheets</h3>
+      <p>機師、機甲、武器、背包、元件、科研 — 分頁管理。管理者在表格中修改，GitHub Actions 自動拉取轉 JSON，網站自動更新。</p>
+    </div>
+    <div class="card yellow">
+      <div class="card-icon">✏️</div>
+      <h3>攻略文章：簡易後台</h3>
+      <p>管理者登入後在網站後台撰寫攻略，Markdown + 截圖上傳（Firebase Storage）。</p>
+    </div>
+    <div class="card blue">
+      <div class="card-icon">📢</div>
+      <h3>改版資訊</h3>
+      <p>透過後台或 Google Sheets 專用分頁管理。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 8. 匯出分享圖 ═══ -->
+<section class="section">
+  <div class="section-label">08 — Export</div>
+  <div class="section-title">匯出分享圖功能</div>
+
+  <div class="card-grid">
+    <div class="card orange">
+      <div class="card-icon">🖼️</div>
+      <h3>分享卡片設計</h3>
+      <p>仿遊戲風格深色卡片：機師立繪 + 機甲名 + 武器 + 背包 + 模組配置 + 科研 + 最終數據 + 網站 Logo。1200×675px，適合社群分享。</p>
+    </div>
+    <div class="card blue">
+      <div class="card-icon">⚙️</div>
+      <h3>技術實作</h3>
+      <p>html2canvas 截圖 → PNG。手機端觸發原生分享，PC 端下載檔案。純前端，不需後端。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 9. JSON 資料總覽 ═══ -->
+<section class="section">
+  <div class="section-label">09 — Data Files Summary</div>
+  <div class="section-title">JSON 資料檔案總覽</div>
+  <div class="section-desc">所有靜態資料檔案對照。</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>檔案</th><th>狀態</th><th>內容</th><th>管理方式</th></tr>
+      <tr><td>pilots.json</td><td style="color:var(--accent-green);">✓ 原有</td><td>機師資料 (~45+ 筆)</td><td>Google Sheets</td></tr>
+      <tr><td>mechs.json</td><td style="color:var(--accent-green);">✓ 原有</td><td>機甲資料 (~40+ 筆)</td><td>Google Sheets</td></tr>
+      <tr><td>weapons.json</td><td style="color:var(--accent-yellow);">⟳ 擴充</td><td>所有武器 + 技能 + 元件插槽數 + 固定改裝 + 浮動改裝範圍</td><td>Google Sheets</td></tr>
+      <tr><td>backpacks.json</td><td style="color:var(--accent-green);">★ 新增</td><td>所有背包 + 技能 + 裝配限制</td><td>Google Sheets</td></tr>
+      <tr><td>components.json</td><td style="color:var(--accent-yellow);">⟳ 擴充</td><td>觸元件 + 應元件（含等級、概率、效果類型）</td><td>Google Sheets</td></tr>
+      <tr><td>pilotResearch.json</td><td style="color:var(--accent-green);">★ 新增</td><td>各機師個別科研選項 + 互斥規則</td><td>Google Sheets</td></tr>
+      <tr><td>globalResearch.json</td><td style="color:var(--accent-green);">★ 新增</td><td>全域科研定義 (職業/機甲/武器)</td><td>Google Sheets</td></tr>
+      <tr><td>enemies.json</td><td style="color:var(--accent-green);">✓ 原有</td><td>敵方機師+機甲 (模擬器用)</td><td>Google Sheets</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ 10. 開發時程 ═══ -->
+<section class="section">
+  <div class="section-label">10 — Roadmap</div>
+  <div class="section-title">開發時程建議</div>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-phase">Phase 1</div>
+      <div class="timeline-title">專案初始化 + 靜態資料</div>
+      <div class="timeline-desc">React + TS + Tailwind 骨架，整理全部 JSON 資料檔。</div>
+      <div class="timeline-tasks">
+        <span class="timeline-task">Vite 專案</span>
+        <span class="timeline-task">路由架構</span>
+        <span class="timeline-task">8 個 JSON 檔</span>
+        <span class="timeline-task">深色主題</span>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-phase">Phase 2</div>
+      <div class="timeline-title">資料庫頁面（機師 + 機甲 + 武器 + 背包）</div>
+      <div class="timeline-desc">所有圖鑑的列表頁與詳情頁，仿遊戲介面。</div>
+      <div class="timeline-tasks">
+        <span class="timeline-task">機師圖鑑</span>
+        <span class="timeline-task">機甲圖鑑</span>
+        <span class="timeline-task">武器圖鑑</span>
+        <span class="timeline-task">背包圖鑑</span>
+        <span class="timeline-task">六維雷達圖</span>
+        <span class="timeline-task">響應式</span>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-phase">Phase 3</div>
+      <div class="timeline-title">配裝模擬器核心</div>
+      <div class="timeline-desc">傷害公式引擎、9步驟配裝流程、自動篩選邏輯、A/B 對比。</div>
+      <div class="timeline-tasks">
+        <span class="timeline-task">公式引擎</span>
+        <span class="timeline-task">配裝 UI</span>
+        <span class="timeline-task">武器技能生效判斷</span>
+        <span class="timeline-task">武器改裝系統</span>
+        <span class="timeline-task">觸/應元件配置</span>
+        <span class="timeline-task">背包裝配限制</span>
+        <span class="timeline-task">科研選擇 UI</span>
+        <span class="timeline-task">A/B 對比</span>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-phase">Phase 4</div>
+      <div class="timeline-title">用戶系統 + 匯出</div>
+      <div class="timeline-desc">Firebase 登入、配裝存檔、全域科研設定頁、匯出 PNG。</div>
+      <div class="timeline-tasks">
+        <span class="timeline-task">Firebase Auth</span>
+        <span class="timeline-task">配裝存檔</span>
+        <span class="timeline-task">科研設定頁</span>
+        <span class="timeline-task">匯出分享圖</span>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-phase">Phase 5</div>
+      <div class="timeline-title">內容系統 + 管理後台</div>
+      <div class="timeline-desc">攻略文章、改版資訊、管理者後台、Google Sheets 同步。</div>
+      <div class="timeline-tasks">
+        <span class="timeline-task">攻略頁面</span>
+        <span class="timeline-task">Markdown 編輯器</span>
+        <span class="timeline-task">管理者權限</span>
+        <span class="timeline-task">Sheets 同步</span>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-phase">Phase 6</div>
+      <div class="timeline-title">優化 + 部署</div>
+      <div class="timeline-desc">手機版優化、效能調整、GitHub Pages 部署。</div>
+      <div class="timeline-tasks">
+        <span class="timeline-task">手機版調整</span>
+        <span class="timeline-task">效能優化</span>
+        <span class="timeline-task">部署</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 11. 下一步 ═══ -->
+<section class="section" style="border-bottom:none;">
+  <div class="section-label">11 — Next Steps</div>
+  <div class="section-title">接下來你需要做的</div>
+
+  <div class="card-grid">
+    <div class="card red">
+      <div class="card-icon">1️⃣</div>
+      <h3>確認本規劃書 v1.1</h3>
+      <p>武器/背包/科研的結構是否正確？有沒有遺漏的系統？</p>
+    </div>
+    <div class="card orange">
+      <div class="card-icon">2️⃣</div>
+      <h3>補充科研互斥規則</h3>
+      <p>機師個別科研的 I/II/III 欄位互斥規則具體是什麼？哪些不能同時選？</p>
+    </div>
+    <div class="card blue">
+      <div class="card-icon">3️⃣</div>
+      <h3>確認傷害公式</h3>
+      <p>NGA 連結無法完整讀取，如有原文或截圖可直接貼給我。</p>
+    </div>
+    <div class="card green">
+      <div class="card-icon">4️⃣</div>
+      <h3>開始 Phase 1</h3>
+      <p>確認後直接建立專案骨架 + 整理 JSON 資料。</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 專案規劃書 v1.2 — 武器改裝/元件系統/背包/科研系統修正版
+</footer>
+
+</body>
+</html>
