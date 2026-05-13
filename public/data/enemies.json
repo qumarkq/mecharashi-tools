@@ -1,0 +1,16 @@
+[
+  {
+    "id": "enemy_001",
+    "name": "範例敵機",
+    "level": 55,
+    "armorType": "中甲",
+    "armor": 350,
+    "hp": {
+      "torso": 15000,
+      "leftArm": 10000,
+      "rightArm": 10000,
+      "legs": 12000
+    },
+    "evasion": 800
+  }
+]

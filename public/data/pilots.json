@@ -1,0 +1,54 @@
+[
+  {
+    "id": "pilot_001",
+    "name": "範例機師",
+    "rarity": "SSR",
+    "class": "突擊手",
+    "stats": {
+      "melee": 7500,
+      "assault": 8200,
+      "shooting": 6800,
+      "tactics": 7000,
+      "defense": 6500,
+      "engineering": 5800
+    },
+    "ap": {
+      "init": 6,
+      "max": 12,
+      "recovery": 4
+    },
+    "license": "中型",
+    "masterLevel": "EX70",
+    "skills": [
+      {
+        "name": "範例技能",
+        "dmg": 15,
+        "crit": 10,
+        "critDmg": 0,
+        "acc": 5
+      }
+    ],
+    "talents": [
+      {
+        "name": "範例天賦",
+        "dmg": 10,
+        "crit": 5,
+        "critDmg": 20,
+        "acc": 0
+      }
+    ],
+    "neuralDrive": [
+      {
+        "name": "範例神經驅動",
+        "dmg": 8,
+        "crit": 0,
+        "critDmg": 15,
+        "acc": 5
+      }
+    ],
+    "attack": 320,
+    "defense": 280,
+    "lore": "這是範例機師的角色故事。",
+    "portrait": "/images/pilots/pilot_001.png"
+  }
+]

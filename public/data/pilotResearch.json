@@ -1,0 +1,73 @@
+[
+  {
+    "pilotId": "pilot_001",
+    "pilotTraits": [
+      {
+        "slot": 1,
+        "options": [
+          { "name": "精準射擊I", "description": "命中率提升10%", "dmg": 0, "crit": 0, "critDmg": 0, "acc": 10 },
+          { "name": "火力強化I", "description": "傷害提升8%", "dmg": 8, "crit": 0, "critDmg": 0, "acc": 0 }
+        ]
+      },
+      {
+        "slot": 2,
+        "options": [
+          { "name": "致命打擊II", "description": "暴擊率提升12%", "dmg": 0, "crit": 12, "critDmg": 0, "acc": 0 },
+          { "name": "穿甲彈II", "description": "傷害提升10%", "dmg": 10, "crit": 0, "critDmg": 0, "acc": 0 }
+        ]
+      },
+      {
+        "slot": 3,
+        "options": [
+          { "name": "狙擊專精III", "description": "暴擊傷害提升25%", "dmg": 0, "crit": 0, "critDmg": 25, "acc": 0 },
+          { "name": "全面強化III", "description": "傷害提升12%，命中+5%", "dmg": 12, "crit": 0, "critDmg": 0, "acc": 5 }
+        ]
+      }
+    ],
+    "mechTraits": [
+      {
+        "slot": 1,
+        "options": [
+          { "name": "裝甲強化I", "description": "機甲耐久提升10%", "dmg": 0, "crit": 0, "critDmg": 0, "acc": 0 },
+          { "name": "火力增幅I", "description": "火力值+500", "dmg": 5, "crit": 0, "critDmg": 0, "acc": 0 }
+        ]
+      },
+      {
+        "slot": 2,
+        "options": [
+          { "name": "機動性II", "description": "閃避+200", "dmg": 0, "crit": 0, "critDmg": 0, "acc": 0 },
+          { "name": "重裝II", "description": "火力值+800", "dmg": 8, "crit": 0, "critDmg": 0, "acc": 0 }
+        ]
+      },
+      {
+        "slot": 3,
+        "options": [
+          { "name": "極限出力III", "description": "火力值+1200", "dmg": 12, "crit": 0, "critDmg": 0, "acc": 0 }
+        ]
+      }
+    ],
+    "weaponTraits": [
+      {
+        "slot": 1,
+        "options": [
+          { "name": "彈道校正I", "description": "命中+200", "dmg": 0, "crit": 0, "critDmg": 0, "acc": 8 },
+          { "name": "彈頭改良I", "description": "攻擊力+50", "dmg": 5, "crit": 0, "critDmg": 0, "acc": 0 }
+        ]
+      },
+      {
+        "slot": 2,
+        "options": [
+          { "name": "精密瞄具II", "description": "暴擊+300", "dmg": 0, "crit": 10, "critDmg": 0, "acc": 0 },
+          { "name": "穿甲彈頭II", "description": "傷害+10%", "dmg": 10, "crit": 0, "critDmg": 0, "acc": 0 }
+        ]
+      },
+      {
+        "slot": 3,
+        "options": [
+          { "name": "狙擊專精III", "description": "暴擊傷害+20%", "dmg": 0, "crit": 0, "critDmg": 20, "acc": 0 }
+        ]
+      }
+    ],
+    "exclusionRules": []
+  }
+]

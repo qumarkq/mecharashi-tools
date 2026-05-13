@@ -1,0 +1,43 @@
+[
+  {
+    "id": "mech_001",
+    "name": "範例機甲",
+    "armorType": "中甲",
+    "firepower": 3650,
+    "armor": 450,
+    "evasion": 1200,
+    "mobility": 5,
+    "weight": 2800,
+    "output": 3500,
+    "parts": {
+      "torso": 12000,
+      "leftArm": 8000,
+      "rightArm": 8000,
+      "legs": 10000
+    },
+    "module4": {
+      "name": "四模組效果",
+      "dmg": 10,
+      "crit": 0,
+      "critDmg": 0,
+      "acc": 5,
+      "description": "裝備4個模組時：傷害+10%、命中+5%"
+    },
+    "module8": {
+      "name": "八模組效果",
+      "dmg": 20,
+      "crit": 10,
+      "critDmg": 0,
+      "acc": 10,
+      "description": "裝備8個模組時：傷害+20%、暴擊+10%、命中+10%"
+    },
+    "moduleFixed": {
+      "name": "固定模組",
+      "dmg": 5,
+      "crit": 0,
+      "critDmg": 0,
+      "acc": 0,
+      "description": "固定模組效果：傷害+5%"
+    }
+  }
+]

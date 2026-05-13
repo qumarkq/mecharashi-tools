@@ -1,0 +1,38 @@
+[
+  {
+    "id": "backpack_001",
+    "name": "侵獵者背包",
+    "type": "增傷",
+    "weight": 150,
+    "slot": "背部",
+    "mechRestriction": null,
+    "skill": {
+      "name": "侵獵者驅動·增傷",
+      "type": "被動技能",
+      "description": "攻擊時傷害提升15%",
+      "dmg": 15,
+      "crit": 0,
+      "critDmg": 0,
+      "acc": 0,
+      "specialEffects": []
+    }
+  },
+  {
+    "id": "backpack_002",
+    "name": "輕裝突襲背包",
+    "type": "首攻",
+    "weight": 100,
+    "slot": "背部",
+    "mechRestriction": "light",
+    "skill": {
+      "name": "輕裝突襲·先手",
+      "type": "被動技能",
+      "description": "首次攻擊傷害提升25%（僅限輕型機甲裝配）",
+      "dmg": 25,
+      "crit": 0,
+      "critDmg": 0,
+      "acc": 0,
+      "specialEffects": []
+    }
+  }
+]

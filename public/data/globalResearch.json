@@ -1,0 +1,133 @@
+{
+  "pilotResearchByClass": [
+    {
+      "className": "格鬥家",
+      "flatBonus": { "melee": 2244, "defense": 2244, "assault": 1800 },
+      "percentBonus": { "melee": 20, "assault": 20 }
+    },
+    {
+      "className": "突擊手",
+      "flatBonus": { "assault": 2244, "shooting": 1800, "melee": 1500 },
+      "percentBonus": { "assault": 20, "shooting": 15 }
+    },
+    {
+      "className": "狙擊手",
+      "flatBonus": { "shooting": 2244, "tactics": 1800, "assault": 1500 },
+      "percentBonus": { "shooting": 20, "tactics": 15 }
+    },
+    {
+      "className": "戰術家",
+      "flatBonus": { "tactics": 2244, "engineering": 1800, "defense": 1500 },
+      "percentBonus": { "tactics": 20, "engineering": 15 }
+    },
+    {
+      "className": "守護者",
+      "flatBonus": { "defense": 2244, "melee": 1800, "engineering": 1500 },
+      "percentBonus": { "defense": 20, "melee": 15 }
+    },
+    {
+      "className": "機械師",
+      "flatBonus": { "engineering": 2244, "tactics": 1800, "defense": 1500 },
+      "percentBonus": { "engineering": 20, "tactics": 15 }
+    }
+  ],
+  "mechResearchByType": [
+    {
+      "armorType": "輕型",
+      "flatBonus": {
+        "torsoHP": 6029,
+        "legHP": 4529,
+        "leftArmHP": 3035,
+        "rightArmHP": 3035,
+        "antiCrit": 2164,
+        "evasion": 2544,
+        "accuracy": 1698,
+        "firepower": 2944,
+        "torsoArmor": 294,
+        "legArmor": 196
+      },
+      "percentBonus": {
+        "torsoHP": 19,
+        "legHP": 19,
+        "leftArmHP": 19,
+        "rightArmHP": 19,
+        "firepower": 9,
+        "antiCrit": 9,
+        "evasion": 9,
+        "accuracy": 9
+      }
+    },
+    {
+      "armorType": "中型",
+      "flatBonus": {
+        "torsoHP": 7200,
+        "legHP": 5400,
+        "leftArmHP": 3600,
+        "rightArmHP": 3600,
+        "antiCrit": 2500,
+        "evasion": 2000,
+        "accuracy": 1800,
+        "firepower": 3200,
+        "torsoArmor": 350,
+        "legArmor": 230
+      },
+      "percentBonus": {
+        "torsoHP": 19,
+        "legHP": 19,
+        "leftArmHP": 19,
+        "rightArmHP": 19,
+        "firepower": 9,
+        "antiCrit": 9,
+        "evasion": 9,
+        "accuracy": 9
+      }
+    },
+    {
+      "armorType": "重型",
+      "flatBonus": {
+        "torsoHP": 9000,
+        "legHP": 6750,
+        "leftArmHP": 4500,
+        "rightArmHP": 4500,
+        "antiCrit": 3000,
+        "evasion": 1500,
+        "accuracy": 2000,
+        "firepower": 3500,
+        "torsoArmor": 420,
+        "legArmor": 280
+      },
+      "percentBonus": {
+        "torsoHP": 19,
+        "legHP": 19,
+        "leftArmHP": 19,
+        "rightArmHP": 19,
+        "firepower": 9,
+        "antiCrit": 9,
+        "evasion": 9,
+        "accuracy": 9
+      }
+    }
+  ],
+  "weaponResearchByType": [
+    {
+      "weaponType": "狙擊步槍",
+      "bonus": { "attack": 462, "accuracy": 1900, "crit": 2598 }
+    },
+    {
+      "weaponType": "機槍",
+      "bonus": { "attack": 380, "accuracy": 1600, "crit": 2200 }
+    },
+    {
+      "weaponType": "重機槍",
+      "bonus": { "attack": 520, "accuracy": 1400, "crit": 2000 }
+    },
+    {
+      "weaponType": "刀劍",
+      "bonus": { "attack": 500, "accuracy": 1800, "crit": 2400 }
+    },
+    {
+      "weaponType": "拳套",
+      "bonus": { "attack": 440, "accuracy": 1700, "crit": 2300 }
+    }
+  ]
+}
