@@ -7,10 +7,20 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "scrape:pilots": "node scripts/scrape-pilots.js",
+    "scrape:pilots:headless": "node scripts/scrape-pilots.js --headless",
+    "scrape:pilots:no-images": "node scripts/scrape-pilots.js --no-images",
+    "scrape": "node scripts/scrape-pilots-v2.js",
+    "scrape:headless": "node scripts/scrape-pilots-v2.js --headless",
+    "scrape:debug": "node scripts/scrape-pilots-v2.js --debug",
+    "scrape:test": "node scripts/scrape-pilots-v2.js --limit=1 --debug",
+    "scrape:v3": "node scripts/scrape-pilots-v3.js",
+    "scrape:v3:force": "node scripts/scrape-pilots-v3.js --force"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
+    "opencc-js": "^1.3.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.15.0",
@@ -26,6 +36,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "playwright": "^1.52.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12"

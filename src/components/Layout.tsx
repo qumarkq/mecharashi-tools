@@ -88,7 +88,7 @@ export default function Layout() {
 
       {/* Footer */}
       <footer className="border-t border-border py-8 text-center text-text-dim text-sm">
-        <p>鋼嵐工具站 — Metal Storm Community Toolkit</p>
+        <p>鋼嵐工具站 — Mecharashi Community Toolkit</p>
         <p className="mt-1">本站為玩家社群工具，與官方無關</p>
       </footer>
     </div>
