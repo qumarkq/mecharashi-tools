@@ -40,7 +40,7 @@ function getNewCommits() {
       const date = line.slice(secondBar + 1).split('T')[0];
 
       // 略過 changelog 更新本身產生的 commit
-      if (/^chore.*update.*CHANGELOG/i.test(subject)) return null;
+      if (/^chore.*CHANGELOG/i.test(subject)) return null;
 
       const match = subject.match(/^(\w+)(?:\(([^)]+)\))?(!)?:\s*(.+)/);
       return {
