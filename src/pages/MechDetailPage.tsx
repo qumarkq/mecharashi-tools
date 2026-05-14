@@ -9,16 +9,51 @@ const ARMOR_STYLES: Record<string, string> = {
   重型: 'text-accent-red bg-accent-red/10 border-accent-red/40',
 }
 
+type NumericPartStatKey = 'durable' | 'firepower' | 'weight' | 'output' | 'antiRiot' | 'hit' | 'dodge' | 'move'
 
-function ModuleCard({
-  mod,
-  label,
-  color,
-}: {
-  mod: Module | null
-  label: string
-  color: string
-}) {
+const PART_STAT_KEYS: { key: NumericPartStatKey; label: string }[] = [
+  { key: 'durable',   label: '耐久'  },
+  { key: 'firepower', label: '火力'  },
+  { key: 'weight',    label: '重量'  },
+  { key: 'output',    label: '出力'  },
+  { key: 'antiRiot',  label: '抗暴'  },
+  { key: 'hit',       label: '命中'  },
+  { key: 'dodge',     label: '閃避'  },
+  { key: 'move',      label: '移動力' },
+]
+
+function PartCard({ part, name }: { part: MechPart; name: string }) {
+  return (
+    <div className="bg-bg-dark border border-border rounded-xl p-3 flex flex-col h-full">
+      <div className="flex items-center gap-2 mb-2">
+        {part.icon && (
+          <img
+            src={assetUrl(part.icon)}
+            alt={name}
+            className="w-10 h-10 rounded-lg bg-bg-card border border-border object-contain flex-shrink-0"
+            onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+          />
+        )}
+        <div>
+          <p className="font-bold text-sm text-text-primary leading-tight">{name}</p>
+          <p className="text-[10px] text-text-dim leading-tight">{part.interface}</p>
+        </div>
+      </div>
+      <div className="flex-1 divide-y divide-border">
+        {PART_STAT_KEYS.filter(({ key }) => part[key] != null).map(({ key, label }) => (
+          <div key={key} className="flex justify-between items-center py-1">
+            <span className="text-[11px] text-text-dim">{label}</span>
+            <span className="text-[11px] text-text-primary font-medium font-[JetBrains_Mono,monospace]">
+              {(part[key] as number).toLocaleString()}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ModuleCard({ mod, label, color }: { mod: Module | null; label: string; color: string }) {
   if (!mod) {
     return (
       <div className={`bg-bg-dark rounded-xl border ${color} p-4 opacity-50`}>
@@ -44,49 +79,17 @@ function ModuleCard({
       <p className="text-xs text-text-secondary leading-relaxed">{mod.description}</p>
       {(mod.dmg || mod.crit || mod.critDmg || mod.acc) ? (
         <div className="flex flex-wrap gap-2 mt-2">
-          {mod.dmg ? <Stat label="增傷" value={`+${mod.dmg}%`} /> : null}
-          {mod.crit ? <Stat label="爆率" value={`+${mod.crit}`} /> : null}
-          {mod.critDmg ? <Stat label="爆傷" value={`+${mod.critDmg}%`} /> : null}
-          {mod.acc ? <Stat label="命中" value={`+${mod.acc}`} /> : null}
+          {mod.dmg    ? <ModStat label="增傷" value={`+${mod.dmg}%`}    /> : null}
+          {mod.crit   ? <ModStat label="爆率" value={`+${mod.crit}`}    /> : null}
+          {mod.critDmg ? <ModStat label="爆傷" value={`+${mod.critDmg}%`} /> : null}
+          {mod.acc    ? <ModStat label="命中" value={`+${mod.acc}`}    /> : null}
         </div>
       ) : null}
     </div>
   )
 }
 
-function PartCard({ part, name }: { part: MechPart; name: string }) {
-  return (
-    <div className="bg-bg-dark border border-border rounded-xl p-4">
-      <div className="flex items-center gap-3 mb-3">
-        {part.icon && (
-          <img
-            src={assetUrl(part.icon)}
-            alt={name}
-            className="w-12 h-12 rounded-lg bg-bg-card border border-border object-contain"
-            onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
-          />
-        )}
-        <div>
-          <p className="font-bold text-sm text-text-primary">{name}</p>
-          <p className="text-[11px] text-text-dim">{part.interface}</p>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-        <AttrRow label="耐久" value={part.durable.toLocaleString()} />
-        <AttrRow label="護甲" value={part.armor.toLocaleString()} />
-        <AttrRow label="火力" value={part.firepower.toLocaleString()} />
-        <AttrRow label="重量" value={part.weight.toLocaleString()} />
-        {part.output != null && <AttrRow label="出力" value={part.output.toLocaleString()} />}
-        {part.antiRiot != null && <AttrRow label="抗暴" value={part.antiRiot.toLocaleString()} />}
-        {part.hit != null && <AttrRow label="命中" value={part.hit.toLocaleString()} />}
-        {part.dodge != null && <AttrRow label="閃避" value={part.dodge.toLocaleString()} />}
-        {part.move != null && <AttrRow label="移動力" value={part.move.toString()} />}
-      </div>
-    </div>
-  )
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
+function ModStat({ label, value }: { label: string; value: string }) {
   return (
     <span className="text-[11px] bg-bg-card border border-border rounded px-2 py-0.5">
       <span className="text-text-dim">{label} </span>
@@ -142,12 +145,19 @@ export default function MechDetailPage() {
 
   const armorCls = ARMOR_STYLES[mech.armorType] ?? 'text-text-secondary bg-bg-card border-border'
 
-  // 從 modules.json 查找對應模組
   const mod4 = modules.find((m) => m.id === mech.module4Id) ?? null
   const mod8 = modules.find((m) => m.id === mech.module8Id) ?? null
   const fixedMods = (mech.moduleFixedIds || [])
     .map((fid) => modules.find((m) => m.id === fid) ?? null)
     .filter(Boolean) as Module[]
+
+  const torso    = mech.parts?.torso    && typeof mech.parts.torso    !== 'number' ? mech.parts.torso    as MechPart : null
+  const leftArm  = mech.parts?.leftArm  && typeof mech.parts.leftArm  !== 'number' ? mech.parts.leftArm  as MechPart : null
+  const rightArm = mech.parts?.rightArm && typeof mech.parts.rightArm !== 'number' ? mech.parts.rightArm as MechPart : null
+  const legs     = mech.parts?.legs     && typeof mech.parts.legs     !== 'number' ? mech.parts.legs     as MechPart : null
+  const hasParts = torso || leftArm || rightArm || legs
+
+  const remainingOutput = mech.output - mech.weight
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
@@ -166,58 +176,62 @@ export default function MechDetailPage() {
         <h1 className="text-3xl font-black">{mech.name}</h1>
       </div>
 
-      {/* Stats */}
+      {/* 機甲屬性 — 四部位總和，耐久各部位獨立不列，護甲不顯示 */}
       <div className="bg-bg-card border border-border rounded-xl p-5 mb-6">
         <SectionLabel>機甲屬性</SectionLabel>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8">
           <AttrRow label="火力" value={mech.firepower.toLocaleString()} />
-          <AttrRow label="裝甲均值" value={mech.armor.toLocaleString()} />
           <AttrRow label="閃避" value={mech.evasion.toLocaleString()} />
           <AttrRow label="移動力" value={mech.mobility} />
           <AttrRow label="重量" value={mech.weight.toLocaleString()} />
-          <AttrRow label="出力" value={mech.output.toLocaleString()} />
+          {/* 出力 + 剩餘出力 同列顯示 */}
+          <div className="flex justify-between items-center py-2 border-b border-border col-span-2 sm:col-span-2">
+            <span className="text-text-dim text-sm">出力</span>
+            <div className="flex items-center gap-3">
+              <span className={`text-xs font-[JetBrains_Mono,monospace] ${remainingOutput >= 0 ? 'text-accent-cyan' : 'text-accent-red'}`}>
+                剩餘 {remainingOutput.toLocaleString()}
+              </span>
+              <span className="text-text-primary font-medium font-[JetBrains_Mono,monospace]">
+                {mech.output.toLocaleString()}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Parts Detail — cockpit layout */}
+      {/* 部件資訊 — 駕駛艙佈局 */}
       <div className="mb-6">
         <SectionLabel>部件資訊（滿級）</SectionLabel>
-        {(() => {
-          const torso    = mech.parts?.torso    && typeof mech.parts.torso    !== 'number' ? mech.parts.torso    as MechPart : null
-          const leftArm  = mech.parts?.leftArm  && typeof mech.parts.leftArm  !== 'number' ? mech.parts.leftArm  as MechPart : null
-          const rightArm = mech.parts?.rightArm && typeof mech.parts.rightArm !== 'number' ? mech.parts.rightArm as MechPart : null
-          const legs     = mech.parts?.legs     && typeof mech.parts.legs     !== 'number' ? mech.parts.legs     as MechPart : null
-          const hasParts = torso || leftArm || rightArm || legs
-          if (!hasParts) return <p className="text-sm text-text-dim">部件資料不可用</p>
-          return (
-            <div className="grid grid-cols-3 gap-3 items-center">
-              {/* Row 1 — torso (centre column) */}
-              <div />
-              {torso ? <PartCard part={torso} name="軀幹" /> : <div />}
-              <div />
-              {/* Row 2 — left arm | mech image | right arm */}
-              {leftArm ? <PartCard part={leftArm} name="左臂" /> : <div />}
-              <div className="bg-bg-card border border-border rounded-xl flex items-center justify-center self-stretch min-h-[200px]">
-                {mech.portrait && (
-                  <img
-                    src={assetUrl(mech.portrait)}
-                    alt={mech.name}
-                    className="max-h-52 w-full object-contain"
-                    onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
-                  />
-                )}
-              </div>
-              {rightArm ? <PartCard part={rightArm} name="右臂" /> : <div />}
-              {/* Row 3 — legs (centre column) */}
-              <div />
-              {legs ? <PartCard part={legs} name="腿部" /> : <div />}
-              <div />
+        {hasParts ? (
+          <div className="grid grid-cols-3 gap-3 items-stretch">
+            {/* Row 1 — 軀幹 */}
+            <div />
+            {torso ? <PartCard part={torso} name="軀幹" /> : <div />}
+            <div />
+            {/* Row 2 — 左臂 | 主圖 | 右臂 */}
+            {leftArm ? <PartCard part={leftArm} name="左臂" /> : <div />}
+            <div className="bg-bg-card border border-border rounded-xl flex items-center justify-center min-h-[200px]">
+              {mech.portrait && (
+                <img
+                  src={assetUrl(mech.portrait)}
+                  alt={mech.name}
+                  className="max-h-52 w-full object-contain"
+                  onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+                />
+              )}
             </div>
-          )
-        })()}
+            {rightArm ? <PartCard part={rightArm} name="右臂" /> : <div />}
+            {/* Row 3 — 腿部 */}
+            <div />
+            {legs ? <PartCard part={legs} name="腿部" /> : <div />}
+            <div />
+          </div>
+        ) : (
+          <p className="text-sm text-text-dim">部件資料不可用</p>
+        )}
       </div>
 
-      {/* Modules */}
+      {/* 機甲模組 */}
       <div>
         <SectionLabel>機甲模組</SectionLabel>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -237,7 +251,7 @@ export default function MechDetailPage() {
         </div>
       </div>
 
-      {/* Lore */}
+      {/* 機體描述 */}
       {mech.lore && (
         <div className="mt-6 bg-bg-card border border-border rounded-xl p-5">
           <SectionLabel>機體描述</SectionLabel>
