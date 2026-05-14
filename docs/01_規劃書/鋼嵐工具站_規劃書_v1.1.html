@@ -377,7 +377,7 @@ body {
   <p class="hero-sub">
     傷害模擬器 · 配裝計算器 · 角色資料庫 · 攻略百科
   </p>
-  <div class="version-badge">V1.4 — 部件詳細資料 / 模組自動偵測 / 管理者介面</div>
+  <div class="version-badge">V1.5 — 配裝/傷害計算分階段 / 模組圖鑑 / 匯出分享圖提前</div>
 </header>
 
 <main class="container">
@@ -423,18 +423,18 @@ body {
 <section class="section">
   <div class="section-label">02 — Feature Modules</div>
   <div class="section-title">網站功能模組</div>
-  <div class="section-desc">八大核心模組，涵蓋完整的配裝系統、科研系統與用戶管理。</div>
+  <div class="section-desc">九大核心模組，涵蓋完整的配裝系統、科研系統與用戶管理。</div>
 
   <div class="card-grid">
-    <div class="card orange">
-      <div class="card-icon">⚔️</div>
-      <h3>傷害模擬器</h3>
-      <p>基於傷害公式計算期望值，支援 A/B 組合對比，整合所有加成來源（模組/元件/背包/科研/武器技能/天賦/神經驅動）。</p>
-    </div>
     <div class="card blue">
       <div class="card-icon">🔧</div>
       <h3>配裝模擬器</h3>
-      <p>選機師 → 機甲 → 武器（含專武技能）→ 背包（含裝配限制）→ 模組 → 元件。即時計算，支援匯出分享圖。</p>
+      <p>選機師 → 機甲 → 武器（含專武技能）→ 背包（含裝配限制）→ 模組 → 元件。支援匯出分享圖。</p>
+    </div>
+    <div class="card orange">
+      <div class="card-icon">⚔️</div>
+      <h3>傷害計算系統</h3>
+      <p>基於傷害公式計算期望值，支援 A/B 組合對比，整合所有加成來源（模組/元件/背包/科研/武器技能/天賦/神經驅動）。最後階段實作。</p>
     </div>
     <div class="card cyan">
       <div class="card-icon">👤</div>
@@ -455,6 +455,11 @@ body {
       <div class="card-icon">🎒</div>
       <h3>背包資料庫</h3>
       <p>所有背包裝備，含技能效果、重量、裝配限制（輕甲限定等）、裝配位置。</p>
+    </div>
+    <div class="card cyan">
+      <div class="card-icon">🧩</div>
+      <h3>模組圖鑑</h3>
+      <p>四模/八模/固定模組完整列表，含綁定機甲、綁定部位、技能效果、稀有度篩選。</p>
     </div>
     <div class="card yellow">
       <div class="card-icon">📰</div>
@@ -861,9 +866,14 @@ body {
       <p>所有背包列表，顯示裝配限制與效果</p>
     </div>
     <div class="page-item">
+      <h4>🧩 模組圖鑑</h4>
+      <div class="route">/modules</div>
+      <p>所有模組列表，依綁定機甲/部位/稀有度篩選</p>
+    </div>
+    <div class="page-item">
       <h4>⚔️ 配裝模擬器</h4>
       <div class="route">/simulator</div>
-      <p>核心工具頁：選配裝 → 計算 → A/B 對比 → 匯出</p>
+      <p>核心工具頁：選配裝 → 匯出分享圖（傷害計算為後期功能）</p>
     </div>
     <div class="page-item">
       <h4>🔬 科研設定</h4>
@@ -897,7 +907,13 @@ body {
 <section class="section">
   <div class="section-label">06 — Simulator Flow</div>
   <div class="section-title">配裝模擬器操作流程</div>
-  <div class="section-desc">v1.2 更新：加入武器改裝、元件插槽（觸/應元件）、背包限制、科研選擇的完整流程。</div>
+  <div class="section-desc">v1.5 更新：配裝模擬器拆分為兩階段 —— 基礎配裝 + 匯出分享圖先行，傷害計算系統最後實作。</div>
+
+  <div class="changed-block">
+    <strong>🔄 v1.5 調整：配裝與傷害計算分離</strong>
+    Phase 3 先實作配裝選擇 UI + 匯出分享圖模板（含元件/模組/機甲部位/武器展示），不含傷害計算。<br>
+    傷害計算（公式引擎、A/B 對比、武器改裝效果計算、科研加成計算）安排於最終 Phase 7 實作。
+  </div>
 
   <div class="card-grid" style="grid-template-columns: 1fr;">
     <div class="card orange" style="padding:28px;">
@@ -955,6 +971,11 @@ body {
   <div class="note-block" style="margin-top:20px;">
     <strong>⚡ 自動篩選邏輯</strong>
     選了機甲後，武器和背包會自動根據「重量 ≤ 剩餘出力」和「裝甲類型限制」過濾不可裝備的選項。使用者不需要自己判斷能不能裝，介面直接幫他過濾。
+  </div>
+
+  <div class="note-block" style="margin-top:20px;">
+    <strong>📸 匯出分享圖模板（Phase 3 優先實作）</strong>
+    先做出一個配裝分享圖模板，包含：機師 + 機甲部位配置 + 武器 + 背包 + 模組 + 元件。模板完成後再調整視覺細節。傷害數據欄位預留空位，待 Phase 7 傷害計算完成後填入。
   </div>
 </section>
 
@@ -1042,8 +1063,8 @@ body {
     </div>
     <div class="timeline-item">
       <div class="timeline-phase">Phase 2</div>
-      <div class="timeline-title">資料庫頁面（機師 + 機甲 + 武器 + 背包）</div>
-      <div class="timeline-desc">所有圖鑑的列表頁與詳情頁，仿遊戲介面。</div>
+      <div class="timeline-title">資料庫頁面 + 管理介面</div>
+      <div class="timeline-desc">所有圖鑑的列表頁與詳情頁，仿遊戲介面。管理者模組-機甲關聯編輯提前至此階段完成。</div>
       <div class="timeline-tasks">
         <span class="timeline-task">機師圖鑑</span>
         <span class="timeline-task">機甲圖鑑</span>
@@ -1051,32 +1072,32 @@ body {
         <span class="timeline-task">背包圖鑑</span>
         <span class="timeline-task">六維雷達圖</span>
         <span class="timeline-task">響應式</span>
+        <span class="timeline-task">管理者模組-機甲關聯</span>
       </div>
     </div>
     <div class="timeline-item">
       <div class="timeline-phase">Phase 3</div>
-      <div class="timeline-title">配裝模擬器核心</div>
-      <div class="timeline-desc">傷害公式引擎、9步驟配裝流程、自動篩選邏輯、A/B 對比。</div>
+      <div class="timeline-title">模組圖鑑 + 配裝模擬器基礎 + 匯出分享圖</div>
+      <div class="timeline-desc">模組圖鑑頁面、配裝選擇 UI、自動篩選邏輯、匯出分享圖模板（含元件/模組/機甲部位/武器）。不含傷害計算。</div>
       <div class="timeline-tasks">
-        <span class="timeline-task">公式引擎</span>
-        <span class="timeline-task">配裝 UI</span>
-        <span class="timeline-task">武器技能生效判斷</span>
-        <span class="timeline-task">武器改裝系統</span>
-        <span class="timeline-task">觸/應元件配置</span>
+        <span class="timeline-task">模組圖鑑</span>
+        <span class="timeline-task">配裝選擇 UI</span>
+        <span class="timeline-task">自動篩選邏輯</span>
+        <span class="timeline-task">匯出分享圖模板</span>
+        <span class="timeline-task">武器改裝選擇</span>
+        <span class="timeline-task">觸/應元件選擇</span>
         <span class="timeline-task">背包裝配限制</span>
         <span class="timeline-task">科研選擇 UI</span>
-        <span class="timeline-task">A/B 對比</span>
       </div>
     </div>
     <div class="timeline-item">
       <div class="timeline-phase">Phase 4</div>
-      <div class="timeline-title">用戶系統 + 匯出</div>
-      <div class="timeline-desc">Firebase 登入、配裝存檔、全域科研設定頁、匯出 PNG。</div>
+      <div class="timeline-title">用戶系統</div>
+      <div class="timeline-desc">Firebase 登入、配裝存檔、全域科研設定頁。</div>
       <div class="timeline-tasks">
         <span class="timeline-task">Firebase Auth</span>
         <span class="timeline-task">配裝存檔</span>
         <span class="timeline-task">科研設定頁</span>
-        <span class="timeline-task">匯出分享圖</span>
       </div>
     </div>
     <div class="timeline-item">
@@ -1098,6 +1119,20 @@ body {
         <span class="timeline-task">手機版調整</span>
         <span class="timeline-task">效能優化</span>
         <span class="timeline-task">部署</span>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-phase">Phase 7</div>
+      <div class="timeline-title">傷害計算系統</div>
+      <div class="timeline-desc">傷害公式引擎、武器技能生效判斷、改裝效果計算、科研加成計算、A/B 傷害對比。複雜度最高，安排於最後實作。</div>
+      <div class="timeline-tasks">
+        <span class="timeline-task">傷害公式引擎</span>
+        <span class="timeline-task">武器技能生效判斷</span>
+        <span class="timeline-task">武器改裝效果計算</span>
+        <span class="timeline-task">觸/應元件效果計算</span>
+        <span class="timeline-task">科研加成計算</span>
+        <span class="timeline-task">A/B 傷害對比</span>
+        <span class="timeline-task">分享圖補填數據</span>
       </div>
     </div>
   </div>
@@ -1135,7 +1170,7 @@ body {
 </main>
 
 <footer class="footer">
-  鋼嵐工具站 專案規劃書 v1.3 — 模組資料庫獨立 / 機甲模組 ID 映射 / 綁定機甲判定
+  鋼嵐工具站 專案規劃書 v1.5 — 配裝/傷害計算分階段 / 模組圖鑑新增 / 匯出分享圖提前 / 管理介面提前
 </footer>
 
 </body>

@@ -7,6 +7,7 @@ import MechsPage from './pages/MechsPage'
 import MechDetailPage from './pages/MechDetailPage'
 import WeaponsPage from './pages/WeaponsPage'
 import BackpacksPage from './pages/BackpacksPage'
+import ModulesPage from './pages/ModulesPage'
 import SimulatorPage from './pages/SimulatorPage'
 import ResearchPage from './pages/ResearchPage'
 import NewsPage from './pages/NewsPage'
@@ -26,6 +27,7 @@ function App() {
           <Route path="mechs/:id" element={<MechDetailPage />} />
           <Route path="weapons" element={<WeaponsPage />} />
           <Route path="backpacks" element={<BackpacksPage />} />
+          <Route path="modules" element={<ModulesPage />} />
           <Route path="simulator" element={<SimulatorPage />} />
           <Route path="research" element={<ResearchPage />} />
           <Route path="news" element={<NewsPage />} />
