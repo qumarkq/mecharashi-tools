@@ -157,7 +157,9 @@ export default function MechDetailPage() {
   const legs     = mech.parts?.legs     && typeof mech.parts.legs     !== 'number' ? mech.parts.legs     as MechPart : null
   const hasParts = torso || leftArm || rightArm || legs
 
-  const remainingOutput = mech.output - mech.weight
+  const totalFirepower = [torso, leftArm, rightArm, legs].reduce((sum, p) => sum + (p?.firepower ?? 0), 0)
+  const totalWeight = [torso, leftArm, rightArm, legs].reduce((sum, p) => sum + (p?.weight ?? 0), 0)
+  const remainingOutput = mech.output - totalWeight
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
@@ -180,7 +182,7 @@ export default function MechDetailPage() {
       <div className="bg-bg-card border border-border rounded-xl p-5 mb-6">
         <SectionLabel>機甲屬性</SectionLabel>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8">
-          <AttrRow label="火力" value={mech.firepower.toLocaleString()} />
+          <AttrRow label="火力" value={totalFirepower.toLocaleString()} />
           <AttrRow label="閃避" value={mech.evasion.toLocaleString()} />
           <AttrRow label="移動力" value={mech.mobility} />
           <AttrRow label="重量" value={mech.weight.toLocaleString()} />
