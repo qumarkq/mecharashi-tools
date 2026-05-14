@@ -127,8 +127,10 @@ export interface MechPart {
   output?: number
   weight: number
   interface: string
-  /** 部件圖示路徑 */
+  /** 部件圖示路徑 /images/mechs/{機甲名}/{position}.png */
   icon?: string
+  /** 遊戲內部資產名（用於 CDN waparts/ 路徑） */
+  mechaIcon?: string
 }
 
 // ─── 機甲（v1.4 更新：部件詳細資料 + 模組映射）──────────────────────────────
@@ -157,6 +159,8 @@ export interface Mech {
   /** → modules.json 固定模組 ID 列表（多數機甲1個，特殊機甲可有多個） */
   moduleFixedIds: string[]
   portrait?: string
+  /** 立繪半身像路徑 */
+  halfPortrait?: string
   quality?: string
   lore?: string
 }

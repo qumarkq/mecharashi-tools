@@ -9,12 +9,6 @@ const ARMOR_STYLES: Record<string, string> = {
   重型: 'text-accent-red bg-accent-red/10 border-accent-red/40',
 }
 
-const PART_NAMES: Record<string, string> = {
-  torso: '軀幹',
-  leftArm: '左臂',
-  rightArm: '右臂',
-  legs: '腿部',
-}
 
 function ModuleCard({
   mod,
@@ -172,10 +166,10 @@ export default function MechDetailPage() {
         <h1 className="text-3xl font-black">{mech.name}</h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* Attributes */}
-        <div className="bg-bg-card border border-border rounded-xl p-5">
-          <SectionLabel>機甲屬性</SectionLabel>
+      {/* Stats */}
+      <div className="bg-bg-card border border-border rounded-xl p-5 mb-6">
+        <SectionLabel>機甲屬性</SectionLabel>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8">
           <AttrRow label="火力" value={mech.firepower.toLocaleString()} />
           <AttrRow label="裝甲均值" value={mech.armor.toLocaleString()} />
           <AttrRow label="閃避" value={mech.evasion.toLocaleString()} />
@@ -183,30 +177,44 @@ export default function MechDetailPage() {
           <AttrRow label="重量" value={mech.weight.toLocaleString()} />
           <AttrRow label="出力" value={mech.output.toLocaleString()} />
         </div>
-
-        {/* 機甲圖 */}
-        <div className="bg-bg-card border border-border rounded-xl p-5 flex items-center justify-center">
-          {mech.portrait && (
-            <img
-              src={assetUrl(mech.portrait)}
-              alt={mech.name}
-              className="max-h-48 object-contain"
-              onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
-            />
-          )}
-        </div>
       </div>
 
-      {/* Parts Detail */}
+      {/* Parts Detail — cockpit layout */}
       <div className="mb-6">
         <SectionLabel>部件資訊（滿級）</SectionLabel>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {(['torso', 'leftArm', 'rightArm', 'legs'] as const).map((key) => {
-            const part = mech.parts?.[key]
-            if (!part || typeof part === 'number') return null
-            return <PartCard key={key} part={part as MechPart} name={PART_NAMES[key]} />
-          })}
-        </div>
+        {(() => {
+          const torso    = mech.parts?.torso    && typeof mech.parts.torso    !== 'number' ? mech.parts.torso    as MechPart : null
+          const leftArm  = mech.parts?.leftArm  && typeof mech.parts.leftArm  !== 'number' ? mech.parts.leftArm  as MechPart : null
+          const rightArm = mech.parts?.rightArm && typeof mech.parts.rightArm !== 'number' ? mech.parts.rightArm as MechPart : null
+          const legs     = mech.parts?.legs     && typeof mech.parts.legs     !== 'number' ? mech.parts.legs     as MechPart : null
+          const hasParts = torso || leftArm || rightArm || legs
+          if (!hasParts) return <p className="text-sm text-text-dim">部件資料不可用</p>
+          return (
+            <div className="grid grid-cols-3 gap-3 items-center">
+              {/* Row 1 — torso (centre column) */}
+              <div />
+              {torso ? <PartCard part={torso} name="軀幹" /> : <div />}
+              <div />
+              {/* Row 2 — left arm | mech image | right arm */}
+              {leftArm ? <PartCard part={leftArm} name="左臂" /> : <div />}
+              <div className="bg-bg-card border border-border rounded-xl flex items-center justify-center self-stretch min-h-[200px]">
+                {mech.portrait && (
+                  <img
+                    src={assetUrl(mech.portrait)}
+                    alt={mech.name}
+                    className="max-h-52 w-full object-contain"
+                    onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+                  />
+                )}
+              </div>
+              {rightArm ? <PartCard part={rightArm} name="右臂" /> : <div />}
+              {/* Row 3 — legs (centre column) */}
+              <div />
+              {legs ? <PartCard part={legs} name="腿部" /> : <div />}
+              <div />
+            </div>
+          )
+        })()}
       </div>
 
       {/* Modules */}

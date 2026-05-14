@@ -581,7 +581,8 @@ body {
     <strong>🔄 v1.4 修正：部件詳細資料獨立 + 模組映射</strong>
     parts 欄位從耐久數值升級為完整部件物件（含火力、護甲、命中/閃避、移動力、接口、重量、圖示等），對應遊戲中各部件的滿級資料。<br>
     機甲擷取腳本同步偵測未知模組，自動新增至 modules.json 並標記為綁定該機甲。<br>
-    僅儲存 manji（滿級）數據，不再保留 base 初始數據。
+    僅儲存 manji（滿級）數據，不再保留 base 初始數據。<br>
+    <strong>腳本 v3 修正：</strong>部件圖片 URL 改用正確路徑（waparts/），圖片依機甲名分資料夾存放：<code>public/images/mechs/{機甲名}/{position}.png</code>（portrait / half / torso / leftArm / rightArm / legs）。機甲詳情頁採座艙式排版（3×3 格），中央顯示立繪，四角顯示各部件屬性卡片。
   </div>
   <div class="data-table-wrap">
     <table class="data-table">
@@ -608,7 +609,7 @@ body {
       <tr><td>&nbsp;├ move</td><td>number?</td><td>移動力（僅腿部有）</td></tr>
       <tr><td>&nbsp;├ output</td><td>number?</td><td>出力（僅軀幹有）</td></tr>
       <tr><td>&nbsp;├ antiRiot</td><td>number?</td><td>抗暴（僅軀幹有）</td></tr>
-      <tr><td>&nbsp;└ icon</td><td>string?</td><td>部件圖示路徑</td></tr>
+      <tr><td>&nbsp;└ icon</td><td>string?</td><td>部件圖示路徑 /images/mechs/{機甲名}/{position}.png</td></tr>
       <tr><td colspan="3" style="color:var(--accent-orange);font-weight:700;">▎模組引用</td></tr>
       <tr><td>module4Id</td><td>string</td><td>→ modules.json 四模組 ID</td></tr>
       <tr><td>module8Id</td><td>string</td><td>→ modules.json 八模組 ID</td></tr>

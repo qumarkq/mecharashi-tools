@@ -1,7 +1,12 @@
 /**
- * 鋼嵐工具站 — 機甲(機兵)資料擷取腳本 v2 (API 版)
+ * 鋼嵐工具站 — 機甲(機兵)資料擷取腳本 v3 (API 版)
  *
  * 直接透過官方 WIKI API 取得資料，無需瀏覽器（速度快、穩定）。
+ *
+ * v3 更新：
+ *   - 圖片依機甲分資料夾存放：public/images/mechs/{機甲名}/portrait.png, half.png, torso.png...
+ *   - 修正部件圖片 URL（正確路徑為 waparts/，非 mecha/）
+ *   - 優化錯誤提示與日誌輸出
  *
  * v2 更新（v1.4）：
  *   - 部件資料獨立存放（每部件含完整屬性 + 圖示）
@@ -14,11 +19,12 @@
  *   - 列表回傳每隻機兵的「軀幹」部件（共 83 隻）
  *   - 詳情以「機兵名稱」查詢，回傳 4 個部件（軀幹/左臂/右臂/腿部）
  *   - 每個部件有 base 與 manji（滿級）數據
+ *   - 部件圖片（mechaIcon）路徑為 waparts/（非 mecha/）
  *
  * 功能：
  *   1. 從官方 API 取得機兵列表 (aircraft_data)
  *   2. 擷取完整資料：裝甲類型、火力、閃避、移動力、部件耐久、模組等
- *   3. 下載機兵圖片到 public/images/mechs/（繁體中文檔名）
+ *   3. 下載機兵圖片到 public/images/mechs/{機甲名}/（分資料夾）
  *   4. 輸出 public/data/mechs.json（繁體中文）
  *   5. 偵測未知模組 → 自動新增至 modules.json
  *
@@ -93,16 +99,18 @@ function fetchJson(url) {
 function downloadImage(url, dest, depth = 0) {
   return new Promise((resolve, reject) => {
     if (depth > 5) { reject(new Error('too many redirects')); return; }
-    if (fs.existsSync(dest)) { resolve(dest); return; }
+    if (fs.existsSync(dest) && !FORCE) { resolve(dest); return; }
 
     const mod  = url.startsWith('https') ? https : http;
     const file = fs.createWriteStream(dest);
 
-    mod.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
+    const req = mod.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 15000 }, (res) => {
       if (res.statusCode === 301 || res.statusCode === 302) {
         file.close();
         fs.unlinkSync(dest);
-        downloadImage(res.headers.location, dest, depth + 1).then(resolve).catch(reject);
+        const redirectUrl = res.headers.location;
+        if (!redirectUrl) { reject(new Error('redirect without location')); return; }
+        downloadImage(redirectUrl, dest, depth + 1).then(resolve).catch(reject);
         return;
       }
       if (res.statusCode !== 200) {
@@ -113,10 +121,17 @@ function downloadImage(url, dest, depth = 0) {
       }
       res.pipe(file);
       file.on('finish', () => { file.close(); resolve(dest); });
-    }).on('error', (err) => {
+    });
+    req.on('error', (err) => {
       file.close();
       fs.unlink(dest, () => {});
       reject(err);
+    });
+    req.on('timeout', () => {
+      req.destroy();
+      file.close();
+      fs.unlink(dest, () => {});
+      reject(new Error('timeout'));
     });
   });
 }
@@ -217,11 +232,11 @@ function buildPartJson(rawPart) {
     part.move = moveRaw >= 1000 ? moveRaw / 1000 : moveRaw;
   }
 
-  // 部件圖示
+  // 部件圖示（正確路徑：waparts/）
   const iconKey = rawPart.mechaIcon || '';
   if (iconKey) {
-    part.icon = `/images/mechs/${iconKey}.png`;
-    part._iconUrl = `${IMG_BASE}/mecha/${iconKey}.png`;
+    part.mechaIcon = iconKey;
+    part._iconUrl = `${IMG_BASE}/waparts/${iconKey}.png`;
   }
 
   return part;
@@ -355,10 +370,18 @@ function buildMechJson(parts, index, modulesMap) {
     torso, id, nameTW, torso.quality || 'SSR', modulesMap
   );
 
-  // 圖片
+  // 圖片（分資料夾存放）
   const iconKey = torso.icon || '';
   const portraitUrl = iconKey ? `${IMG_BASE}/mecha/${iconKey}.png` : '';
   const lihuiUrl = torso.lihuiIcon ? `${IMG_BASE}/mechaHalf/${torso.lihuiIcon}.png` : '';
+
+  // 為各部件設定本地圖片路徑
+  const partFileMap = { torso: 'torso.png', leftArm: 'leftArm.png', rightArm: 'rightArm.png', legs: 'legs.png' };
+  for (const [key, fileName] of Object.entries(partFileMap)) {
+    if (partsData[key]?.mechaIcon) {
+      partsData[key].icon = `/images/mechs/${safeName}/${fileName}`;
+    }
+  }
 
   return {
     id,
@@ -374,7 +397,8 @@ function buildMechJson(parts, index, modulesMap) {
     module4Id,
     module8Id,
     moduleFixedIds,
-    portrait:    `/images/mechs/${safeName}.png`,
+    portrait:    `/images/mechs/${safeName}/portrait.png`,
+    halfPortrait: lihuiUrl ? `/images/mechs/${safeName}/half.png` : '',
     portraitUrl,
     lihuiUrl,
     quality:     torso.quality || '',
@@ -383,45 +407,66 @@ function buildMechJson(parts, index, modulesMap) {
 }
 
 // ════════════════════════════════════════════════════════════
-// 圖片下載
+// 圖片下載（分資料夾存放）
 // ════════════════════════════════════════════════════════════
+const PART_FILE_MAP = {
+  torso:    'torso.png',
+  leftArm:  'leftArm.png',
+  rightArm: 'rightArm.png',
+  legs:     'legs.png',
+};
+
 async function downloadMechImages(mech) {
   if (!DOWNLOAD_IMG) return;
 
   const safeName = mech.name.replace(/[^一-龥a-zA-Z0-9\u3000-\u303f\uff00-\uffef\-]/g, '');
+  const mechDir = path.join(MECHS_DIR, safeName);
+  fs.mkdirSync(mechDir, { recursive: true });
 
-  // 下載機甲圖示
+  let downloaded = 0;
+  let failed = 0;
+
+  // 下載機甲圖示（portrait）
   if (mech.portraitUrl) {
-    const dest = path.join(MECHS_DIR, `${safeName}.png`);
+    const dest = path.join(mechDir, 'portrait.png');
     try {
       await downloadImage(mech.portraitUrl, dest);
+      downloaded++;
     } catch (e) {
-      // 靜默忽略
+      failed++;
+      if (DEBUG) process.stdout.write(` [圖示失敗: ${e.message}]`);
     }
   }
 
-  // 下載立繪
+  // 下載立繪（half）
   if (mech.lihuiUrl) {
-    const dest = path.join(MECHS_DIR, `${safeName}_half.png`);
+    const dest = path.join(mechDir, 'half.png');
     try {
       await downloadImage(mech.lihuiUrl, dest);
+      downloaded++;
     } catch (e) {
-      // 靜默忽略
+      failed++;
+      if (DEBUG) process.stdout.write(` [立繪失敗: ${e.message}]`);
     }
   }
 
-  // 下載各部件圖示
-  for (const partKey of ['torso', 'leftArm', 'rightArm', 'legs']) {
+  // 下載各部件圖示（waparts/）
+  for (const [partKey, fileName] of Object.entries(PART_FILE_MAP)) {
     const part = mech.parts?.[partKey];
     if (part?._iconUrl) {
-      const iconFile = path.basename(part.icon);
-      const dest = path.join(MECHS_DIR, iconFile);
+      const dest = path.join(mechDir, fileName);
       try {
         await downloadImage(part._iconUrl, dest);
+        downloaded++;
       } catch (e) {
-        // 靜默忽略
+        failed++;
+        if (DEBUG) process.stdout.write(` [${partKey}失敗: ${e.message}]`);
       }
     }
+  }
+
+  if (downloaded > 0 || failed > 0) {
+    process.stdout.write(` [圖:${downloaded}✓${failed > 0 ? ` ${failed}✗` : ''}]`);
   }
 }
 
@@ -431,7 +476,7 @@ async function downloadMechImages(mech) {
 async function main() {
   console.log('');
   console.log('╔══════════════════════════════════════════════╗');
-  console.log('║  鋼嵐工具站 — 機兵擷取腳本 v2 (API 版)       ║');
+  console.log('║  鋼嵐工具站 — 機兵擷取腳本 v3 (API 版)       ║');
   console.log('╚══════════════════════════════════════════════╝');
   console.log(`  圖片: ${DOWNLOAD_IMG ? '✓' : '✗'}  強制: ${FORCE ? '✓' : '✗'}  全品質: ${ALL_QUALITY ? '✓' : '✗'}  Debug: ${DEBUG ? '✓' : '✗'}`);
   if (SINGLE_MECH_RAW) console.log(`  指定機兵: ${SINGLE_MECH_RAW}（簡體: ${SINGLE_MECH_CN}）`);
@@ -598,7 +643,7 @@ async function main() {
   console.log(`   📁 ${OUTPUT_JSON}`);
   console.log(`   📁 ${MODULES_JSON}`);
   if (DOWNLOAD_IMG) {
-    console.log(`   📁 ${MECHS_DIR}`);
+    console.log(`   📁 ${MECHS_DIR}/{機甲名}/portrait.png, half.png, torso.png, leftArm.png, rightArm.png, legs.png`);
     console.log(`   📁 ${MODULES_DIR}`);
   }
 }
