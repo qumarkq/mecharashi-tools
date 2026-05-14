@@ -152,10 +152,10 @@ export default function MechsPage() {
                 {/* Parts */}
                 <div className="mt-4 grid grid-cols-4 gap-1 text-center">
                   {[
-                    { label: '軀幹', value: mech.parts.torso },
-                    { label: '左臂', value: mech.parts.leftArm },
-                    { label: '右臂', value: mech.parts.rightArm },
-                    { label: '腿部', value: mech.parts.legs },
+                    { label: '軀幹', value: typeof mech.parts.torso === 'number' ? mech.parts.torso : mech.parts.torso?.durable ?? 0 },
+                    { label: '左臂', value: typeof mech.parts.leftArm === 'number' ? mech.parts.leftArm : mech.parts.leftArm?.durable ?? 0 },
+                    { label: '右臂', value: typeof mech.parts.rightArm === 'number' ? mech.parts.rightArm : mech.parts.rightArm?.durable ?? 0 },
+                    { label: '腿部', value: typeof mech.parts.legs === 'number' ? mech.parts.legs : mech.parts.legs?.durable ?? 0 },
                   ].map((p) => (
                     <div key={p.label} className="bg-bg-dark border border-border rounded-lg p-1.5">
                       <p className="text-[9px] text-text-dim">{p.label}</p>

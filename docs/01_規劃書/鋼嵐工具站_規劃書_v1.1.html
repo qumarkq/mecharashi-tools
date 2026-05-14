@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>鋼嵐工具站 — 專案規劃書 v1.2</title>
+<title>鋼嵐工具站 — 專案規劃書 v1.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -377,7 +377,7 @@ body {
   <p class="hero-sub">
     傷害模擬器 · 配裝計算器 · 角色資料庫 · 攻略百科
   </p>
-  <div class="version-badge">V1.2 — 武器改裝 / 元件系統 / 背包 / 科研系統修正</div>
+  <div class="version-badge">V1.4 — 部件詳細資料 / 模組自動偵測 / 管理者介面</div>
 </header>
 
 <main class="container">
@@ -513,7 +513,7 @@ body {
 <section class="section">
   <div class="section-label">04 — Data Model</div>
   <div class="section-title">資料結構設計</div>
-  <div class="section-desc">v1.2 根據截圖反饋，大幅修正武器改裝、元件、背包、科研四大系統的資料結構。</div>
+  <div class="section-desc">v1.2 根據截圖反饋，大幅修正武器改裝、元件、背包、科研四大系統的資料結構。v1.4 機甲部件獨立化、模組新增綁定部位與來源標記。</div>
 
   <!-- ── pilots.json ── -->
   <div class="sub-h">📁 pilots.json — 機師資料</div>
@@ -537,22 +537,77 @@ body {
     </table>
   </div>
 
+  <!-- ── modules.json ── -->
+  <div class="sub-h">📁 modules.json — 模組資料庫 <span class="tag tag-updated">UPDATED v1.4</span></div>
+  <div class="changed-block">
+    <strong>🔄 v1.4 更新：模組新增綁定部位與來源標記</strong>
+    新增 <strong>boundPart</strong> 欄位：標記模組綁定於哪個部位（torso / leftArm / rightArm / legs / null），null 表示不限部位。<br>
+    新增 <strong>source</strong> 欄位："auto" 表示由腳本自動擷取並新增，"manual" 表示管理者手動新增。<br>
+    <strong>自動偵測邏輯：</strong>腳本擷取機甲資料時，若發現模組不存在於 modules.json，則自動新增並標記 boundMechId 為該機甲（視為綁定模組），管理者可透過後台修改為通用模組或調整綁定。
+  </div>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>id</td><td>string</td><td>唯一識別 (如 "mod_都卜勒_4mod")</td></tr>
+      <tr><td>name</td><td>string</td><td>模組名稱 (如 "人機鏈接")</td></tr>
+      <tr><td>slot</td><td>string</td><td>模組槽位："4mod" / "8mod" / "fixed" / "fixed_N"</td></tr>
+      <tr><td>boundMechId</td><td>string?</td><td>綁定機甲 ID；null = 通用模組</td></tr>
+      <tr><td>boundPart</td><td>string?</td><td>綁定部位："torso" / "leftArm" / "rightArm" / "legs" / null = 不限部位</td></tr>
+      <tr><td>dmg</td><td>number</td><td>增傷加成 (%)（管理者手動填寫）</td></tr>
+      <tr><td>crit</td><td>number</td><td>暴擊率加成（管理者手動填寫）</td></tr>
+      <tr><td>critDmg</td><td>number</td><td>暴擊傷害加成 (%)（管理者手動填寫）</td></tr>
+      <tr><td>acc</td><td>number</td><td>命中率加成（管理者手動填寫）</td></tr>
+      <tr><td>description</td><td>string</td><td>完整效果描述文字</td></tr>
+      <tr><td>rarity</td><td>string</td><td>稀有度 (SSR/SR/R)</td></tr>
+      <tr><td>icon</td><td>string?</td><td>模組圖示路徑 /images/modules/{iconKey}.png</td></tr>
+      <tr><td>source</td><td>string?</td><td>來源："auto" = 腳本自動擷取 / "manual" = 手動新增</td></tr>
+    </table>
+  </div>
+
+  <div class="note-block">
+    <strong>💡 綁定機甲 vs 通用模組</strong>
+    目前遊戲資料中，四模/八模/固定模均為各機甲專屬、隨機甲解鎖，因此所有現有模組 boundMechId 均非 null。
+    未來若遊戲新增可自由裝卸的通用模組，只需將 boundMechId 設為 null 即可擴充，設計保持向前相容。
+  </div>
+
   <!-- ── mechs.json ── -->
-  <div class="sub-h">📁 mechs.json — 機甲資料</div>
+  <div class="sub-h">📁 mechs.json — 機甲資料 <span class="tag tag-updated">UPDATED v1.4</span></div>
+  <div class="changed-block">
+    <strong>🔄 v1.4 修正：部件詳細資料獨立 + 模組映射</strong>
+    parts 欄位從耐久數值升級為完整部件物件（含火力、護甲、命中/閃避、移動力、接口、重量、圖示等），對應遊戲中各部件的滿級資料。<br>
+    機甲擷取腳本同步偵測未知模組，自動新增至 modules.json 並標記為綁定該機甲。<br>
+    僅儲存 manji（滿級）數據，不再保留 base 初始數據。
+  </div>
   <div class="data-table-wrap">
     <table class="data-table">
       <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
       <tr><td>id / name</td><td>string</td><td>識別與名稱</td></tr>
-      <tr><td>armorType</td><td>string</td><td>輕甲 / 中甲 / 重甲</td></tr>
-      <tr><td>firepower</td><td>number</td><td>火力值</td></tr>
-      <tr><td>armor</td><td>number</td><td>裝甲平均值</td></tr>
-      <tr><td>evasion</td><td>number</td><td>閃避值</td></tr>
-      <tr><td>mobility</td><td>number</td><td>移動力</td></tr>
-      <tr><td>weight / output</td><td>number</td><td>重量 / 出力（決定能裝什麼武器與背包）</td></tr>
-      <tr><td>parts</td><td>object</td><td>{ torso, leftArm, rightArm, legs } 各部件耐久值</td></tr>
-      <tr><td>module4</td><td>object</td><td>四模組 { name, dmg, crit, critDmg, acc, description }</td></tr>
-      <tr><td>module8</td><td>object</td><td>八模組</td></tr>
-      <tr><td>modulesFixed</td><td>array</td><td>固定模組列表（多數機甲只有一個，特殊機甲可有多個）{ name, dmg, crit, critDmg, acc, description }</td></tr>
+      <tr><td>armorType</td><td>string</td><td>輕型 / 中甲 / 重型</td></tr>
+      <tr><td>firepower</td><td>number</td><td>火力值（軀幹滿級）</td></tr>
+      <tr><td>armor</td><td>number</td><td>裝甲值（軀幹滿級）</td></tr>
+      <tr><td>evasion</td><td>number</td><td>閃避值（腿部滿級）</td></tr>
+      <tr><td>mobility</td><td>number</td><td>移動力（腿部滿級）</td></tr>
+      <tr><td>weight / output</td><td>number</td><td>總重量 / 出力</td></tr>
+      <tr><td colspan="3" style="color:var(--accent-orange);font-weight:700;">▎部件詳細資料 parts.{position}</td></tr>
+      <tr><td>parts.torso</td><td>object</td><td>軀幹部件 ↓</td></tr>
+      <tr><td>parts.leftArm</td><td>object</td><td>左臂部件 ↓</td></tr>
+      <tr><td>parts.rightArm</td><td>object</td><td>右臂部件 ↓</td></tr>
+      <tr><td>parts.legs</td><td>object</td><td>腿部部件 ↓</td></tr>
+      <tr><td>&nbsp;├ durable</td><td>number</td><td>耐久值</td></tr>
+      <tr><td>&nbsp;├ armor</td><td>number</td><td>護甲值</td></tr>
+      <tr><td>&nbsp;├ firepower</td><td>number</td><td>火力值</td></tr>
+      <tr><td>&nbsp;├ weight</td><td>number</td><td>部件重量</td></tr>
+      <tr><td>&nbsp;├ interface</td><td>string</td><td>接口類型 (如 "Ⅱ型接口")</td></tr>
+      <tr><td>&nbsp;├ hit</td><td>number?</td><td>命中值（僅左右臂有）</td></tr>
+      <tr><td>&nbsp;├ dodge</td><td>number?</td><td>閃避值（僅腿部有）</td></tr>
+      <tr><td>&nbsp;├ move</td><td>number?</td><td>移動力（僅腿部有）</td></tr>
+      <tr><td>&nbsp;├ output</td><td>number?</td><td>出力（僅軀幹有）</td></tr>
+      <tr><td>&nbsp;├ antiRiot</td><td>number?</td><td>抗暴（僅軀幹有）</td></tr>
+      <tr><td>&nbsp;└ icon</td><td>string?</td><td>部件圖示路徑</td></tr>
+      <tr><td colspan="3" style="color:var(--accent-orange);font-weight:700;">▎模組引用</td></tr>
+      <tr><td>module4Id</td><td>string</td><td>→ modules.json 四模組 ID</td></tr>
+      <tr><td>module8Id</td><td>string</td><td>→ modules.json 八模組 ID</td></tr>
+      <tr><td>moduleFixedIds</td><td>string[]</td><td>→ modules.json 固定模組 ID 列表</td></tr>
     </table>
   </div>
 
@@ -956,7 +1011,8 @@ body {
     <table class="data-table">
       <tr><th>檔案</th><th>狀態</th><th>內容</th><th>管理方式</th></tr>
       <tr><td>pilots.json</td><td style="color:var(--accent-green);">✓ 原有</td><td>機師資料 (~45+ 筆)</td><td>Google Sheets</td></tr>
-      <tr><td>mechs.json</td><td style="color:var(--accent-green);">✓ 原有</td><td>機甲資料 (~40+ 筆)</td><td>Google Sheets</td></tr>
+      <tr><td>modules.json</td><td style="color:var(--accent-green);">★ 新增 · 優先</td><td>所有模組（四模/八模/固定模）含 boundMechId 綁定判定</td><td>Google Sheets</td></tr>
+      <tr><td>mechs.json</td><td style="color:var(--accent-yellow);">⟳ 更新</td><td>機甲資料 (~40+ 筆)，模組改為引用 modules.json ID</td><td>Google Sheets</td></tr>
       <tr><td>weapons.json</td><td style="color:var(--accent-yellow);">⟳ 擴充</td><td>所有武器 + 技能 + 元件插槽數 + 固定改裝 + 浮動改裝範圍</td><td>Google Sheets</td></tr>
       <tr><td>backpacks.json</td><td style="color:var(--accent-green);">★ 新增</td><td>所有背包 + 技能 + 裝配限制</td><td>Google Sheets</td></tr>
       <tr><td>components.json</td><td style="color:var(--accent-yellow);">⟳ 擴充</td><td>觸元件 + 應元件（含等級、概率、效果類型）</td><td>Google Sheets</td></tr>
@@ -1079,7 +1135,7 @@ body {
 </main>
 
 <footer class="footer">
-  鋼嵐工具站 專案規劃書 v1.2 — 武器改裝/元件系統/背包/科研系統修正版
+  鋼嵐工具站 專案規劃書 v1.3 — 模組資料庫獨立 / 機甲模組 ID 映射 / 綁定機甲判定
 </footer>
 
 </body>

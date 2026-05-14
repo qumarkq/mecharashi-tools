@@ -27,7 +27,7 @@
 #   scraper   爬蟲腳本
 #   deploy    部署設定
 #   mech      機體相關
-#   pilot     飛行員相關
+#   pilot     機師相關
 #   weapon    武器相關
 #   research  研發相關
 #   backpack  背包相關
@@ -42,5 +42,5 @@
 # 範例：
 #   feat(page): 新增機體詳情頁
 #   fix(data): 修正機體 HP 數值錯誤
-#   data: 更新飛行員技能資料
+#   data: 更新機師技能資料
 #   ci: 新增 GitHub Pages 自動部署工作流程

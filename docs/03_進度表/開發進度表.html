@@ -180,7 +180,7 @@ body {
 <header class="header">
   <h1>開發進度表</h1>
   <p>鋼嵐工具站 — Mecharashi Community Toolkit</p>
-  <a class="link-to-spec" href="../01_規劃書/鋼嵐工具站_規劃書_v1.1.html">📋 查看完整規劃書 v1.2</a>
+  <a class="link-to-spec" href="../01_規劃書/鋼嵐工具站_規劃書_v1.1.html">📋 查看完整規劃書 v1.3</a>
 </header>
 
 <div class="container">
@@ -260,6 +260,11 @@ body {
         <span class="task-name done">Build 驗證通過 (tsc + vite build)</span>
         <span class="task-date">2026-05-13</span>
       </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">modules.json 建立（v1.3）— 171 個模組，含 boundMechId / slot / rarity 欄位</span>
+        <span class="task-date">2026-05-14</span>
+      </li>
     </ul>
   </div>
 
@@ -267,7 +272,7 @@ body {
   <div class="phase">
     <div class="phase-header">
       <span class="phase-badge done">✓ DONE</span>
-      <span class="phase-title">Phase 2 — 資料庫頁面</span>
+      <span class="phase-title">Phase 2 — 資料庫頁面 + 型別系統 + 管理介面</span>
       <span class="phase-ref">規劃書 §10</span>
     </div>
     <div class="progress-bar"><div class="progress-bar-fill green" style="width:100%"></div></div>
@@ -311,6 +316,46 @@ body {
       <li class="task-item">
         <span class="task-status done">✓</span>
         <span class="task-name done">響應式佈局 (Tailwind grid，手機 2 欄/桌面 5 欄)</span>
+        <span class="task-date">2026-05-14</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">mechs.json 欄位更新（v1.3）— 移除內嵌模組物件，改填 module4Id / module8Id / moduleFixedIds[]</span>
+        <span class="task-date">2026-05-14</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">TypeScript 型別更新（v1.3）— Module / Component / PilotResearch / GlobalResearch / Build 介面全面建立</span>
+        <span class="task-date">2026-05-14</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">機甲詳情頁 lookup 邏輯更新 — 改由 module4Id/module8Id/moduleFixedIds 查找 modules.json 顯示模組資訊</span>
+        <span class="task-date">2026-05-14</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">機甲詳情頁部件展示（v1.4）— 四部件獨立卡片含圖示、屬性（耐久/護甲/火力/命中/閃避/移動力）</span>
+        <span class="task-date">2026-05-14</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">TypeScript 型別更新（v1.4）— MechPart 介面、Module 新增 boundPart/source 欄位</span>
+        <span class="task-date">2026-05-14</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">機甲擷取腳本 v2 — 部件詳細資料 + 自動偵測未知模組寫入 modules.json</span>
+        <span class="task-date">2026-05-14</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">模組擷取腳本 v2 — 新增 boundPart / source 欄位，保留手動數值</span>
+        <span class="task-date">2026-05-14</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">管理者後台（v1.4 提前）— 模組編輯（綁定機甲/部位/數值）+ 機甲模組關聯編輯 + JSON 匯出</span>
         <span class="task-date">2026-05-14</span>
       </li>
     </ul>
@@ -469,8 +514,8 @@ body {
   </div>
 
   <div class="updated">
-    最後更新：2026-05-14 ｜
-    <a href="../01_規劃書/鋼嵐工具站_規劃書_v1.1.html" style="color:var(--accent-cyan);text-decoration:none;">對照規劃書 v1.2 §10 Roadmap</a>
+    最後更新：2026-05-14（v1.4 部件詳細化 + 管理介面完成）｜
+    <a href="../01_規劃書/鋼嵐工具站_規劃書_v1.1.html" style="color:var(--accent-cyan);text-decoration:none;">對照規劃書 v1.4 §10 Roadmap</a>
   </div>
 
 </div>

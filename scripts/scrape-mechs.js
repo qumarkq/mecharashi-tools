@@ -1,8 +1,13 @@
 /**
- * 鋼嵐工具站 — 機甲(機兵)資料擷取腳本 v1 (API 版)
+ * 鋼嵐工具站 — 機甲(機兵)資料擷取腳本 v2 (API 版)
  *
  * 直接透過官方 WIKI API 取得資料，無需瀏覽器（速度快、穩定）。
- * 參考 scrape-pilots-v3.js 的行為模式。
+ *
+ * v2 更新（v1.4）：
+ *   - 部件資料獨立存放（每部件含完整屬性 + 圖示）
+ *   - 僅使用 manji（滿級）數據
+ *   - 偵測到未知模組自動寫入 modules.json（標記為綁定該機甲）
+ *   - 模組 ID 自動映射到 modules.json
  *
  * API 發現：
  *   - 機兵在 API 中的 target 名稱是 aircraft_data（不是 mecha_data）
@@ -15,6 +20,7 @@
  *   2. 擷取完整資料：裝甲類型、火力、閃避、移動力、部件耐久、模組等
  *   3. 下載機兵圖片到 public/images/mechs/（繁體中文檔名）
  *   4. 輸出 public/data/mechs.json（繁體中文）
+ *   5. 偵測未知模組 → 自動新增至 modules.json
  *
  * 使用方式：
  *   node scripts/scrape-mechs.js                     ← 全量機兵
@@ -24,7 +30,6 @@
  *   node scripts/scrape-mechs.js --limit=3            ← 只跑前 N 個
  *   node scripts/scrape-mechs.js --all                ← 含所有品質（預設只抓 S 級）
  *   node scripts/scrape-mechs.js --debug              ← 輸出 debug 資訊
- *   node scripts/scrape-mechs.js --base               ← 使用 base 數據（預設 manji 滿級）
  */
 
 import * as OpenCC from 'opencc-js';
@@ -37,12 +42,14 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ── 路徑設定 ──────────────────────────────────────────────────
-const API_BASE    = 'https://ma-activity.zlongame.com/common/infodata/mQuery.do';
-const APP_KEY     = '1616148215678';
-const IMG_BASE    = 'https://media.zlongame.com/media/pictures/cn/community/img/gl/gameInfo';
-const OUTPUT_JSON = path.join(__dirname, '../public/data/mechs.json');
-const MECHS_DIR   = path.join(__dirname, '../public/images/mechs');
-const DEBUG_DIR   = path.join(__dirname, '../public/debug');
+const API_BASE     = 'https://ma-activity.zlongame.com/common/infodata/mQuery.do';
+const APP_KEY      = '1616148215678';
+const IMG_BASE     = 'https://media.zlongame.com/media/pictures/cn/community/img/gl/gameInfo';
+const OUTPUT_JSON  = path.join(__dirname, '../public/data/mechs.json');
+const MODULES_JSON = path.join(__dirname, '../public/data/modules.json');
+const MECHS_DIR    = path.join(__dirname, '../public/images/mechs');
+const MODULES_DIR  = path.join(__dirname, '../public/images/modules');
+const DEBUG_DIR    = path.join(__dirname, '../public/debug');
 
 // ── 命令列參數 ────────────────────────────────────────────────
 const args             = process.argv.slice(2);
@@ -50,7 +57,6 @@ const DOWNLOAD_IMG     = !args.includes('--no-images');
 const FORCE            = args.includes('--force');
 const ALL_QUALITY      = args.includes('--all');
 const DEBUG            = args.includes('--debug');
-const USE_BASE         = args.includes('--base');
 const SINGLE_MECH_RAW = (args.find(a => a.startsWith('--mech=')) || '').split('=')[1] || '';
 const LIMIT            = (() => {
   const l = args.find(a => a.startsWith('--limit='));
@@ -168,10 +174,144 @@ const ARMOR_MAP = {
 };
 
 // ════════════════════════════════════════════════════════════
-// 從 4 個部件組裝機甲 JSON
+// 位置映射（API 簡體 → 英文 key）
 // ════════════════════════════════════════════════════════════
-function buildMechJson(parts, index) {
-  // 按 position 分類
+const POSITION_MAP = {
+  '躯干': 'torso',
+  '左臂': 'leftArm',
+  '右臂': 'rightArm',
+  '腿部': 'legs',
+};
+
+// ════════════════════════════════════════════════════════════
+// 從單一部件建構部件 JSON（使用 manji 滿級數據）
+// ════════════════════════════════════════════════════════════
+function buildPartJson(rawPart) {
+  if (!rawPart) return null;
+  const posKey = POSITION_MAP[rawPart.position];
+  if (!posKey) return null;
+
+  // 優先使用 manji 滿級數據
+  const src = rawPart.manji || rawPart;
+
+  const part = {
+    position: posKey,
+    durable:  parseInt(src.durable) || 0,
+    armor:    parseInt(src.Armor) || 0,
+    firepower: parseInt(src.fire) || 0,
+    weight:   parseInt(rawPart.aircraftWeight) || 0,
+    interface: s2t(src.Interface || rawPart.Interface || ''),
+  };
+
+  // 部位特有屬性
+  if (posKey === 'torso') {
+    part.output   = parseInt(src.output) || 0;
+    part.antiRiot = parseInt(src.Antiriot) || 0;
+  }
+  if (posKey === 'leftArm' || posKey === 'rightArm') {
+    part.hit = parseInt(src.Hit) || 0;
+  }
+  if (posKey === 'legs') {
+    part.dodge = parseInt(src.Dodge) || 0;
+    const moveRaw = parseInt(src.move) || 0;
+    part.move = moveRaw >= 1000 ? moveRaw / 1000 : moveRaw;
+  }
+
+  // 部件圖示
+  const iconKey = rawPart.mechaIcon || '';
+  if (iconKey) {
+    part.icon = `/images/mechs/${iconKey}.png`;
+    part._iconUrl = `${IMG_BASE}/mecha/${iconKey}.png`;
+  }
+
+  return part;
+}
+
+// ════════════════════════════════════════════════════════════
+// 從軀幹的 ModuleCarried 解析模組，偵測未知模組 → 自動新增
+// ════════════════════════════════════════════════════════════
+function extractAndSyncModules(torso, mechId, mechNameTW, rarity, modulesMap) {
+  // 優先使用 manji（滿級）的 ModuleCarried
+  let rawModules = torso.manji?.ModuleCarried;
+  if (!Array.isArray(rawModules)) rawModules = torso.ModuleCarried;
+  if (!Array.isArray(rawModules)) return { module4Id: '', module8Id: '', moduleFixedIds: [] };
+
+  const sorted = [...rawModules].sort((a, b) => (a.level || 0) - (b.level || 0));
+  const mod8 = sorted.find(m => m.level === 8);
+  const mod4 = sorted.find(m => m.level === 4);
+  const fixed = sorted.filter(m => m !== mod4 && m !== mod8);
+
+  let newModulesAdded = 0;
+
+  function ensureModule(m, slot) {
+    if (!m) return '';
+    const modId = `mod_${mechNameTW}_${slot}`;
+    const iconKey = m.icon || m.SkillIcon || '';
+
+    // 檢查 modules.json 是否已有此模組
+    if (!modulesMap.has(modId)) {
+      // 新模組 → 視為綁定該機甲，自動新增
+      const newModule = {
+        id: modId,
+        name: s2t(m.name || ''),
+        slot,
+        boundMechId: mechId,
+        boundPart: null,
+        dmg: 0,
+        crit: 0,
+        critDmg: 0,
+        acc: 0,
+        description: s2t(cleanRichText(m.SpecificEffects || '')),
+        rarity,
+        icon: iconKey ? `/images/modules/${iconKey}.png` : '',
+        source: 'auto',
+      };
+      modulesMap.set(modId, newModule);
+      newModulesAdded++;
+
+      // 下載模組圖示
+      if (DOWNLOAD_IMG && iconKey) {
+        const iconUrl = `${IMG_BASE}/skill/${iconKey}.png`;
+        const dest = path.join(MODULES_DIR, `${iconKey}.png`);
+        downloadImage(iconUrl, dest).catch(() => {}); // 靜默忽略
+      }
+    } else {
+      // 已存在：更新描述（若原本為空）
+      const existing = modulesMap.get(modId);
+      if (!existing.description && m.SpecificEffects) {
+        existing.description = s2t(cleanRichText(m.SpecificEffects));
+      }
+      if (!existing.name && m.name) {
+        existing.name = s2t(m.name);
+      }
+    }
+
+    return modId;
+  }
+
+  const module4Id = ensureModule(mod4, '4mod');
+  const module8Id = ensureModule(mod8, '8mod');
+
+  const moduleFixedIds = [];
+  if (fixed.length === 1) {
+    moduleFixedIds.push(ensureModule(fixed[0], 'fixed'));
+  } else {
+    fixed.forEach((m, idx) => {
+      moduleFixedIds.push(ensureModule(m, `fixed_${idx + 1}`));
+    });
+  }
+
+  if (newModulesAdded > 0) {
+    process.stdout.write(` [+${newModulesAdded} 新模組]`);
+  }
+
+  return { module4Id, module8Id, moduleFixedIds };
+}
+
+// ════════════════════════════════════════════════════════════
+// 從 4 個部件組裝機甲 JSON（v2：含完整部件資料）
+// ════════════════════════════════════════════════════════════
+function buildMechJson(parts, index, modulesMap) {
   const torso    = parts.find(p => p.position === '躯干');
   const leftArm  = parts.find(p => p.position === '左臂');
   const rightArm = parts.find(p => p.position === '右臂');
@@ -186,36 +326,34 @@ function buildMechJson(parts, index) {
   // 裝甲類型
   const armorType = ARMOR_MAP[torso.type] || s2t(torso.type) || '中甲';
 
-  // 決定使用 base 或 manji（滿級）數據
-  const src = (part) => (!USE_BASE && part?.manji) ? part.manji : part;
+  // 使用 manji（滿級）數據
+  const t  = torso.manji || torso;
+  const lg = legs?.manji || legs;
 
-  const t = src(torso);
-  const la = src(leftArm);
-  const ra = src(rightArm);
-  const lg = src(legs);
-
-  // 基本屬性
+  // 機甲總覽屬性
   const firepower = parseInt(t?.fire) || 0;
   const armor     = parseInt(t?.Armor) || 0;
   const evasion   = parseInt(lg?.Dodge) || 0;
   const moveRaw   = parseInt(lg?.move) || 0;
-  const mobility  = moveRaw >= 1000 ? moveRaw / 1000 : moveRaw; // 4000 → 4
+  const mobility  = moveRaw >= 1000 ? moveRaw / 1000 : moveRaw;
   const output    = parseInt(t?.output) || 0;
 
   // 總重量 = 各部件重量之和
   const weight = [torso, leftArm, rightArm, legs]
     .reduce((sum, p) => sum + (parseInt(p?.aircraftWeight) || 0), 0);
 
-  // 部件耐久（使用對應 src 的 durable）
-  const mechParts = {
-    torso:    parseInt(t?.durable) || 0,
-    leftArm:  parseInt(la?.durable) || 0,
-    rightArm: parseInt(ra?.durable) || 0,
-    legs:     parseInt(lg?.durable) || 0,
+  // 建構各部件詳細資料
+  const partsData = {
+    torso:    buildPartJson(torso),
+    leftArm:  buildPartJson(leftArm),
+    rightArm: buildPartJson(rightArm),
+    legs:     buildPartJson(legs),
   };
 
-  // 模組效果
-  const { module4, module8, moduleFixed } = buildModules(torso);
+  // 模組映射（自動偵測未知模組並新增）
+  const { module4Id, module8Id, moduleFixedIds } = extractAndSyncModules(
+    torso, id, nameTW, torso.quality || 'SSR', modulesMap
+  );
 
   // 圖片
   const iconKey = torso.icon || '';
@@ -232,67 +370,15 @@ function buildMechJson(parts, index) {
     mobility,
     weight,
     output,
-    parts:      mechParts,
-    module4,
-    module8,
-    moduleFixed,
+    parts:      partsData,
+    module4Id,
+    module8Id,
+    moduleFixedIds,
     portrait:    `/images/mechs/${safeName}.png`,
     portraitUrl,
     lihuiUrl,
     quality:     torso.quality || '',
     lore:        s2t(cleanRichText(torso.introduce || '')),
-  };
-}
-
-/**
- * 從軀幹的 ModuleCarried（base 與 manji）組裝 module4 / module8 / moduleFixed
- *
- * 邏輯：
- *   - base  ModuleCarried 是初始模組（level 通常為 2 或 4）
- *   - manji ModuleCarried 是滿級模組（level 通常升到 4 或 8）
- *   - 找 manji 中 level=4 的模組作為 module4
- *   - 找 manji 中 level=8 的模組作為 module8
- *   - 其他模組歸入 moduleFixed
- */
-function buildModules(torso) {
-  const emptyModule = { name: '', dmg: 0, crit: 0, critDmg: 0, acc: 0, description: '' };
-
-  // 優先用 manji 的 ModuleCarried（滿級模組資訊最完整）
-  let modules = torso.manji?.ModuleCarried;
-  if (!Array.isArray(modules)) {
-    modules = torso.ModuleCarried;
-  }
-  if (!Array.isArray(modules)) {
-    return { module4: { ...emptyModule }, module8: { ...emptyModule }, moduleFixed: { ...emptyModule } };
-  }
-
-  // 按 level 排序
-  const sorted = [...modules].sort((a, b) => (a.level || 0) - (b.level || 0));
-
-  // level=8 的模組 → module8
-  const mod8 = sorted.find(m => m.level === 8);
-  // level=4 的模組 → module4
-  const mod4 = sorted.find(m => m.level === 4);
-  // 剩餘的 → moduleFixed（取第一個）
-  const fixedCandidates = sorted.filter(m => m !== mod4 && m !== mod8);
-  const modFixed = fixedCandidates[0];
-
-  function toModule(m) {
-    if (!m) return { ...emptyModule };
-    return {
-      name:        s2t(m.name || ''),
-      dmg:         0,
-      crit:        0,
-      critDmg:     0,
-      acc:         0,
-      description: s2t(cleanRichText(m.SpecificEffects || '')),
-    };
-  }
-
-  return {
-    module4:     toModule(mod4),
-    module8:     toModule(mod8),
-    moduleFixed: toModule(modFixed),
   };
 }
 
@@ -309,9 +395,8 @@ async function downloadMechImages(mech) {
     const dest = path.join(MECHS_DIR, `${safeName}.png`);
     try {
       await downloadImage(mech.portraitUrl, dest);
-      console.log(`    📷 圖示: ${safeName}.png`);
     } catch (e) {
-      console.log(`    ⚠ 圖示下載失敗: ${e.message}`);
+      // 靜默忽略
     }
   }
 
@@ -320,9 +405,22 @@ async function downloadMechImages(mech) {
     const dest = path.join(MECHS_DIR, `${safeName}_half.png`);
     try {
       await downloadImage(mech.lihuiUrl, dest);
-      console.log(`    📷 立繪: ${safeName}_half.png`);
     } catch (e) {
-      console.log(`    ⚠ 立繪下載失敗: ${e.message}`);
+      // 靜默忽略
+    }
+  }
+
+  // 下載各部件圖示
+  for (const partKey of ['torso', 'leftArm', 'rightArm', 'legs']) {
+    const part = mech.parts?.[partKey];
+    if (part?._iconUrl) {
+      const iconFile = path.basename(part.icon);
+      const dest = path.join(MECHS_DIR, iconFile);
+      try {
+        await downloadImage(part._iconUrl, dest);
+      } catch (e) {
+        // 靜默忽略
+      }
     }
   }
 }
@@ -333,19 +431,22 @@ async function downloadMechImages(mech) {
 async function main() {
   console.log('');
   console.log('╔══════════════════════════════════════════════╗');
-  console.log('║  鋼嵐工具站 — 機兵擷取腳本 v1 (API 版)       ║');
+  console.log('║  鋼嵐工具站 — 機兵擷取腳本 v2 (API 版)       ║');
   console.log('╚══════════════════════════════════════════════╝');
-  console.log(`  圖片: ${DOWNLOAD_IMG ? '✓' : '✗'}  強制: ${FORCE ? '✓' : '✗'}  全品質: ${ALL_QUALITY ? '✓' : '✗'}  數值: ${USE_BASE ? 'base' : 'manji(滿級)'}  Debug: ${DEBUG ? '✓' : '✗'}`);
+  console.log(`  圖片: ${DOWNLOAD_IMG ? '✓' : '✗'}  強制: ${FORCE ? '✓' : '✗'}  全品質: ${ALL_QUALITY ? '✓' : '✗'}  Debug: ${DEBUG ? '✓' : '✗'}`);
   if (SINGLE_MECH_RAW) console.log(`  指定機兵: ${SINGLE_MECH_RAW}（簡體: ${SINGLE_MECH_CN}）`);
   if (isFinite(LIMIT))  console.log(`  數量限制: ${LIMIT}`);
   console.log('');
 
   // 建立輸出目錄
-  if (DOWNLOAD_IMG) fs.mkdirSync(MECHS_DIR, { recursive: true });
+  if (DOWNLOAD_IMG) {
+    fs.mkdirSync(MECHS_DIR, { recursive: true });
+    fs.mkdirSync(MODULES_DIR, { recursive: true });
+  }
   if (DEBUG) fs.mkdirSync(DEBUG_DIR, { recursive: true });
 
-  // ── 載入已有資料 ──
-  let existingMechs = new Map(); // key: 簡體名 → value: mech json
+  // ── 載入已有機甲資料 ──
+  let existingMechs = new Map();
   if (!FORCE && fs.existsSync(OUTPUT_JSON)) {
     try {
       const arr = JSON.parse(fs.readFileSync(OUTPUT_JSON, 'utf-8'));
@@ -355,6 +456,17 @@ async function main() {
       console.log(`📦 已有 ${arr.length} 個機兵資料`);
     } catch {}
   }
+
+  // ── 載入已有模組資料 ──
+  const modulesMap = new Map();
+  if (fs.existsSync(MODULES_JSON)) {
+    try {
+      const arr = JSON.parse(fs.readFileSync(MODULES_JSON, 'utf-8'));
+      for (const m of arr) modulesMap.set(m.id, m);
+      console.log(`📦 已有 ${arr.length} 個模組資料`);
+    } catch {}
+  }
+  const modulesCountBefore = modulesMap.size;
 
   // ── 取得機兵列表 ──
   console.log('📋 正在取得機兵列表 (target: aircraft_data)...');
@@ -382,7 +494,6 @@ async function main() {
   // ── 篩選目標 ──
   let targets;
   if (SINGLE_MECH_CN) {
-    // 精確 → 模糊比對
     targets = allMechs.filter(m => m.name === SINGLE_MECH_CN);
     if (targets.length === 0) {
       targets = allMechs.filter(m => (m.name || '').includes(SINGLE_MECH_CN));
@@ -395,7 +506,6 @@ async function main() {
   } else if (ALL_QUALITY) {
     targets = allMechs;
   } else {
-    // 預設只抓 SSR (S 級)
     const ssrMechs = allMechs.filter(m => m.quality === 'SSR');
     if (ssrMechs.length > 0) {
       targets = ssrMechs;
@@ -437,11 +547,10 @@ async function main() {
       if (DEBUG && i === 0) {
         const debugPath = path.join(DEBUG_DIR, 'aircraft_detail_sample.json');
         fs.writeFileSync(debugPath, JSON.stringify(parts, null, 2), 'utf-8');
-        console.log(`\n    📁 Detail 範例已存: ${debugPath}`);
       }
 
       const currentIndex = existingMechs.size + newCount;
-      const mechJson = buildMechJson(parts, currentIndex);
+      const mechJson = buildMechJson(parts, currentIndex, modulesMap);
 
       // 下載圖片
       await downloadMechImages(mechJson);
@@ -449,33 +558,48 @@ async function main() {
       results.set(mech.name, mechJson);
       newCount++;
 
-      process.stdout.write(` ✓ [${mechJson.armorType}] 火力:${mechJson.firepower} 閃避:${mechJson.evasion} 移動:${mechJson.mobility}\n`);
+      process.stdout.write(` ✓ [${mechJson.armorType}] 火力:${mechJson.firepower} 閃避:${mechJson.evasion}\n`);
     } catch (err) {
       process.stdout.write(` ✗ ${err.message}\n`);
     }
 
-    // 禮貌延遲（避免被限速）
+    // 禮貌延遲
     if (i < finalTargets.length - 1) {
       await new Promise(r => setTimeout(r, 300));
     }
   }
 
-  // ── 輸出 JSON ──
-  // 從結果 Map 中取出，移除內部欄位 (portraitUrl, lihuiUrl)
+  // ── 輸出 mechs.json ──
   const mechArray = Array.from(results.values()).map(m => {
     const { portraitUrl, lihuiUrl, ...rest } = m;
+    // 清理部件的 _iconUrl 內部欄位
+    if (rest.parts) {
+      for (const key of ['torso', 'leftArm', 'rightArm', 'legs']) {
+        if (rest.parts[key]?._iconUrl) {
+          delete rest.parts[key]._iconUrl;
+        }
+      }
+    }
     return rest;
   });
   fs.writeFileSync(OUTPUT_JSON, JSON.stringify(mechArray, null, 2), 'utf-8');
 
+  // ── 輸出 modules.json（保留已有手動數值）──
+  const modulesArray = Array.from(modulesMap.values());
+  fs.writeFileSync(MODULES_JSON, JSON.stringify(modulesArray, null, 2), 'utf-8');
+  const newModules = modulesMap.size - modulesCountBefore;
+
   console.log('');
   console.log('═══════════════════════════════════════════');
   console.log(`✅ 完成！`);
-  console.log(`   本次新增: ${newCount} 個機兵`);
-  console.log(`   合計:     ${mechArray.length} 個機兵`);
+  console.log(`   本次新增機兵: ${newCount} 個`);
+  console.log(`   機兵合計:     ${mechArray.length} 個`);
+  console.log(`   模組合計:     ${modulesArray.length} 個 (新增 ${newModules} 個)`);
   console.log(`   📁 ${OUTPUT_JSON}`);
+  console.log(`   📁 ${MODULES_JSON}`);
   if (DOWNLOAD_IMG) {
     console.log(`   📁 ${MECHS_DIR}`);
+    console.log(`   📁 ${MODULES_DIR}`);
   }
 }
 
