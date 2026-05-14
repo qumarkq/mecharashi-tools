@@ -6,6 +6,10 @@
 
 ## [Unreleased] - 2026-05-14
 
+### ✨ 新功能
+
+- v1.4 模組系統 — Module 資料結構、爬蟲與管理介面 (`89ac717`)
+
 ### 🐛 修復
 
 - **scraper**: 修正 CHANGELOG 自動 commit 過濾 regex 支援中文訊息 (`f0145d0`)
