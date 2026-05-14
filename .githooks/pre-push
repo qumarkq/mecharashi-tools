@@ -1,0 +1,21 @@
+#!/bin/sh
+# .githooks/pre-push
+# 在每次 push 前自動更新 CHANGELOG.md，並將變更一併推送。
+
+echo "🔄  執行 pre-push：更新 CHANGELOG.md ..."
+
+# 更新 changelog
+node scripts/update-changelog.js
+if [ $? -ne 0 ]; then
+  echo "❌  update-changelog.js 執行失敗，中止 push。"
+  exit 1
+fi
+
+# 若 CHANGELOG.md 有變動，自動 commit
+if [ -n "$(git status --porcelain CHANGELOG.md)" ]; then
+  git add CHANGELOG.md
+  git commit -m "chore: update CHANGELOG.md [skip ci]"
+  echo "📝  CHANGELOG.md 已自動 commit，將一併推送。"
+fi
+
+exit 0

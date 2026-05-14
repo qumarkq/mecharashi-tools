@@ -1,0 +1,46 @@
+# <type>(<scope>): <subject>
+# |<---- 標題最多 50 個字元 ---->|
+
+# 說明本次變更的原因（選填，每行最多 72 字元）
+# |<-------- 每行最多 72 個字元 -------->|
+
+# --- COMMIT END ---
+#
+# Type（必填，擇一）：
+#   feat      新增功能
+#   fix       修復 bug
+#   docs      文件更新（README、規劃書等）
+#   style     格式調整，不影響程式邏輯（空白、縮排等）
+#   refactor  重構，非 bug 修復也非新功能
+#   perf      效能優化
+#   test      新增或修改測試
+#   chore     建構流程／工具鏈／套件依賴更新
+#   ci        CI/CD 設定調整
+#   data      遊戲資料更新（JSON、圖片等靜態資源）
+#   revert    還原先前的 commit
+#
+# Scope（選填，擇一或自訂）：
+#   ui        介面元件
+#   page      頁面
+#   layout    版型
+#   data      資料層
+#   scraper   爬蟲腳本
+#   deploy    部署設定
+#   mech      機體相關
+#   pilot     飛行員相關
+#   weapon    武器相關
+#   research  研發相關
+#   backpack  背包相關
+#   skill     技能相關
+#
+# 規則：
+#   - Subject 使用祈使句，說明「做了什麼」（如：新增、修復、移除）
+#   - 標題結尾不加句號
+#   - 標題與說明之間空一行
+#   - Breaking change 請在 type 後加 !，例如：feat!: 移除舊 API
+#
+# 範例：
+#   feat(page): 新增機體詳情頁
+#   fix(data): 修正機體 HP 數值錯誤
+#   data: 更新飛行員技能資料
+#   ci: 新增 GitHub Pages 自動部署工作流程

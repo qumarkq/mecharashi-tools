@@ -8,6 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "prepare": "git config commit.template .gitmessage && git config core.hooksPath .githooks",
+    "changelog": "node scripts/update-changelog.js",
     "scrape:pilots": "node scripts/scrape-pilots.js",
     "scrape:pilots:headless": "node scripts/scrape-pilots.js --headless",
     "scrape:pilots:no-images": "node scripts/scrape-pilots.js --no-images",
@@ -16,7 +18,10 @@
     "scrape:debug": "node scripts/scrape-pilots-v2.js --debug",
     "scrape:test": "node scripts/scrape-pilots-v2.js --limit=1 --debug",
     "scrape:v3": "node scripts/scrape-pilots-v3.js",
-    "scrape:v3:force": "node scripts/scrape-pilots-v3.js --force"
+    "scrape:v3:force": "node scripts/scrape-pilots-v3.js --force",
+    "scrape:mechs": "node scripts/scrape-mechs.js",
+    "scrape:mechs:force": "node scripts/scrape-mechs.js --force",
+    "scrape:mechs:debug": "node scripts/scrape-mechs.js --debug"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
