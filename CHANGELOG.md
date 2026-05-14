@@ -12,6 +12,7 @@
 
 ### 🔧 維護
 
+- 更新 .gitignore 並修正 pre-push hook CI 跳過問題 (`8dcddc6`)
 - 新增 changelog 自動化工具與提交規範 (`61cba93`)
 
 ---
