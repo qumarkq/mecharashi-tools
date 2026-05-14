@@ -167,9 +167,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -206,9 +206,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -245,9 +245,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -308,9 +308,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -944,9 +944,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -983,9 +983,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -1022,9 +1022,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -1085,9 +1085,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -1723,9 +1723,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -1762,9 +1762,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -1801,9 +1801,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -1864,9 +1864,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -2502,9 +2502,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -2541,9 +2541,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -2580,9 +2580,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -2643,9 +2643,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -3279,9 +3279,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -3318,9 +3318,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -3357,9 +3357,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -3420,9 +3420,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -4056,9 +4056,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -4095,9 +4095,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -4134,9 +4134,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -4197,9 +4197,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -4834,9 +4834,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Dodge芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：藍色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -4873,9 +4873,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Attack芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：紅色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -4912,9 +4912,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -4975,9 +4975,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -5612,9 +5612,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Dodge芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：藍色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -5651,9 +5651,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -5690,9 +5690,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -5753,9 +5753,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Attack芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：紅色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -6389,9 +6389,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -6428,9 +6428,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Attack芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：紅色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -6467,9 +6467,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Dodge芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：藍色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -6530,9 +6530,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -7164,9 +7164,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -7203,9 +7203,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -7242,9 +7242,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -7305,9 +7305,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -7941,9 +7941,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -7980,9 +7980,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -8019,9 +8019,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -8082,9 +8082,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -8720,9 +8720,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -8759,9 +8759,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -8798,9 +8798,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -8861,9 +8861,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -9499,9 +9499,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -9538,9 +9538,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -9577,9 +9577,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -9640,9 +9640,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -10277,9 +10277,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Dodge芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：藍色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -10316,9 +10316,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Attack芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：紅色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -10355,9 +10355,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -10418,9 +10418,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -11054,9 +11054,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -11093,9 +11093,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -11132,9 +11132,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -11195,9 +11195,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -11831,9 +11831,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -11870,9 +11870,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -11909,9 +11909,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -11972,9 +11972,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -12610,9 +12610,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -12649,9 +12649,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -12688,9 +12688,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -12751,9 +12751,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -13389,9 +13389,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -13428,9 +13428,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -13467,9 +13467,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -13530,9 +13530,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -14166,9 +14166,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -14205,9 +14205,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -14244,9 +14244,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -14307,9 +14307,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -14944,9 +14944,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -14983,9 +14983,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -15022,9 +15022,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -15085,9 +15085,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -15723,9 +15723,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -15762,9 +15762,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -15801,9 +15801,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -15864,9 +15864,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -16502,9 +16502,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -16541,9 +16541,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -16580,9 +16580,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -16643,9 +16643,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -17281,9 +17281,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -17320,9 +17320,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -17359,9 +17359,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -17422,9 +17422,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -18058,9 +18058,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -18097,9 +18097,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -18136,9 +18136,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -18199,9 +18199,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -18835,9 +18835,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -18874,9 +18874,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -18913,9 +18913,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -18976,9 +18976,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -19612,9 +19612,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -19651,9 +19651,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -19690,9 +19690,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -19753,9 +19753,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -20389,9 +20389,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -20428,9 +20428,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -20467,9 +20467,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -20530,9 +20530,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -21167,9 +21167,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -21206,9 +21206,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -21245,9 +21245,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -21308,9 +21308,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -21946,9 +21946,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -21985,9 +21985,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -22024,9 +22024,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -22087,9 +22087,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -22723,9 +22723,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -22762,9 +22762,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -22801,9 +22801,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -22864,9 +22864,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -23501,9 +23501,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -23540,9 +23540,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -23579,9 +23579,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -23642,9 +23642,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -24278,9 +24278,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -24317,9 +24317,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -24356,9 +24356,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -24419,9 +24419,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -25057,9 +25057,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -25096,9 +25096,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -25135,9 +25135,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -25198,9 +25198,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -25834,9 +25834,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -25873,9 +25873,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -25912,9 +25912,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -25975,9 +25975,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -26611,9 +26611,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -26650,9 +26650,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -26689,9 +26689,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -26752,9 +26752,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -27389,9 +27389,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -27428,9 +27428,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -27467,9 +27467,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -27530,9 +27530,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -28167,9 +28167,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -28206,9 +28206,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -28245,9 +28245,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -28308,9 +28308,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -28945,9 +28945,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -28984,9 +28984,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -29023,9 +29023,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -29086,9 +29086,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -29723,9 +29723,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -29762,9 +29762,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -29801,9 +29801,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -29864,9 +29864,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -30501,9 +30501,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -30540,9 +30540,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -30579,9 +30579,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -30642,9 +30642,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -31279,9 +31279,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -31318,9 +31318,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -31357,9 +31357,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -31420,9 +31420,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -32058,9 +32058,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -32097,9 +32097,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -32136,9 +32136,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -32199,9 +32199,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -32836,9 +32836,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -32875,9 +32875,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -32914,9 +32914,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -32977,9 +32977,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -33614,9 +33614,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -33653,9 +33653,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -33692,9 +33692,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -33755,9 +33755,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -34389,9 +34389,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -34428,9 +34428,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -34467,9 +34467,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -34530,9 +34530,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -35164,9 +35164,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -35203,9 +35203,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -35242,9 +35242,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -35305,9 +35305,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -35943,9 +35943,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -35982,9 +35982,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -36021,9 +36021,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -36084,9 +36084,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -36721,9 +36721,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -36760,9 +36760,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -36799,9 +36799,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -36862,9 +36862,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -37499,9 +37499,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -37538,9 +37538,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -37577,9 +37577,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -37640,9 +37640,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -38276,9 +38276,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -38315,9 +38315,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -38354,9 +38354,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -38417,9 +38417,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -39053,9 +39053,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -39092,9 +39092,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Critical芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：黃色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -39131,9 +39131,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -39194,9 +39194,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -39831,9 +39831,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -39870,9 +39870,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -39909,9 +39909,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -39972,9 +39972,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -40609,9 +40609,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -40648,9 +40648,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -40687,9 +40687,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
@@ -40750,9 +40750,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -41388,9 +41388,9 @@
         "name": "α",
         "icon": "Icon_zoneskill_0001",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -41427,9 +41427,9 @@
         "name": "β",
         "icon": "Icon_zoneskill_0002",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -41466,9 +41466,9 @@
         "name": "γ1",
         "icon": "Icon_zoneskill_0004",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Critical芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：黃色晶片"
         ],
         "levels": [
           {
@@ -41529,9 +41529,9 @@
         "name": "γ2",
         "icon": "Icon_zoneskill_0005",
         "slots": [
-          "插槽一：Attack芯片",
-          "插槽二：Dodge芯片",
-          "插槽三：Dodge芯片"
+          "插槽一：紅色晶片",
+          "插槽二：藍色晶片",
+          "插槽三：藍色晶片"
         ],
         "levels": [
           {
