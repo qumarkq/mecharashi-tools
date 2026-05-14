@@ -36,3 +36,9 @@ yarn-error.log*
 # Cache
 .cache/
 .parcel-cache/
+
+# Claude Code
+.claude/
+
+# Debug artifacts
+public/debug/

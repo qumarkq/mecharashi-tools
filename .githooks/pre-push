@@ -14,7 +14,7 @@ fi
 # 若 CHANGELOG.md 有變動，自動 commit
 if [ -n "$(git status --porcelain CHANGELOG.md)" ]; then
   git add CHANGELOG.md
-  git commit -m "chore: update CHANGELOG.md [skip ci]"
+  git commit -m "chore: 自動更新 CHANGELOG.md"
   echo "📝  CHANGELOG.md 已自動 commit，將一併推送。"
 fi
 
