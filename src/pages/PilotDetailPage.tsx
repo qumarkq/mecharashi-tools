@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import type { Pilot, PilotStats } from '../types'
-import { fetchData, assetUrl } from '../utils/assets'
+import type { PilotStats } from '../types'
+import { assetUrl } from '../utils/assets'
+import { usePilot } from '../hooks/useFirestore'
 
 // ─── Radar Chart ─────────────────────────────────────────────────────────────
 
@@ -172,16 +173,8 @@ const CLASS_STYLES: Record<string, string> = {
 
 export default function PilotDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const [pilot, setPilot] = useState<Pilot | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data: pilot, loading } = usePilot(id)
   const [activeSkillTab, setActiveSkillTab] = useState<'技能' | '天賦' | '神經驅動'>('天賦')
-
-  useEffect(() => {
-    fetchData<Pilot[]>('pilots.json').then((list) => {
-      setPilot(list.find((p) => p.id === id) ?? null)
-      setLoading(false)
-    })
-  }, [id])
 
   if (loading) {
     return (

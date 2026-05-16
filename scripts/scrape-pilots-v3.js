@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 鋼嵐工具站 — 機師資料擷取腳本 v3 (API 版)
  *
  * 直接透過官方 WIKI API 取得資料，無需瀏覽器（速度快、穩定）。
@@ -6,9 +6,10 @@
  * 功能：
  *   1. 從官方 API 取得 S 級（SSR）機師列表
  *   2. 擷取完整資料：六維、天賦、神經驅動、算力(仿生電腦)
- *   3. 下載機師半身像到 public/images/pilots/（繁體中文檔名）
- *   4. 下載技能圖示到 public/images/skills/
- *   5. 輸出 public/data/pilots.json（繁體中文）
+ *   3. 下載機師半身像到 public/images/pilots/{機師名}.png
+ *   4. 下載大立繪到 public/images/pilots/{機師名}/full.png
+ *   5. 下載技能圖示到 public/images/skills/
+ *   6. 輸出 public/data/pilots.json（繁體中文）
  *
  * 使用方式：
  *   node scripts/scrape-pilots-v3.js                     ← 全量 S 級機師
@@ -17,6 +18,8 @@
  *   node scripts/scrape-pilots-v3.js --force              ← 強制重抓（忽略已有資料）
  *   node scripts/scrape-pilots-v3.js --limit=3            ← 只跑前 N 個
  *   node scripts/scrape-pilots-v3.js --all                ← 含 SR/R 級別
+ *   node scripts/scrape-pilots-v3.js --debug              ← 輸出 debug 資訊
+ *   node scripts/scrape-pilots-v3.js --fetch-portraits    ← 僅補下載大立繪（無需重打 API）
  */
 
 import * as OpenCC from 'opencc-js';
@@ -25,14 +28,18 @@ import path from 'path';
 import https from 'https';
 import http from 'http';
 import { fileURLToPath } from 'url';
+import { resolve } from 'path';
+import admin from 'firebase-admin';
+import readline from 'readline';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT      = resolve(__dirname, '..');
 
 // ── 路徑設定 ──────────────────────────────────────────────────
 const API_BASE    = 'https://ma-activity.zlongame.com/common/infodata/mQuery.do';
 const APP_KEY     = '1616148215678';
 const IMG_BASE    = 'https://media.zlongame.com/media/pictures/cn/community/img/gl/gameInfo';
-const OUTPUT_JSON = path.join(__dirname, '../public/data/pilots.json');
+// const OUTPUT_JSON = path.join(__dirname, '../public/data/pilots.json');  // 已停用：資料改由 Firestore 管理
 const PILOTS_DIR  = path.join(__dirname, '../public/images/pilots');
 const SKILLS_DIR  = path.join(__dirname, '../public/images/skills');
 
@@ -41,11 +48,83 @@ const args             = process.argv.slice(2);
 const DOWNLOAD_IMG     = !args.includes('--no-images');
 const FORCE            = args.includes('--force');
 const ALL_QUALITY      = args.includes('--all');
+const DEBUG            = args.includes('--debug');
+const AUTO             = args.includes('--auto');    // 略過確認，直接寫入 Firestore
+// --fetch-portraits 模式依賴本地 JSON，已停用（改用 --force 重新擷取）
+// const FETCH_PORTRAITS  = args.includes('--fetch-portraits');
 const SINGLE_PILOT_RAW = (args.find(a => a.startsWith('--pilot=')) || '').split('=')[1] || '';
 const LIMIT            = (() => {
   const l = args.find(a => a.startsWith('--limit='));
   return l ? parseInt(l.split('=')[1]) : Infinity;
 })();
+
+// ════════════════════════════════════════════════════════════
+// Firebase Admin 初始化
+// ════════════════════════════════════════════════════════════
+let db = null;
+
+function initFirebase() {
+  try {
+    const envPath = resolve(ROOT, '.env.migration');
+    if (fs.existsSync(envPath)) {
+      fs.readFileSync(envPath, 'utf-8').split('\n').forEach(line => {
+        const eqIdx = line.indexOf('=');
+        if (eqIdx > 0) {
+          const k = line.slice(0, eqIdx).trim();
+          const v = line.slice(eqIdx + 1).trim();
+          if (k && v) process.env[k] = v;
+        }
+      });
+    }
+    const credPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    if (!credPath) throw new Error('GOOGLE_APPLICATION_CREDENTIALS 未設定');
+    const absCredPath = resolve(ROOT, credPath);
+    if (!fs.existsSync(absCredPath)) throw new Error(`找不到服務帳號金鑰：${absCredPath}`);
+    const serviceAccount = JSON.parse(fs.readFileSync(absCredPath, 'utf-8'));
+    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+    db = admin.firestore();
+    return true;
+  } catch (err) {
+    console.log(`  ⚠ Firebase 初始化失敗: ${err.message}`);
+    return false;
+  }
+}
+
+async function loadFirestorePilots() {
+  if (!db) return new Map();
+  const snap = await db.collection('pilots').get();
+  const map  = new Map();
+  for (const doc of snap.docs) {
+    const data = { id: doc.id, ...doc.data() };
+    if (data.name) map.set(t2s(data.name), data);
+  }
+  return map;
+}
+
+async function batchWrite(collectionName, docs) {
+  if (!db || docs.length === 0) return 0;
+  let written = 0;
+  for (let i = 0; i < docs.length; i += 500) {
+    const batch = db.batch();
+    docs.slice(i, i + 500).forEach(d => {
+      batch.set(db.collection(collectionName).doc(d.id), d);
+    });
+    await batch.commit();
+    written += Math.min(500, docs.length - i);
+  }
+  return written;
+}
+
+async function promptConfirm(question) {
+  if (AUTO) return true;
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise(res => {
+    rl.question(question, answer => {
+      rl.close();
+      res(answer.trim().toLowerCase() === 'y');
+    });
+  });
+}
 
 // ════════════════════════════════════════════════════════════
 // 中文轉換（OpenCC）
@@ -77,16 +156,18 @@ function fetchJson(url) {
 function downloadImage(url, dest, depth = 0) {
   return new Promise((resolve, reject) => {
     if (depth > 5) { reject(new Error('too many redirects')); return; }
-    if (fs.existsSync(dest)) { resolve(dest); return; }
+    if (fs.existsSync(dest) && !FORCE) { resolve(dest); return; }
 
     const mod  = url.startsWith('https') ? https : http;
     const file = fs.createWriteStream(dest);
 
-    mod.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
+    const req = mod.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 15000 }, (res) => {
       if (res.statusCode === 301 || res.statusCode === 302) {
         file.close();
         fs.unlinkSync(dest);
-        downloadImage(res.headers.location, dest, depth + 1).then(resolve).catch(reject);
+        const redirectUrl = res.headers.location;
+        if (!redirectUrl) { reject(new Error('redirect without location')); return; }
+        downloadImage(redirectUrl, dest, depth + 1).then(resolve).catch(reject);
         return;
       }
       if (res.statusCode !== 200) {
@@ -97,10 +178,17 @@ function downloadImage(url, dest, depth = 0) {
       }
       res.pipe(file);
       file.on('finish', () => { file.close(); resolve(dest); });
-    }).on('error', (err) => {
+    });
+    req.on('error', (err) => {
       file.close();
       fs.unlink(dest, () => {});
       reject(err);
+    });
+    req.on('timeout', () => {
+      req.destroy();
+      file.close();
+      fs.unlink(dest, () => {});
+      reject(new Error('timeout'));
     });
   });
 }
@@ -128,6 +216,16 @@ async function fetchPilotList() {
 async function fetchPilotDetail(id) {
   const res = await fetchJson(apiUrl('pilot_data', 'detail', id));
   return res.data.data;
+}
+
+// ════════════════════════════════════════════════════════════
+// 大立繪 URL 推導（characterHalf → character，_half → _Raw）
+// ════════════════════════════════════════════════════════════
+function deriveFullPortraitUrl(halfPortraitUrl) {
+  if (!halfPortraitUrl) return '';
+  return halfPortraitUrl
+    .replace('/characterHalf/', '/character/')
+    .replace(/_half\.png$/, '_Raw.png');
 }
 
 // ════════════════════════════════════════════════════════════
@@ -334,9 +432,11 @@ function buildPilotJson(detail, index) {
     skills,
     neuralDrive,
     biometicComputer,
-    portrait:    `/images/pilots/${safeName}.png`,
-    portraitUrl: `${IMG_BASE}/characterHalf/${detail.icon || detail.PortraitHeroIcon}.png`,
-    lore:        s2t(detail.Introduction || ''),
+    portrait:         `/images/pilots/${safeName}/half.png`,
+    fullPortrait:     `/images/pilots/${safeName}/full.png`,
+    portraitUrl:      `${IMG_BASE}/characterHalf/${detail.icon || detail.PortraitHeroIcon}.png`,
+    fullPortraitUrl:  deriveFullPortraitUrl(`${IMG_BASE}/characterHalf/${detail.icon || detail.PortraitHeroIcon}.png`),
+    lore:             s2t(detail.Introduction || ''),
     attack:  0,
     defense: 0,
   };
@@ -348,14 +448,28 @@ function buildPilotJson(detail, index) {
 async function downloadPilotImages(pilot, detail) {
   if (!DOWNLOAD_IMG) return;
 
-  // 機師頭像
   const safeName = pilot.name.replace(/[^一-龥a-zA-Z0-9\u3000-\u303f\uff00-\uffef]/g, '');
-  const portraitDest = path.join(PILOTS_DIR, `${safeName}.png`);
+  const pilotSubDir = path.join(PILOTS_DIR, safeName);
+  fs.mkdirSync(pilotSubDir, { recursive: true });
+
+  // 半身像（存入子資料夾 half.png）
+  const halfDest = path.join(pilotSubDir, 'half.png');
   try {
-    await downloadImage(pilot.portraitUrl, portraitDest);
-    console.log(`    📷 頭像: ${safeName}.png`);
+    await downloadImage(pilot.portraitUrl, halfDest);
+    if (DEBUG) process.stdout.write(` [半身✓]`);
   } catch (e) {
-    console.log(`    ⚠ 頭像下載失敗: ${e.message}`);
+    if (DEBUG) process.stdout.write(` [半身✗: ${e.message}]`);
+  }
+
+  // 大立繪（full.png）
+  if (pilot.fullPortraitUrl) {
+    const fullDest = path.join(pilotSubDir, 'full.png');
+    try {
+      await downloadImage(pilot.fullPortraitUrl, fullDest);
+      if (DEBUG) process.stdout.write(` [立繪✓]`);
+    } catch (e) {
+      if (DEBUG) process.stdout.write(` [立繪✗: ${e.message}]`);
+    }
   }
 
   // 天賦技能圖示
@@ -394,11 +508,20 @@ async function downloadPilotImages(pilot, detail) {
 async function main() {
   console.log('');
   console.log('╔══════════════════════════════════════════════╗');
-  console.log('║  鋼嵐工具站 — 機師擷取腳本 v3 (API 版)       ║');
+  console.log('║  鋼嵐工具站 — 機師擷取腳本 v4 (Firebase 版)  ║');
   console.log('╚══════════════════════════════════════════════╝');
-  console.log(`  圖片: ${DOWNLOAD_IMG ? '✓' : '✗'}  強制重抓: ${FORCE ? '✓' : '✗'}  全品質: ${ALL_QUALITY ? '✓' : '✗'}`);
+  console.log(`  圖片: ${DOWNLOAD_IMG ? '✓' : '✗'}  強制: ${FORCE ? '✓' : '✗'}  全品質: ${ALL_QUALITY ? '✓' : '✗'}  Debug: ${DEBUG ? '✓' : '✗'}  自動: ${AUTO ? '✓' : '✗'}`);
   if (SINGLE_PILOT_RAW) console.log(`  指定機師: ${SINGLE_PILOT_RAW}（簡體: ${SINGLE_PILOT_CN}）`);
   if (isFinite(LIMIT))  console.log(`  數量限制: ${LIMIT}`);
+  console.log('');
+
+  // ── 初始化 Firebase ──
+  const firebaseReady = initFirebase();
+  if (!firebaseReady) {
+    console.log('❌ Firebase 未連線，請確認 .env.migration 與服務帳號金鑰。');
+    process.exit(1);
+  }
+  console.log('🔥 Firebase 連線成功');
   console.log('');
 
   // 建立輸出目錄
@@ -407,16 +530,12 @@ async function main() {
     fs.mkdirSync(SKILLS_DIR, { recursive: true });
   }
 
-  // ── 載入已有資料 ──
-  let existingPilots = new Map(); // key: 簡體名 → value: pilot json
-  if (!FORCE && fs.existsSync(OUTPUT_JSON)) {
-    try {
-      const arr = JSON.parse(fs.readFileSync(OUTPUT_JSON, 'utf-8'));
-      for (const p of arr) {
-        existingPilots.set(t2s(p.name), p);
-      }
-      console.log(`📦 已有 ${arr.length} 個機師資料`);
-    } catch {}
+  // ── 從 Firestore 載入已有機師資料 ──
+  let existingPilots = new Map(); // key: 簡體名 → value: pilot data
+  if (!FORCE) {
+    process.stdout.write('📦 載入 Firestore 機師資料...');
+    existingPilots = await loadFirestorePilots();
+    console.log(` ${existingPilots.size} 個`);
   }
 
   // ── 取得機師列表 ──
@@ -491,18 +610,37 @@ async function main() {
     }
   }
 
-  // ── 輸出 JSON ──
-  const pilotArray = Array.from(results.values());
-  fs.writeFileSync(OUTPUT_JSON, JSON.stringify(pilotArray, null, 2), 'utf-8');
+  // ── 整理輸出（去除內部欄位 fullPortraitUrl）──
+  const newPilots = Array.from(results.values())
+    .filter(p => !existingPilots.has(t2s(p.name)))
+    .map(({ fullPortraitUrl, ...rest }) => rest);
 
   console.log('');
   console.log('═══════════════════════════════════════════');
-  console.log(`✅ 完成！`);
-  console.log(`   本次新增: ${newCount} 個機師`);
-  console.log(`   合計:     ${pilotArray.length} 個機師`);
-  console.log(`   📁 ${OUTPUT_JSON}`);
+  console.log(`📊 差異報告`);
+  console.log(`   🆕 新增: ${newPilots.length} 個機師`);
+  if (newPilots.length > 0) {
+    newPilots.slice(0, 10).forEach(p => console.log(`     + ${p.name}  [${p.class}]  ${p.rarity}級`));
+    if (newPilots.length > 10) console.log(`     ... 及其他 ${newPilots.length - 10} 個`);
+  }
+  console.log('');
+
+  if (newPilots.length === 0) {
+    console.log('✅ Firestore 已是最新，無需寫入。');
+    return;
+  }
+
+  // ── 寫入 Firestore（含確認）──
+  const confirmed = await promptConfirm(`將 ${newPilots.length} 個新機師寫入 Firestore？ [y/N] `);
+  if (!confirmed) { console.log('已取消。'); process.exit(0); }
+
+  process.stdout.write('🔥 寫入 Firestore...');
+  const written = await batchWrite('pilots', newPilots);
+  console.log(` ${written} 筆完成`);
+  console.log('');
+  console.log(`✅ 完成！新增 ${written} 個機師`);
   if (DOWNLOAD_IMG) {
-    console.log(`   📁 ${PILOTS_DIR}`);
+    console.log(`   📁 ${PILOTS_DIR}/{機師名}/half.png, full.png`);
     console.log(`   📁 ${SKILLS_DIR}`);
   }
 }

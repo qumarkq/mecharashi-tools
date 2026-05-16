@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
-import type { Backpack } from '../types'
-import { fetchData } from '../utils/assets'
+import { useState } from 'react'
+import { useBackpacks } from '../hooks/useFirestore'
 
 const RESTRICTION_LABELS: Record<string, string> = {
   light: '輕甲限定',
@@ -22,17 +21,10 @@ const TYPE_STYLES: Record<string, string> = {
 }
 
 export default function BackpacksPage() {
-  const [backpacks, setBackpacks] = useState<Backpack[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: backpacks, loading } = useBackpacks()
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [restrictionFilter, setRestrictionFilter] = useState('')
-
-  useEffect(() => {
-    fetchData<Backpack[]>('backpacks.json')
-      .then(setBackpacks)
-      .finally(() => setLoading(false))
-  }, [])
 
   const types = [...new Set(backpacks.map((b) => b.type))]
   const restrictions = [...new Set(backpacks.map((b) => b.mechRestriction).filter(Boolean))] as string[]

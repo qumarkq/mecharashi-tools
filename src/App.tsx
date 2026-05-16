@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import PilotsPage from './pages/PilotsPage'
@@ -17,26 +18,28 @@ import AdminPage from './pages/AdminPage'
 
 function App() {
   return (
-    <BrowserRouter basename="/mecharashi-tools">
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<HomePage />} />
-          <Route path="pilots" element={<PilotsPage />} />
-          <Route path="pilots/:id" element={<PilotDetailPage />} />
-          <Route path="mechs" element={<MechsPage />} />
-          <Route path="mechs/:id" element={<MechDetailPage />} />
-          <Route path="weapons" element={<WeaponsPage />} />
-          <Route path="backpacks" element={<BackpacksPage />} />
-          <Route path="modules" element={<ModulesPage />} />
-          <Route path="simulator" element={<SimulatorPage />} />
-          <Route path="research" element={<ResearchPage />} />
-          <Route path="news" element={<NewsPage />} />
-          <Route path="guides" element={<GuidesPage />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="admin" element={<AdminPage />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter basename="/mecharashi-tools">
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<HomePage />} />
+            <Route path="pilots" element={<PilotsPage />} />
+            <Route path="pilots/:id" element={<PilotDetailPage />} />
+            <Route path="mechs" element={<MechsPage />} />
+            <Route path="mechs/:id" element={<MechDetailPage />} />
+            <Route path="weapons" element={<WeaponsPage />} />
+            <Route path="backpacks" element={<BackpacksPage />} />
+            <Route path="modules" element={<ModulesPage />} />
+            <Route path="simulator" element={<SimulatorPage />} />
+            <Route path="research" element={<ResearchPage />} />
+            <Route path="news" element={<NewsPage />} />
+            <Route path="guides" element={<GuidesPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="admin" element={<AdminPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 

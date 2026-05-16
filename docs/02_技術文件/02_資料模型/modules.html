@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>modules — 模組資料模型 — 鋼嵐工具站 (v1.9)</title>
+<link rel="stylesheet" href="../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../index.html">技術文件</a>
+    <span>›</span>
+    <span>資料模型</span>
+    <span>›</span>
+    <span class="current">modules</span>
+  </div>
+</nav>
+
+<header class="hero cyan">
+  <div class="hero-badge cyan">◆ Data Model</div>
+  <h1>modules<span>模組資料 · MODULE DATA</span></h1>
+  <p class="hero-sub">4模/8模/通用模組/副模組 — 各等級效果 — 雙來源擷取</p>
+  <div class="version-badge" style="background:var(--accent-cyan);color:#000;">UPDATED v2.3</div>
+</header>
+
+<main class="container">
+
+<section class="section">
+  <div class="section-label cyan">v1.6 更新</div>
+  <div class="section-title">重構說明</div>
+
+  <div class="changed-block">
+    <strong>🔄 v2.3 更新：新增 moduleLevel 欄位（配裝模擬器用）</strong>
+    &nbsp;• 新增 <code>moduleAddLevel</code> 欄位（<code>number</code>，預設 <code>1</code>）：代表此模組在插槽中所貢獻的等級增幅<br>
+    &nbsp;• 配裝模擬器累加所有嵌入模組的 <code>moduleAddLevel</code>，以計算總模組等級<br>
+    &nbsp;• 遷移時對所有現有模組補寫 <code>moduleAddLevel: 1</code>；副模組同樣預設 1
+  </div>
+
+  <div class="changed-block">
+    <strong>🔄 v2.2 更新：ModuleSource 新增「機甲不可拆」、boundPart 改為陣列</strong>
+    &nbsp;• <code>ModuleSource</code> 新增枚舉值 <code>'機甲不可拆'</code>：表示模組來自機甲但該機甲無法拆解取得（source 仍可與其他值並存於陣列中）<br>
+    &nbsp;• <code>boundPart</code> 由單一字串改為 <code>MechPartPosition[]</code> 陣列，支援模組同時綁定多個部位（<code>null</code> 或空陣列 = 不限部位）<br>
+    &nbsp;• 管理後台 source 選取任何「非未知」來源時，自動取消「未知」；boundPart 改為複選核取方塊
+  </div>
+
+  <div class="changed-block">
+    <strong>🔄 v2.1 更新：source 改為陣列、新增 dismantleMechIds 欄位</strong>
+    &nbsp;• <code>source</code> 由單一字串改為 <code>ModuleSource[]</code> 陣列，支援複數取得途徑（如同時可在商店購買也可拆機甲）<br>
+    &nbsp;• 新增 <code>dismantleMechIds</code> 欄位（<code>string[]?</code>）：拆解哪些機甲可取得此模組，儲存機甲 ID 陣列（對應 mechs collection），顯示時 mapping 為機甲名稱<br>
+    &nbsp;• 管理後台 source 欄位改為複選核取方塊；dismantleMechIds 以機甲名稱清單複選
+  </div>
+
+  <div class="changed-block">
+    <strong>🔄 v2.0 更新：新增武器專屬增傷欄位（20 個）</strong>
+    &nbsp;• 新增 4 個武器類別增傷欄位：<code>dmg_assault</code>（突擊）/ <code>dmg_melee</code>（格鬥）/ <code>dmg_shooting</code>（射擊）/ <code>dmg_tactical</code>（戰術）<br>
+    &nbsp;• 新增 15 個武器種類增傷欄位：<code>dmg_blade</code>（刀劍）/ <code>dmg_polearm</code>（長柄）/ <code>dmg_missile</code>（導彈）/ <code>dmg_rocket</code>（火箭）/ <code>dmg_shotgun</code>（霰彈）/ <code>dmg_machinegun</code>（機槍）/ <code>dmg_heavy_machinegun</code>（重機槍）/ <code>dmg_railgun</code>（電磁炮）/ <code>dmg_funnel</code>（浮游炮）/ <code>dmg_sniper_light</code>（輕型狙擊步槍）/ <code>dmg_sniper</code>（狙擊步槍）/ <code>dmg_fist</code>（拳套）/ <code>dmg_pile</code>（打樁機）/ <code>dmg_chainsaw</code>（電鋸）/ <code>dmg_flamethrower</code>（噴火器）<br>
+    &nbsp;• 新增 2 個特殊情境增傷欄位：<code>dmg_counter</code>（反擊）/ <code>dmg_enemy_phase</code>（敵方階段）<br>
+    &nbsp;• 所有新欄位為選填（<code>number?</code>），預設 0；同樣適用於 <code>levels[]</code> 各等級資料；<code>conditionalEffects[].stats</code> 亦可引用這些欄位鍵名
+  </div>
+
+  <div class="changed-block">
+    <strong>🔄 v1.9 更新：新增 conditionalEffects[] + ConditionalTrigger enum（傷害模擬器用）</strong>
+    &nbsp;• 新增 <code>conditionalEffects</code> 欄位（<code>ConditionalEffect[]</code>），儲存條件性效果供傷害模擬器運算<br>
+    &nbsp;• 新增 <code>ConditionalTrigger</code> 列舉：<code>perBuffHeld</code> / <code>perCombo</code> / <code>apSkill</code> / <code>perAmmoConsumed</code> / <code>tacticalWeapon</code><br>
+    &nbsp;• 無條件效果的模組此欄位為空陣列 <code>[]</code>；副模組同樣為 <code>[]</code>
+  </div>
+
+  <div class="changed-block">
+    <strong>🔄 v1.8 更新：全欄位 enum 化 + source/managedBy 語義釐清 + slot 資料遷移</strong>
+    &nbsp;• <code>slot</code> 全面改用 <code>ModuleSlot</code> 列舉值（'機甲特性模組'/'機甲8級模組'/'通用模組'/'機甲副模組'）；modules.json 已完成資料遷移<br>
+    &nbsp;• <code>source</code> 語義回歸遊戲取得途徑（<code>ModuleSource</code>：商店/拆機甲/未知）<br>
+    &nbsp;• 新增 <code>managedBy</code> 欄位（<code>ModuleDataSource</code>：auto/manual）專門表示後台資料維護方式，與 source 分離
+  </div>
+
+  <div class="changed-block">
+    <strong>🔄 v1.7 更新：ModuleRarity 列舉 + 管理後台 enum 防呆</strong>
+    &nbsp;• <code>rarity</code> 欄位改用獨立的 <code>ModuleRarity</code> 列舉（S / A），不再沿用通用的 <code>ItemRarity</code><br>
+    &nbsp;• <code>boundPart</code> 欄位在後台表單改由 <code>MechPartPosition</code> 列舉驅動，避免打錯字串
+  </div>
+
+  <div class="changed-block">
+    <strong>🔄 v1.6 重構：雙來源擷取 + slot 重新定義 + 各等級效果</strong>
+    <strong>slot 五種類型：</strong><br>
+    &nbsp;• <code>"機甲特性模組"</code> — 需 4 模組槽；來自 module_data API；max 4 levels；名稱不帶 Ⅰ/Ⅱ<br>
+    &nbsp;• <code>"機甲8級模組"</code> — 需 8 模組槽；來自 module_data API；max 8 levels<br>
+    &nbsp;• <code>"通用模組"</code> — 來自 module_data API；max 4 levels；名稱含 Ⅰ/Ⅱ；可通用裝備<br>
+    &nbsp;• <code>"機甲副模組"</code> — 機甲自帶；來自 aircraft_data API（含 S+A 品質機甲）；<strong>模組圖鑑預設不顯示（可勾選「顯示副模組」開啟）</strong><br>
+    &nbsp;• <code>"機甲專屬模組"</code> — 機甲限定；<strong>永遠排除於模組圖鑑</strong>，僅在機甲詳情頁與配裝模擬器中呈現<br><br>
+    <strong>模組 ID 格式：</strong><br>
+    &nbsp;• 特性/8級/通用模組：<code>mod_{masterApiId}</code>（如 "mod_1001"）<br>
+    &nbsp;• 副模組：<code>mod_{機甲名}_{position}</code>（如 "mod_都卜勒_4mod"）
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label cyan">Schema</div>
+  <div class="section-title">欄位定義</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>id</td><td>string</td><td>唯一識別碼（格式見上方）</td></tr>
+      <tr><td>name</td><td>string</td><td>模組名稱（繁體中文）</td></tr>
+      <tr><td>slot</td><td>ModuleSlot (Enum)</td><td>"機甲特性模組" / "機甲8級模組" / "通用模組" / "機甲副模組" / "機甲專屬模組"（v1.8 已完成 modules.json 資料遷移）</td></tr>
+      <tr><td>boundMechId</td><td>string?</td><td>綁定機甲 ID；null = 可獨立取得（特性/8級/通用）</td></tr>
+      <tr><td>boundPart</td><td>MechPartPosition[] (Enum[])?</td><td>綁定部位陣列（<strong>v2.2 改為複數</strong>）："torso" / "leftArm" / "rightArm" / "legs"；<code>null</code> 或 <code>[]</code> = 不限部位；後台以複選核取方塊操作</td></tr>
+      <tr><td>available</td><td>boolean</td><td>可獨立取得：特性/8級/通用模組 = true；副模組 = false</td></tr>
+      <tr><td>source</td><td>ModuleSource[] (Enum[])</td><td>遊戲取得途徑（<strong>陣列，v2.1 改為複數</strong>）："商店" / "拆機甲" / "機甲不可拆"（v2.2 新增）/ "未知"；可同時含多個值；含任何非「未知」值時「未知」自動被排除</td></tr>
+      <tr><td>dismantleMechIds</td><td>string[]?</td><td>拆解可得此模組的機甲 ID 陣列（對應 mechs collection）；顯示時 mapping 為機甲 name；僅 source 含 "拆機甲" 時填寫</td></tr>
+      <tr><td>managedBy</td><td>ModuleDataSource (Enum)</td><td>後台資料維護標記："auto"（腳本自動擷取）/ "manual"（管理者手動新增）。<strong>與 source 語義不同，勿混用</strong></td></tr>
+      <tr><td>moduleAddLevel</td><td>number</td><td>模組增加等級（配裝時，在插槽中增加模組等級計算用，配裝時會計算嵌入的模組總和；預設 1）</td></tr>
+      <tr><td>output_bonus</td><td>number</td><td>機甲出力增加（預設 0）</td></tr>
+      <tr><td>dmg</td><td>number</td><td>增傷加成 % — 最高等級值</td></tr>
+      <tr><td>crit_rate</td><td>number</td><td>暴擊率加成 — 最高等級值</td></tr>
+      <tr><td>critDmg</td><td>number</td><td>暴擊傷害加成 % — 最高等級值</td></tr>
+      <tr><td>acc_rate</td><td>number</td><td>命中率加成 — 最高等級值</td></tr>
+      <tr><td>firepower_rate</td><td>number</td><td>火力提升 % — 最高等級值</td></tr>
+      <tr><td>armor_rate</td><td>number</td><td>護甲提升 % — 最高等級值</td></tr>
+      <tr><td>crit_resist_rate</td><td>number</td><td>被暴擊率降低 % — 最高等級值</td></tr>
+      <tr><td>dodge_rate</td><td>number</td><td>回避率 % — 最高等級值</td></tr>
+      <tr><td>durable_rate</td><td>number</td><td>耐久值提升 % — 最高等級值</td></tr>
+      <tr><td>dmg_resist_rate</td><td>number</td><td>遭受傷害降低 % — 最高等級值</td></tr>
+      <tr class="group-header"><td colspan="3">▎武器類別增傷（選填，預設 0）</td></tr>
+      <tr><td>dmg_assault</td><td>number?</td><td>使用突擊武器增傷 %</td></tr>
+      <tr><td>dmg_melee</td><td>number?</td><td>使用格鬥武器增傷 %</td></tr>
+      <tr><td>dmg_shooting</td><td>number?</td><td>使用射擊武器增傷 %</td></tr>
+      <tr><td>dmg_tactical</td><td>number?</td><td>使用戰術武器增傷 %</td></tr>
+      <tr class="group-header"><td colspan="3">▎武器種類增傷（選填，預設 0）</td></tr>
+      <tr><td>dmg_blade</td><td>number?</td><td>刀劍增傷 %</td></tr>
+      <tr><td>dmg_polearm</td><td>number?</td><td>長柄增傷 %</td></tr>
+      <tr><td>dmg_missile</td><td>number?</td><td>導彈增傷 %</td></tr>
+      <tr><td>dmg_rocket</td><td>number?</td><td>火箭增傷 %</td></tr>
+      <tr><td>dmg_shotgun</td><td>number?</td><td>霰彈增傷 %</td></tr>
+      <tr><td>dmg_machinegun</td><td>number?</td><td>機槍增傷 %</td></tr>
+      <tr><td>dmg_heavy_machinegun</td><td>number?</td><td>重機槍增傷 %</td></tr>
+      <tr><td>dmg_railgun</td><td>number?</td><td>電磁炮增傷 %</td></tr>
+      <tr><td>dmg_funnel</td><td>number?</td><td>浮游炮增傷 %</td></tr>
+      <tr><td>dmg_sniper_light</td><td>number?</td><td>輕型狙擊步槍增傷 %</td></tr>
+      <tr><td>dmg_sniper</td><td>number?</td><td>狙擊步槍增傷 %</td></tr>
+      <tr><td>dmg_fist</td><td>number?</td><td>拳套增傷 %</td></tr>
+      <tr><td>dmg_pile</td><td>number?</td><td>打樁機增傷 %</td></tr>
+      <tr><td>dmg_chainsaw</td><td>number?</td><td>電鋸增傷 %</td></tr>
+      <tr><td>dmg_flamethrower</td><td>number?</td><td>噴火器增傷 %</td></tr>
+      <tr class="group-header"><td colspan="3">▎特殊情境增傷（選填，預設 0）</td></tr>
+      <tr><td>dmg_counter</td><td>number?</td><td>反擊增傷 %</td></tr>
+      <tr><td>dmg_enemy_phase</td><td>number?</td><td>敵方階段增傷 %</td></tr>
+      <tr><td>description</td><td>string</td><td>最高等級的效果描述文字</td></tr>
+      <tr><td>rarity</td><td>ModuleRarity (Enum)</td><td>模組品質："S" / "A"（副模組繼承機甲品質；其他由管理者填寫）。<br>注意：模組使用獨立的 <code>ModuleRarity</code>，非通用的 <code>ItemRarity</code></td></tr>
+      <tr><td>icon</td><td>string?</td><td>模組圖示路徑 /images/modules/{iconKey}.png</td></tr>
+      <tr class="group-header"><td colspan="3">▎條件效果 conditionalEffects[]（傷害模擬器用；無條件效果或副模組為空陣列）</td></tr>
+      <tr><td>&nbsp;├ trigger</td><td>ConditionalTrigger (Enum)</td><td>觸發類型：<code>perBuffHeld</code>（每個增益）/ <code>perCombo</code>（每連擊）/ <code>apSkill</code>（AP技能）/ <code>perAmmoConsumed</code>（每消耗彈藥）/ <code>tacticalWeapon</code>（使用戰術武器）</td></tr>
+      <tr><td>&nbsp;├ minCount</td><td>number?</td><td>觸發門檻值（apSkill 時代表最低 AP 數，如 3）</td></tr>
+      <tr><td>&nbsp;├ stats</td><td>string[]</td><td>受影響的屬性欄位名稱陣列（如 <code>["dmg"]</code>、<code>["dmg","acc_rate"]</code>）；直接對應 module 頂層欄位名</td></tr>
+      <tr><td>&nbsp;├ base</td><td>number?</td><td>觸發條件成立時的基礎加成值（未設定則為 0）</td></tr>
+      <tr><td>&nbsp;├ scale</td><td>number?</td><td>每單位追加值（每個 buff / 每 1 連擊 / 每超額 1 AP / 每 1 彈藥）</td></tr>
+      <tr><td>&nbsp;├ max</td><td>number?</td><td>總加成上限（base + scaling 合計不超過此值）</td></tr>
+      <tr><td>&nbsp;├ maxStacks</td><td>number?</td><td>最多疊加層數（perAmmoConsumed 等疊層效果用）</td></tr>
+      <tr><td>&nbsp;├ duration</td><td>number?</td><td>效果持續回合數；null / 未設定 = 永久（直到戰鬥結束）</td></tr>
+      <tr><td>&nbsp;└ resetOn</td><td>"attack" | "turn" | null</td><td>效果重置時機：<code>"attack"</code>（每次攻擊後重置，如連擊數）/ <code>"turn"</code>（回合結束）/ null（不重置）</td></tr>
+      <tr class="group-header"><td colspan="3">▎各等級資料 levels[]（特性/8級/通用模組有；副模組為空陣列）</td></tr>
+      <tr><td>&nbsp;├ level</td><td>number</td><td>等級上限（該筆資料的最高等級，如 4 代表此為 4 級時的數值）</td></tr>
+      <tr><td>&nbsp;├ description</td><td>string</td><td>該等級的效果描述文字（腳本自動從 API 擷取）</td></tr>
+      <tr><td>&nbsp;├ dmg</td><td>number</td><td>該等級增傷加成（預設 0）</td></tr>
+      <tr><td>&nbsp;├ crit_rate</td><td>number</td><td>該等級暴擊率加成</td></tr>
+      <tr><td>&nbsp;├ critDmg</td><td>number</td><td>該等級暴擊傷害加成</td></tr>
+      <tr><td>&nbsp;├ acc_rate</td><td>number</td><td>該等級命中率加成</td></tr>
+      <tr><td>&nbsp;├ firepower_rate</td><td>number</td><td>該等級火力提升 %</td></tr>
+      <tr><td>&nbsp;├ armor_rate</td><td>number</td><td>該等級護甲提升 %</td></tr>
+      <tr><td>&nbsp;├ crit_resist_rate</td><td>number</td><td>該等級被暴擊率降低 %</td></tr>
+      <tr><td>&nbsp;├ output_bonus</td><td>number</td><td>該等級機甲出力增加</td></tr>
+      <tr><td>&nbsp;├ dodge_rate</td><td>number</td><td>該等級回避率 %</td></tr>
+      <tr><td>&nbsp;├ durable_rate</td><td>number</td><td>該等級耐久值提升 %</td></tr>
+      <tr><td>&nbsp;├ dmg_resist_rate</td><td>number</td><td>該等級遭受傷害降低 %</td></tr>
+      <tr><td>&nbsp;├ dmg_assault</td><td>number?</td><td>該等級突擊武器增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_melee</td><td>number?</td><td>該等級格鬥武器增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_shooting</td><td>number?</td><td>該等級射擊武器增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_tactical</td><td>number?</td><td>該等級戰術武器增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_blade</td><td>number?</td><td>該等級刀劍增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_polearm</td><td>number?</td><td>該等級長柄增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_missile</td><td>number?</td><td>該等級導彈增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_rocket</td><td>number?</td><td>該等級火箭增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_shotgun</td><td>number?</td><td>該等級霰彈增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_machinegun</td><td>number?</td><td>該等級機槍增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_heavy_machinegun</td><td>number?</td><td>該等級重機槍增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_railgun</td><td>number?</td><td>該等級電磁炮增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_funnel</td><td>number?</td><td>該等級浮游炮增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_sniper_light</td><td>number?</td><td>該等級輕型狙擊步槍增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_sniper</td><td>number?</td><td>該等級狙擊步槍增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_fist</td><td>number?</td><td>該等級拳套增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_pile</td><td>number?</td><td>該等級打樁機增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_chainsaw</td><td>number?</td><td>該等級電鋸增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_flamethrower</td><td>number?</td><td>該等級噴火器增傷 %</td></tr>
+      <tr><td>&nbsp;├ dmg_counter</td><td>number?</td><td>該等級反擊增傷 %</td></tr>
+      <tr><td>&nbsp;└ dmg_enemy_phase</td><td>number?</td><td>該等級敵方階段增傷 %</td></tr>
+    </table>
+  </div>
+
+  <div class="note-block">
+    <strong>💡 模組圖鑑顯示邏輯</strong>
+    模組圖鑑（/modules）預設顯示 slot 為 "機甲特性模組"、"機甲8級模組"、"通用模組" 的條目。<br>
+    <strong>機甲副模組</strong>（"機甲副模組"）預設隱藏，可透過篩選列「顯示副模組」checkbox 開啟。<br>
+    <strong>機甲專屬模組</strong>（"機甲專屬模組"）永遠排除，不顯示於圖鑑，僅在機甲詳情頁與配裝模擬器中透過 mechs 的 module4Id / module8Id / moduleFixedIds 引用。
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label cyan">相關文件</div>
+  <div class="section-title">關聯資料</div>
+  <div class="doc-grid">
+    <a class="doc-item" href="mechs.html">
+      <div class="doc-tag">Collection</div>
+      <h4>🤖 mechs</h4>
+      <p>機甲透過 module4Id / module8Id / moduleFixedIds 引用副模組</p>
+    </a>
+    <a class="doc-item" href="../../03_頁面規劃/06_模組/index.html">
+      <div class="doc-tag">Page</div>
+      <h4>🧩 模組圖鑑頁</h4>
+      <p>模組列表頁面規劃（僅顯示 available=true 的模組）</p>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 · 資料模型 · modules — <a href="../index.html" style="color:var(--accent-cyan);text-decoration:none;">← 技術文件總覽</a>
+</footer>
+
+</body>
+</html>

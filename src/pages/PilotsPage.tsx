@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import type { Pilot } from '../types'
-import { fetchData, assetUrl } from '../utils/assets'
+import { assetUrl } from '../utils/assets'
+import { usePilots } from '../hooks/useFirestore'
 
 const CLASS_STYLES: Record<string, { text: string; border: string; bg: string }> = {
   守護者: { text: 'text-accent-green', border: 'border-accent-green/40', bg: 'bg-accent-green/10' },
@@ -17,17 +17,10 @@ const CLASSES = ['守護者', '突擊手', '格鬥家', '狙擊手', '戰術家'
 const LICENSES = ['重型', '中型', '輕型']
 
 export default function PilotsPage() {
-  const [pilots, setPilots] = useState<Pilot[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: pilots, loading } = usePilots()
   const [search, setSearch] = useState('')
   const [classFilter, setClassFilter] = useState('')
   const [licenseFilter, setLicenseFilter] = useState('')
-
-  useEffect(() => {
-    fetchData<Pilot[]>('pilots.json')
-      .then(setPilots)
-      .finally(() => setLoading(false))
-  }, [])
 
   const filtered = pilots.filter((p) => {
     if (classFilter && p.class !== classFilter) return false

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>weapons — 武器資料模型 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../index.html">技術文件</a>
+    <span>›</span>
+    <span>資料模型</span>
+    <span>›</span>
+    <span class="current">weapons</span>
+  </div>
+</nav>
+
+<header class="hero purple">
+  <div class="hero-badge purple">◆ Data Model</div>
+  <h1>weapons<span>武器資料 · WEAPON DATA</span></h1>
+  <p class="hero-sub">武器屬性、元件插槽、固定/浮動改裝、三種技能生效方式</p>
+  <div class="version-badge" style="background:var(--accent-purple);">UPDATED v1.2</div>
+</header>
+
+<main class="container">
+
+<section class="section">
+  <div class="section-label purple">v1.2 更新</div>
+  <div class="section-title">重構說明</div>
+
+  <div class="changed-block">
+    <strong>🔄 v1.2 修正：武器系統大幅擴充</strong>
+    武器有類型、元件插槽（觸元件/應元件數量不同）、固定改裝（確定效果）、浮動改裝（隨機範圍）。<br>
+    專武不限制使用者，但技能會加強特定機師的天賦。<br>
+    技能生效方式分三種：攜帶即生效（carry）/ 裝備中生效（equip）/ 僅使用時生效（use）。
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label purple">Schema</div>
+  <div class="section-title">欄位定義</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>id</td><td>string</td><td>唯一識別碼</td></tr>
+      <tr><td>name</td><td>string</td><td>武器名稱（如 "昏星繼光"）</td></tr>
+      <tr><td>category</td><td>WeaponCategory (Enum)</td><td>武器大類：射擊 / 格鬥 / 突擊 / 戰術</td></tr>
+      <tr><td>type</td><td>string</td><td>武器種類（機槍/狙擊步槍/重機槍/拳套…）</td></tr>
+      <tr><td>typeCoefficient</td><td>number</td><td>武器種類係數（狙擊步槍 = 5.92）</td></tr>
+      <tr><td>attack</td><td>string</td><td>攻擊力（如 "766×1"，含子彈數）</td></tr>
+      <tr><td>accuracy</td><td>number</td><td>命中值</td></tr>
+      <tr><td>critValue</td><td>number</td><td>暴擊值</td></tr>
+      <tr><td>range</td><td>string</td><td>射程（如 "2-4"）</td></tr>
+      <tr><td>weight</td><td>number</td><td>重量（影響機甲出力限制）</td></tr>
+      <tr><td>rarity</td><td>Rarity (Enum)</td><td>稀有度</td></tr>
+      <tr><td>isExclusive</td><td>boolean</td><td>是否為專屬武器</td></tr>
+      <tr><td>exclusiveFor</td><td>string?</td><td>主要對應機師 ID（專武天賦加強對象）</td></tr>
+      <tr class="group-header"><td colspan="3">▎元件插槽</td></tr>
+      <tr><td>triggerSlots</td><td>number</td><td>觸元件插槽數量</td></tr>
+      <tr><td>effectSlots</td><td>number</td><td>應元件插槽數量</td></tr>
+      <tr class="group-header"><td colspan="3">▎固定改裝 fixedMod（效果固定，依武器等級解鎖）</td></tr>
+      <tr><td>&nbsp;├ planName</td><td>string</td><td>改進方案名稱（如 "機槍VIII"）</td></tr>
+      <tr><td>&nbsp;├ maxLevel</td><td>number</td><td>可改裝等級上限（如 70）</td></tr>
+      <tr><td>&nbsp;└ effects[]</td><td>array</td><td>固定效果列表 { stat: "attack"/"crit"/"accuracy", value: number }</td></tr>
+      <tr class="group-header"><td colspan="3">▎浮動改裝 floatingMod（效果隨機，有範圍）</td></tr>
+      <tr><td>&nbsp;├ planName</td><td>string</td><td>進階方案名稱（如 "機槍IV"）</td></tr>
+      <tr><td>&nbsp;├ slots</td><td>number</td><td>可裝填效果欄位數</td></tr>
+      <tr><td>&nbsp;└ possibleEffects[]</td><td>array</td><td>所有可能效果 ↓</td></tr>
+      <tr><td>&nbsp;&nbsp;├ stat</td><td>string</td><td>效果類型：attack / crit / accuracy / firepower</td></tr>
+      <tr><td>&nbsp;&nbsp;├ condition</td><td>string?</td><td>觸發條件：null（無條件）/ "targetHP&lt;50%" / "vsLight" / "vsMedium" / "vsHeavy"</td></tr>
+      <tr><td>&nbsp;&nbsp;├ min</td><td>number</td><td>數值下限</td></tr>
+      <tr><td>&nbsp;&nbsp;└ max</td><td>number</td><td>數值上限</td></tr>
+      <tr class="group-header"><td colspan="3">▎武器技能 skills[]</td></tr>
+      <tr><td>&nbsp;├ name</td><td>string</td><td>技能名稱（如 "白鶴之眺"）</td></tr>
+      <tr><td>&nbsp;├ type</td><td>string</td><td>技能類型（被動技能/主動技能）</td></tr>
+      <tr><td>&nbsp;├ activation</td><td>SkillActivation (Enum)</td><td>carry = 攜帶即生效 / equip = 裝備中生效 / use = 僅使用時生效</td></tr>
+      <tr><td>&nbsp;├ description</td><td>string</td><td>技能效果描述</td></tr>
+      <tr><td>&nbsp;├ dmg / crit / critDmg / acc</td><td>number</td><td>可量化的加成數值</td></tr>
+      <tr><td>&nbsp;└ enhancesTalent</td><td>string?</td><td>加強的特定機師天賦名稱（專武用）</td></tr>
+    </table>
+  </div>
+
+  <div class="note-block">
+    <strong>💡 固定改裝 vs 浮動改裝</strong>
+    固定改裝（基礎改裝）：效果確定，達到等級即解鎖，管理者填入確切數值。<br>
+    浮動改裝（高級改裝）：效果從可能池中隨機獲得，數值有範圍，模擬器中由使用者手動輸入已改裝的效果。
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label purple">相關文件</div>
+  <div class="section-title">關聯資料</div>
+  <div class="doc-grid">
+    <a class="doc-item" href="components.html">
+      <div class="doc-tag">Collection</div>
+      <h4>⚡ components</h4>
+      <p>觸元件/應元件，由 triggerSlots / effectSlots 決定可裝備數量</p>
+    </a>
+    <a class="doc-item" href="../03_遊戲機制/傷害公式.html">
+      <div class="doc-tag">Mechanic</div>
+      <h4>⚔️ 傷害公式</h4>
+      <p>武器攻擊力、改裝效果在傷害計算中的應用</p>
+    </a>
+    <a class="doc-item" href="../../03_頁面規劃/04_武器/index.html">
+      <div class="doc-tag">Page</div>
+      <h4>🔫 武器圖鑑頁</h4>
+      <p>武器列表頁面規劃</p>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 · 資料模型 · weapons — <a href="../index.html" style="color:var(--accent-cyan);text-decoration:none;">← 技術文件總覽</a>
+</footer>
+
+</body>
+</html>

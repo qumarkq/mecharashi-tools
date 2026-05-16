@@ -1,0 +1,69 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "pilots",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "class",  "order": "ASCENDING" },
+        { "fieldPath": "rarity", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pilots",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "license", "order": "ASCENDING" },
+        { "fieldPath": "class",   "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "modules",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "slot",   "order": "ASCENDING" },
+        { "fieldPath": "rarity", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "modules",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "boundMechId", "order": "ASCENDING" },
+        { "fieldPath": "boundPart",   "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "modules",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "available", "order": "ASCENDING" },
+        { "fieldPath": "slot",      "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "weapons",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "type",     "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "weapons",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isExclusive", "order": "ASCENDING" },
+        { "fieldPath": "category",    "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "components",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "slot",   "order": "ASCENDING" },
+        { "fieldPath": "rarity", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

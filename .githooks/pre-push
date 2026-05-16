@@ -4,6 +4,11 @@
 
 echo "🔄  執行 pre-push：更新 CHANGELOG.md ..."
 
+# 收集即將推送的 commit 摘要（排除 changelog 更新本身，最多 10 筆）
+PUSHED_COMMITS=$(git log origin/main..HEAD --pretty=format:"%s" --no-merges 2>/dev/null \
+  | grep -v "^chore.*CHANGELOG" \
+  | head -10)
+
 # 更新 changelog
 node scripts/update-changelog.js
 if [ $? -ne 0 ]; then
@@ -14,7 +19,15 @@ fi
 # 若 CHANGELOG.md 有變動，自動 commit
 if [ -n "$(git status --porcelain CHANGELOG.md)" ]; then
   git add CHANGELOG.md
-  git commit -m "chore: 自動更新 CHANGELOG.md"
+
+  if [ -n "$PUSHED_COMMITS" ]; then
+    COMMIT_LIST=$(echo "$PUSHED_COMMITS" | sed 's/^/- /')
+    git commit -m "chore: 自動更新 CHANGELOG.md" -m "包含：
+$COMMIT_LIST"
+  else
+    git commit -m "chore: 自動更新 CHANGELOG.md"
+  fi
+
   echo "📝  CHANGELOG.md 已自動 commit，將一併推送。"
 fi
 

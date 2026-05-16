@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firestore Collections 總覽 — 鋼嵐工具站技術文件</title>
+<link rel="stylesheet" href="../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../index.html">技術文件</a>
+    <span>›</span>
+    <span>架構設計</span>
+    <span>›</span>
+    <span class="current">Firestore Collections 總覽</span>
+  </div>
+</nav>
+
+<header class="hero blue">
+  <div class="hero-badge blue">◆ Database</div>
+  <h1>Firestore Collections<span>COLLECTIONS OVERVIEW</span></h1>
+  <p class="hero-sub">v2.0 全面遷移至 Firebase Firestore — 所有 Collection 一覽</p>
+</header>
+
+<main class="container">
+
+<section class="section">
+  <div class="section-label blue">Collections 列表</div>
+  <div class="section-title">全部 Firestore Collections</div>
+  <div class="section-desc">
+    完整 Schema、安全規則、索引策略詳見
+    <a href="../04_Firebase/Firebase資料庫設計文件.html" style="color:var(--accent-cyan);">Firebase 資料庫設計文件 v1.0</a>。
+  </div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr>
+        <th>Collection</th>
+        <th>類型</th>
+        <th>內容</th>
+        <th>管理方式</th>
+        <th>詳細文件</th>
+      </tr>
+      <tr>
+        <td>pilots</td>
+        <td style="color:var(--accent-blue);">遊戲資料</td>
+        <td>機師完整資料（六維/AP/天賦/技能/神經驅動）</td>
+        <td>管理後台 → Firestore</td>
+        <td><a href="../02_資料模型/pilots.html" style="color:var(--accent-cyan);">pilots.html</a></td>
+      </tr>
+      <tr>
+        <td>mechs</td>
+        <td style="color:var(--accent-blue);">遊戲資料</td>
+        <td>機甲資料（部件/火力/出力/模組引用）</td>
+        <td>管理後台 → Firestore</td>
+        <td><a href="../02_資料模型/mechs.html" style="color:var(--accent-cyan);">mechs.html</a></td>
+      </tr>
+      <tr>
+        <td>modules</td>
+        <td style="color:var(--accent-blue);">遊戲資料</td>
+        <td>4模組/8模組/通用模組/副模組（各等級效果）</td>
+        <td>管理後台 → Firestore</td>
+        <td><a href="../02_資料模型/modules.html" style="color:var(--accent-cyan);">modules.html</a></td>
+      </tr>
+      <tr>
+        <td>weapons</td>
+        <td style="color:var(--accent-blue);">遊戲資料</td>
+        <td>武器（技能/元件插槽/固定改裝/浮動改裝）</td>
+        <td>管理後台 → Firestore</td>
+        <td><a href="../02_資料模型/weapons.html" style="color:var(--accent-cyan);">weapons.html</a></td>
+      </tr>
+      <tr>
+        <td>backpacks</td>
+        <td style="color:var(--accent-blue);">遊戲資料</td>
+        <td>背包（技能/機甲類型限制）</td>
+        <td>管理後台 → Firestore</td>
+        <td><a href="../02_資料模型/backpacks.html" style="color:var(--accent-cyan);">backpacks.html</a></td>
+      </tr>
+      <tr>
+        <td>components</td>
+        <td style="color:var(--accent-blue);">遊戲資料</td>
+        <td>觸元件 + 應元件（等級/條件類型/效果類型）</td>
+        <td>管理後台 → Firestore</td>
+        <td><a href="../02_資料模型/components.html" style="color:var(--accent-cyan);">components.html</a></td>
+      </tr>
+      <tr>
+        <td>skills</td>
+        <td style="color:var(--accent-green);">遊戲資料 ★ NEW</td>
+        <td>共用技能庫（可跨實體引用的技能定義）</td>
+        <td>管理後台 → Firestore</td>
+        <td><a href="../02_資料模型/skills_buffs.html" style="color:var(--accent-cyan);">skills_buffs.html</a></td>
+      </tr>
+      <tr>
+        <td>buffs</td>
+        <td style="color:var(--accent-green);">遊戲資料 ★ NEW</td>
+        <td>BUFF 定義（名稱+描述，後續擴充效果欄位）</td>
+        <td>管理後台 → Firestore</td>
+        <td><a href="../02_資料模型/skills_buffs.html" style="color:var(--accent-cyan);">skills_buffs.html</a></td>
+      </tr>
+      <tr>
+        <td>pilotResearch</td>
+        <td style="color:var(--accent-blue);">遊戲資料</td>
+        <td>各機師個別科研選項 + 互斥規則</td>
+        <td>管理後台 → Firestore</td>
+        <td><a href="../02_資料模型/pilotResearch.html" style="color:var(--accent-cyan);">pilotResearch.html</a></td>
+      </tr>
+      <tr>
+        <td>globalResearch</td>
+        <td style="color:var(--accent-blue);">遊戲資料</td>
+        <td>全域科研定義（職業/機甲/武器三大類）</td>
+        <td>管理後台 → Firestore</td>
+        <td><a href="../02_資料模型/globalResearch.html" style="color:var(--accent-cyan);">globalResearch.html</a></td>
+      </tr>
+      <tr>
+        <td>enemies</td>
+        <td style="color:var(--accent-blue);">遊戲資料</td>
+        <td>敵方機師+機甲（傷害模擬器用）</td>
+        <td>管理後台 → Firestore</td>
+        <td style="color:var(--text-dim);">（待規劃）</td>
+      </tr>
+      <tr>
+        <td>users/{uid}/profile</td>
+        <td style="color:var(--accent-purple);">用戶資料</td>
+        <td>用戶設定（全域科研/科研選擇/角色權限）</td>
+        <td>Firebase Auth → 自動建立</td>
+        <td style="color:var(--text-dim);">Firestore 設計文件</td>
+      </tr>
+      <tr>
+        <td>users/{uid}/builds/{id}</td>
+        <td style="color:var(--accent-purple);">用戶資料</td>
+        <td>用戶配裝紀錄（機師+機甲+武器+元件+模組）</td>
+        <td>用戶操作 → 自動存檔</td>
+        <td style="color:var(--text-dim);">Firestore 設計文件</td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label blue">型別系統</div>
+  <div class="section-title">TypeScript Enum 枚舉化</div>
+  <div class="section-desc">所有分類字串欄位統一使用 TypeScript Enum，定義於 <code>src/types/enums.ts</code>。</div>
+
+  <div class="note-block">
+    <strong>📌 枚舉化欄位說明</strong>
+    職業、稀有度、模組槽位、裝甲類型、武器大類等分類欄位，均以 TypeScript Enum 定義。
+    Firestore 儲存 Enum 的字串值（如 <code>"突擊手"</code>），前端讀取後映射至對應 Enum。
+    詳細 Enum 定義見 <a href="../04_Firebase/Firebase資料庫設計文件.html" style="color:var(--accent-cyan);">Firebase 資料庫設計文件 §02</a>。
+  </div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>Enum 名稱</th><th>適用 Collection</th><th>枚舉值（示例）</th></tr>
+      <tr><td>PilotClass</td><td>pilots</td><td>突擊手 / 狙擊手 / 戰術家 / 格鬥家 / 守護者 / 機械師</td></tr>
+      <tr><td>Rarity</td><td>pilots / weapons / modules / backpacks</td><td>SSR / SR / R / N（或 金/紫/藍）</td></tr>
+      <tr><td>ArmorType</td><td>mechs / backpacks</td><td>輕型 / 中甲 / 重型</td></tr>
+      <tr><td>ModuleSlot</td><td>modules</td><td>4模組 / 8模組 / 通用模組 / 副模組</td></tr>
+      <tr><td>WeaponCategory</td><td>weapons</td><td>射擊 / 格鬥 / 突擊 / 戰術</td></tr>
+      <tr><td>LicenseType</td><td>pilots</td><td>輕型 / 中型 / 重型</td></tr>
+      <tr><td>SkillActivation</td><td>weapons</td><td>carry / equip / use</td></tr>
+      <tr><td>ConditionType</td><td>components</td><td>dualWield / singleWield / firstAttack / apCost / targetTorso / always</td></tr>
+      <tr><td>EffectType</td><td>components</td><td>dmgBoost / bulletAdd / multiplierBoost / armorBreak / apDmgBoost / torsoDmgBoost</td></tr>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 技術文件 · Firestore Collections — <a href="../index.html" style="color:var(--accent-cyan);text-decoration:none;">← 技術文件總覽</a>
+</footer>
+
+</body>
+</html>

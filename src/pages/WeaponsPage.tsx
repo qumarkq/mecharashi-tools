@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
-import type { Weapon } from '../types'
-import { fetchData } from '../utils/assets'
+import { useState } from 'react'
+import { useWeapons } from '../hooks/useFirestore'
 
 const RARITY_STYLES: Record<string, string> = {
   金: 'text-accent-yellow bg-accent-yellow/10 border-accent-yellow/40',
@@ -21,18 +20,11 @@ const ACTIVATION_STYLES: Record<string, string> = {
 }
 
 export default function WeaponsPage() {
-  const [weapons, setWeapons] = useState<Weapon[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: weapons, loading } = useWeapons()
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
   const [exclusiveOnly, setExclusiveOnly] = useState(false)
-
-  useEffect(() => {
-    fetchData<Weapon[]>('weapons.json')
-      .then(setWeapons)
-      .finally(() => setLoading(false))
-  }, [])
 
   const categories = [...new Set(weapons.map((w) => w.category))]
   const types = [...new Set(weapons.filter((w) => !categoryFilter || w.category === categoryFilter).map((w) => w.type))]

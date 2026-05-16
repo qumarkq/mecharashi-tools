@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>backpacks — 背包資料模型 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../index.html">技術文件</a>
+    <span>›</span>
+    <span>資料模型</span>
+    <span>›</span>
+    <span class="current">backpacks</span>
+  </div>
+</nav>
+
+<header class="hero" style="background:radial-gradient(ellipse 80% 50% at 50% 0%, rgba(236,72,153,0.12) 0%, transparent 60%), var(--bg-dark);">
+  <div class="hero-badge" style="border-color:var(--accent-pink);color:var(--accent-pink);background:rgba(236,72,153,0.06);">◆ Data Model</div>
+  <h1 style="background:linear-gradient(135deg,#fff 0%,var(--accent-pink) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">backpacks<span style="-webkit-text-fill-color:var(--text-secondary);">背包資料 · BACKPACK DATA</span></h1>
+  <p class="hero-sub">背包技能、重量、機甲裝甲類型限制</p>
+  <div class="version-badge" style="background:var(--accent-pink);">NEW v1.1</div>
+</header>
+
+<main class="container">
+
+<section class="section">
+  <div class="section-label">Schema</div>
+  <div class="section-title">欄位定義</div>
+  <div class="section-desc">背包是獨立裝備，有自己的技能效果與重量，部分背包有機甲裝甲類型限制（如「僅限輕型機甲裝配」）。</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>id</td><td>string</td><td>唯一識別碼</td></tr>
+      <tr><td>name</td><td>string</td><td>背包名稱（如 "侵獵者背包"）</td></tr>
+      <tr><td>type</td><td>string</td><td>效果分類標籤（增傷/護甲/再攻擊/首攻…）</td></tr>
+      <tr><td>weight</td><td>number</td><td>重量（佔機甲出力）</td></tr>
+      <tr><td>slot</td><td>string</td><td>裝配位置（如 "背部"）</td></tr>
+      <tr><td>mechRestriction</td><td>ArmorType? (Enum)</td><td>機甲限制：null = 無限制 / "輕型" = 僅輕甲 / "重型" = 僅重甲</td></tr>
+      <tr class="group-header"><td colspan="3">▎背包技能 skill</td></tr>
+      <tr><td>&nbsp;├ name</td><td>string</td><td>技能名稱（如 "侵獵者驅動·增傷"）</td></tr>
+      <tr><td>&nbsp;├ type</td><td>string</td><td>技能類型（被動技能）</td></tr>
+      <tr><td>&nbsp;├ description</td><td>string</td><td>完整效果描述</td></tr>
+      <tr><td>&nbsp;├ dmg</td><td>number</td><td>增傷加成 %</td></tr>
+      <tr><td>&nbsp;├ crit</td><td>number</td><td>暴擊率加成</td></tr>
+      <tr><td>&nbsp;├ critDmg</td><td>number</td><td>暴擊傷害加成 %</td></tr>
+      <tr><td>&nbsp;├ acc</td><td>number</td><td>命中率加成</td></tr>
+      <tr><td>&nbsp;└ specialEffects[]</td><td>array?</td><td>非數值效果（如 "移動方式變為漂浮"）</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label">篩選邏輯</div>
+  <div class="section-title">配裝模擬器中的篩選規則</div>
+
+  <div class="info-block">
+    <strong>📋 背包選擇篩選邏輯</strong>
+    1. mechRestriction 過濾：若背包限輕甲，選了中/重機甲的玩家看不到此背包。<br>
+    2. 重量過濾：背包重量 ≤ 機甲剩餘出力（出力 - 武器重量）才顯示。<br>
+    3. 以上兩個條件皆由前端自動過濾，不需使用者判斷。
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label">相關文件</div>
+  <div class="section-title">關聯資料</div>
+  <div class="doc-grid">
+    <a class="doc-item" href="mechs.html">
+      <div class="doc-tag">Collection</div>
+      <h4>🤖 mechs</h4>
+      <p>機甲的 armorType 與 output 決定可裝備的背包範圍</p>
+    </a>
+    <a class="doc-item" href="../03_遊戲機制/配裝模擬器流程.html">
+      <div class="doc-tag">Mechanic</div>
+      <h4>🔧 配裝模擬器流程</h4>
+      <p>Step 4：選擇背包的篩選邏輯</p>
+    </a>
+    <a class="doc-item" href="../../03_頁面規劃/05_背包/index.html">
+      <div class="doc-tag">Page</div>
+      <h4>🎒 背包圖鑑頁</h4>
+      <p>背包列表頁面規劃</p>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 · 資料模型 · backpacks — <a href="../index.html" style="color:var(--accent-cyan);text-decoration:none;">← 技術文件總覽</a>
+</footer>
+
+</body>
+</html>

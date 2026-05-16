@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mechs — 機甲資料模型 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../index.html">技術文件</a>
+    <span>›</span>
+    <span>資料模型</span>
+    <span>›</span>
+    <span class="current">mechs</span>
+  </div>
+</nav>
+
+<header class="hero green">
+  <div class="hero-badge green">◆ Data Model</div>
+  <h1>mechs<span>機甲資料 · MECH DATA</span></h1>
+  <p class="hero-sub">部件詳細資料、出力/重量、副模組引用 — 僅儲存滿級（manji）數據</p>
+  <div class="version-badge" style="background:var(--accent-green);">UPDATED v1.4</div>
+</header>
+
+<main class="container">
+
+<section class="section">
+  <div class="section-label green">v1.4 更新</div>
+  <div class="section-title">重構說明</div>
+
+  <div class="changed-block">
+    <strong>🔄 v1.4 修正：部件詳細資料獨立 + 模組映射</strong>
+    parts 欄位從耐久數值升級為完整部件物件（含火力、護甲、命中/閃避、移動力、接口、重量、圖示等）。<br>
+    機甲詳情頁採座艙式排版（3×3 格），中央顯示立繪，四角顯示各部件屬性卡片。<br>
+    部件圖片路徑：<code>public/images/mechs/{機甲名}/{position}.png</code>（portrait / half / torso / leftArm / rightArm / legs）。<br>
+    僅儲存 manji（滿級）數據，不再保留初始 base 數據。
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label green">Schema</div>
+  <div class="section-title">欄位定義</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>id</td><td>string</td><td>唯一識別碼</td></tr>
+      <tr><td>name</td><td>string</td><td>機甲名稱</td></tr>
+      <tr><td>armorType</td><td>ArmorType (Enum)</td><td>輕型 / 中甲 / 重型</td></tr>
+      <tr><td>firepower</td><td>number</td><td>火力值（軀幹滿級）</td></tr>
+      <tr><td>armor</td><td>number</td><td>裝甲值（軀幹滿級）</td></tr>
+      <tr><td>evasion</td><td>number</td><td>閃避值（腿部滿級）</td></tr>
+      <tr><td>mobility</td><td>number</td><td>移動力（腿部滿級）</td></tr>
+      <tr><td>weight</td><td>number</td><td>總重量</td></tr>
+      <tr><td>output</td><td>number</td><td>出力（影響武器/背包裝備限制）</td></tr>
+      <tr class="group-header"><td colspan="3">▎部件詳細資料 parts.{position}（torso / leftArm / rightArm / legs）</td></tr>
+      <tr><td>&nbsp;├ durable</td><td>number</td><td>耐久值</td></tr>
+      <tr><td>&nbsp;├ armor</td><td>number</td><td>護甲值</td></tr>
+      <tr><td>&nbsp;├ firepower</td><td>number</td><td>火力值</td></tr>
+      <tr><td>&nbsp;├ weight</td><td>number</td><td>部件重量</td></tr>
+      <tr><td>&nbsp;├ interface</td><td>string</td><td>接口類型（如 "Ⅱ型接口"）</td></tr>
+      <tr><td>&nbsp;├ hit</td><td>number?</td><td>命中值（僅左右臂有）</td></tr>
+      <tr><td>&nbsp;├ dodge</td><td>number?</td><td>閃避值（僅腿部有）</td></tr>
+      <tr><td>&nbsp;├ move</td><td>number?</td><td>移動力（僅腿部有）</td></tr>
+      <tr><td>&nbsp;├ output</td><td>number?</td><td>出力（僅軀幹有）</td></tr>
+      <tr><td>&nbsp;├ antiRiot</td><td>number?</td><td>抗暴（僅軀幹有）</td></tr>
+      <tr><td>&nbsp;└ icon</td><td>string?</td><td>部件圖示路徑 /images/mechs/{機甲名}/{position}.png</td></tr>
+      <tr class="group-header"><td colspan="3">▎副模組引用（指向 modules Collection）</td></tr>
+      <tr><td>module4Id</td><td>string</td><td>副模組 ID（4模組槽位）→ modules Collection</td></tr>
+      <tr><td>module8Id</td><td>string</td><td>副模組 ID（8模組槽位）→ modules Collection</td></tr>
+      <tr><td>moduleFixedIds</td><td>string[]</td><td>固定副模組 ID 列表（可多個）→ modules Collection</td></tr>
+      <tr class="group-header"><td colspan="3">▎圖片路徑</td></tr>
+      <tr><td>portrait</td><td>string</td><td>完整立繪 /images/mechs/{name}/portrait.png</td></tr>
+      <tr><td>half</td><td>string</td><td>半身圖 /images/mechs/{name}/half.png</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label green">相關文件</div>
+  <div class="section-title">關聯資料</div>
+  <div class="doc-grid">
+    <a class="doc-item" href="modules.html">
+      <div class="doc-tag">Collection</div>
+      <h4>🧩 modules</h4>
+      <p>副模組詳細資料，透過 module4Id / module8Id / moduleFixedIds 關聯</p>
+    </a>
+    <a class="doc-item" href="../../03_頁面規劃/03_機甲/index.html">
+      <div class="doc-tag">Page</div>
+      <h4>🤖 機甲圖鑑 &amp; 詳情頁</h4>
+      <p>座艙式排版、部件卡片、模組顯示</p>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 · 資料模型 · mechs — <a href="../index.html" style="color:var(--accent-cyan);text-decoration:none;">← 技術文件總覽</a>
+</footer>
+
+</body>
+</html>

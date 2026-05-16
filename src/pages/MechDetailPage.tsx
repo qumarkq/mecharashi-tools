@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import type { Mech, MechPart, Module } from '../types'
-import { fetchData, assetUrl } from '../utils/assets'
+import type { MechPart, Module } from '../types'
+import { assetUrl } from '../utils/assets'
+import { useMechWithModules } from '../hooks/useFirestore'
 
 const ARMOR_STYLES: Record<string, string> = {
   輕型: 'text-accent-cyan bg-accent-cyan/10 border-accent-cyan/40',
@@ -77,12 +77,19 @@ function ModuleCard({ mod, label, color }: { mod: Module | null; label: string; 
         <p className="font-bold text-sm text-text-primary">{mod.name}</p>
       </div>
       <p className="text-xs text-text-secondary leading-relaxed">{mod.description}</p>
-      {(mod.dmg || mod.crit || mod.critDmg || mod.acc) ? (
+      {(mod.dmg || mod.crit_rate || mod.critDmg || mod.acc_rate || mod.firepower_rate) ? (
         <div className="flex flex-wrap gap-2 mt-2">
-          {mod.dmg    ? <ModStat label="增傷" value={`+${mod.dmg}%`}    /> : null}
-          {mod.crit   ? <ModStat label="爆率" value={`+${mod.crit}`}    /> : null}
-          {mod.critDmg ? <ModStat label="爆傷" value={`+${mod.critDmg}%`} /> : null}
-          {mod.acc    ? <ModStat label="命中" value={`+${mod.acc}`}    /> : null}
+          {mod.dmg                        ? <ModStat label="增傷" value={`+${mod.dmg}%`}                  /> : null}
+          {mod.crit_rate                  ? <ModStat label="爆率" value={`+${mod.crit_rate}`}             /> : null}
+          {mod.critDmg                    ? <ModStat label="爆傷" value={`+${mod.critDmg}%`}              /> : null}
+          {mod.acc_rate                   ? <ModStat label="命中" value={`+${mod.acc_rate}`}              /> : null}
+          {(mod.firepower_rate ?? 0) > 0  ? <ModStat label="火力" value={`+${mod.firepower_rate}%`}      /> : null}
+          {(mod.armor_rate ?? 0) > 0      ? <ModStat label="護甲" value={`+${mod.armor_rate}%`}          /> : null}
+          {(mod.output_bonus ?? 0) > 0    ? <ModStat label="出力" value={`+${mod.output_bonus}`}         /> : null}
+          {(mod.dodge_rate ?? 0) > 0      ? <ModStat label="回避" value={`+${mod.dodge_rate}%`}          /> : null}
+          {(mod.durable_rate ?? 0) > 0    ? <ModStat label="耐久" value={`+${mod.durable_rate}%`}        /> : null}
+          {(mod.dmg_resist_rate ?? 0) > 0 ? <ModStat label="減傷" value={`-${mod.dmg_resist_rate}%`}     /> : null}
+          {(mod.crit_resist_rate ?? 0) > 0? <ModStat label="抗暴" value={`-${mod.crit_resist_rate}%`}    /> : null}
         </div>
       ) : null}
     </div>
@@ -109,20 +116,7 @@ function AttrRow({ label, value }: { label: string; value: string | number }) {
 
 export default function MechDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const [mech, setMech] = useState<Mech | null>(null)
-  const [modules, setModules] = useState<Module[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    Promise.all([
-      fetchData<Mech[]>('mechs.json'),
-      fetchData<Module[]>('modules.json'),
-    ]).then(([mechList, modList]) => {
-      setMech(mechList.find((m) => m.id === id) ?? null)
-      setModules(modList)
-      setLoading(false)
-    })
-  }, [id])
+  const { data, loading } = useMechWithModules(id)
 
   if (loading) {
     return (
@@ -132,7 +126,7 @@ export default function MechDetailPage() {
     )
   }
 
-  if (!mech) {
+  if (!data) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-12 text-center text-text-dim">
         <p>找不到機甲資料</p>
@@ -143,13 +137,8 @@ export default function MechDetailPage() {
     )
   }
 
+  const { mech, mod4, mod8, fixedMods } = data
   const armorCls = ARMOR_STYLES[mech.armorType] ?? 'text-text-secondary bg-bg-card border-border'
-
-  const mod4 = modules.find((m) => m.id === mech.module4Id) ?? null
-  const mod8 = modules.find((m) => m.id === mech.module8Id) ?? null
-  const fixedMods = (mech.moduleFixedIds || [])
-    .map((fid) => modules.find((m) => m.id === fid) ?? null)
-    .filter(Boolean) as Module[]
 
   const torso    = mech.parts?.torso    && typeof mech.parts.torso    !== 'number' ? mech.parts.torso    as MechPart : null
   const leftArm  = mech.parts?.leftArm  && typeof mech.parts.leftArm  !== 'number' ? mech.parts.leftArm  as MechPart : null
@@ -244,11 +233,11 @@ export default function MechDetailPage() {
                 <ModuleCard
                   key={fm.id}
                   mod={fm}
-                  label={fixedMods.length === 1 ? '固定模組' : `固定模組 ${idx + 1}`}
+                  label={fixedMods.length === 1 ? '額外模組' : `額外模組 ${idx + 1}`}
                   color="border-accent-cyan/30"
                 />
               ))
-            : <ModuleCard mod={null} label="固定模組" color="border-accent-cyan/30" />
+            : <ModuleCard mod={null} label="額外模組" color="border-accent-cyan/30" />
           }
         </div>
       </div>

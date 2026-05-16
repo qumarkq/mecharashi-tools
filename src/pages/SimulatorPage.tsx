@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import html2canvas from 'html2canvas'
 import type {
   Pilot,
@@ -7,13 +8,17 @@ import type {
   Backpack,
   Module,
   Component,
+  PilotResearch,
   TriggerComponent,
   EffectComponent,
-  PilotResearch,
-  GlobalResearch,
   FloatingModSelection,
+  Build,
 } from '../types'
-import { fetchData } from '../utils/assets'
+import { useAllGameData, type AllGameData } from '../hooks/useFirestore'
+
+type AllData = AllGameData
+import { useAuth } from '../contexts/AuthContext'
+import { saveBuild } from '../lib/userApi'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -29,19 +34,6 @@ const STEPS: { key: Step; label: string; icon: string }[] = [
   { key: 'components', label: '元件', icon: '⚙️' },
   { key: 'result', label: '結果', icon: '📊' },
 ]
-
-// ─── Data state ──────────────────────────────────────────────────────────────
-
-interface AllData {
-  pilots: Pilot[]
-  mechs: Mech[]
-  weapons: Weapon[]
-  backpacks: Backpack[]
-  modules: Module[]
-  components: Component[]
-  pilotResearch: PilotResearch[]
-  globalResearch: GlobalResearch
-}
 
 // ─── Simulator State ─────────────────────────────────────────────────────────
 
@@ -123,29 +115,12 @@ function SelectionCard({
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function SimulatorPage() {
-  const [data, setData] = useState<AllData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data, loading } = useAllGameData()
+  const { user } = useAuth()
   const [step, setStep] = useState<Step>('pilot')
   const [state, setState] = useState<SimState>(INITIAL_STATE)
   const [exporting, setExporting] = useState(false)
   const exportRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    Promise.all([
-      fetchData<Pilot[]>('pilots.json'),
-      fetchData<Mech[]>('mechs.json'),
-      fetchData<Weapon[]>('weapons.json'),
-      fetchData<Backpack[]>('backpacks.json'),
-      fetchData<Module[]>('modules.json'),
-      fetchData<Component[]>('components.json'),
-      fetchData<PilotResearch[]>('pilotResearch.json'),
-      fetchData<GlobalResearch>('globalResearch.json'),
-    ])
-      .then(([pilots, mechs, weapons, backpacks, modules, components, pilotResearch, globalResearch]) => {
-        setData({ pilots, mechs, weapons, backpacks, modules, components, pilotResearch, globalResearch })
-      })
-      .finally(() => setLoading(false))
-  }, [])
 
   // ─── Derived data ────────────────────────────────────────────────────────
 
@@ -291,6 +266,33 @@ export default function SimulatorPage() {
     }
   }
 
+  // ─── Save Build ──────────────────────────────────────────────────────────
+
+  const handleSaveBuild = useCallback(async (buildName: string): Promise<void> => {
+    if (!user || !state.pilotId || !state.mechId || !state.weaponId) return
+    const mech = data?.mechs.find((m) => m.id === state.mechId)
+    const build: Build = {
+      buildName,
+      pilotId: state.pilotId,
+      mechId: state.mechId,
+      weaponId: state.weaponId,
+      backpackId: state.backpackId ?? '',
+      modules: {
+        slot4: mech?.module4Id ?? null,
+        slot8: mech?.module8Id ?? null,
+        fixed: mech?.moduleFixedIds ?? [],
+      },
+      weaponFixedMod: {},
+      weaponFloatingMod: state.weaponFloatingMods,
+      triggerComponents: state.triggerComponentIds,
+      effectComponents: state.effectComponentIds,
+      pilotResearch: Object.fromEntries(
+        Object.entries(state.researchSelections).map(([k, v]) => [k, parseInt(v) || 0])
+      ),
+    }
+    await saveBuild(user.uid, build)
+  }, [user, state, data])
+
   // ─── Render ──────────────────────────────────────────────────────────────
 
   if (loading || !data) {
@@ -345,6 +347,8 @@ export default function SimulatorPage() {
             exportRef={exportRef}
             exporting={exporting}
             onExport={handleExport}
+            user={user}
+            onSave={handleSaveBuild}
           />
         )}
       </div>
@@ -742,6 +746,8 @@ function ResultStep({
   exportRef,
   exporting,
   onExport,
+  user,
+  onSave,
 }: {
   data: AllData
   state: SimState
@@ -753,7 +759,27 @@ function ResultStep({
   exportRef: React.RefObject<HTMLDivElement | null>
   exporting: boolean
   onExport: () => void
+  user: import('firebase/auth').User | null
+  onSave: (buildName: string) => Promise<void>
 }) {
+  const [buildName, setBuildName] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saveMsg, setSaveMsg] = useState<string | null>(null)
+
+  const handleSave = async () => {
+    if (!buildName.trim()) return
+    setSaving(true)
+    setSaveMsg(null)
+    try {
+      await onSave(buildName.trim())
+      setSaveMsg('配裝已儲存！')
+      setBuildName('')
+    } catch {
+      setSaveMsg('儲存失敗，請稍後再試')
+    } finally {
+      setSaving(false)
+    }
+  }
   const triggerComps = data.components.filter((c): c is TriggerComponent => state.triggerComponentIds.includes(c.id) && c.slot === 'trigger')
   const effectComps = data.components.filter((c): c is EffectComponent => state.effectComponentIds.includes(c.id) && c.slot === 'effect')
 
@@ -846,15 +872,61 @@ function ResultStep({
         </div>
       </div>
 
-      {/* Export button */}
-      <div className="flex justify-center">
-        <button
-          onClick={onExport}
-          disabled={exporting}
-          className="px-6 py-3 bg-accent-orange text-white rounded-xl text-sm font-bold hover:bg-accent-orange/80 transition-colors disabled:opacity-50 cursor-pointer flex items-center gap-2"
-        >
-          {exporting ? '匯出中...' : '📸 匯出分享圖'}
-        </button>
+      {/* Action buttons */}
+      <div className="flex flex-col gap-4">
+        {/* Export */}
+        <div className="flex justify-center">
+          <button
+            onClick={onExport}
+            disabled={exporting}
+            className="px-6 py-3 bg-accent-orange text-white rounded-xl text-sm font-bold hover:bg-accent-orange/80 transition-colors disabled:opacity-50 cursor-pointer flex items-center gap-2"
+          >
+            {exporting ? '匯出中...' : '📸 匯出分享圖'}
+          </button>
+        </div>
+
+        {/* Save build */}
+        <div className="border-t border-border pt-4">
+          <div className="text-xs text-text-dim mb-3 text-center">☁️ 儲存配裝至雲端</div>
+          {user ? (
+            <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
+              <input
+                type="text"
+                placeholder="輸入配裝名稱..."
+                value={buildName}
+                onChange={(e) => setBuildName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                maxLength={40}
+                className="w-full sm:w-60 bg-bg-dark border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-dim outline-none focus:border-border-accent"
+              />
+              <button
+                onClick={handleSave}
+                disabled={saving || !buildName.trim()}
+                className="px-4 py-2 bg-accent-blue/10 text-accent-blue border border-accent-blue/30 rounded-lg text-sm font-medium hover:bg-accent-blue/20 transition-colors cursor-pointer disabled:opacity-40 whitespace-nowrap"
+              >
+                {saving ? '儲存中...' : '儲存配裝'}
+              </button>
+            </div>
+          ) : (
+            <div className="text-center">
+              <Link
+                to="/profile"
+                className="text-sm text-accent-orange no-underline hover:text-accent-orange/80 transition-colors"
+              >
+                請先登入以儲存配裝 →
+              </Link>
+            </div>
+          )}
+          {saveMsg && (
+            <div
+              className={`text-center text-sm mt-2 ${
+                saveMsg.includes('失敗') ? 'text-accent-red' : 'text-accent-green'
+              }`}
+            >
+              {saveMsg}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

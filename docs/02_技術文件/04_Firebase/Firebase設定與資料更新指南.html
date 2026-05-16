@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firebase 設定與資料更新指南 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../../_shared/style.css">
+<style>
+  .cmd-block {
+    background: #0d1117;
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #c9d1d9;
+    position: relative;
+  }
+  .cmd-block .label {
+    position: absolute;
+    top: -11px;
+    left: 14px;
+    background: var(--card-bg, #1a1a2e);
+    padding: 0 8px;
+    font-size: 11px;
+    color: var(--accent-indigo, #818cf8);
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1px;
+  }
+  .cmd-block .comment { color: #6e7681; }
+  .cmd-block .cmd { color: #79c0ff; }
+  .cmd-block .flag { color: #ffa657; }
+  .cmd-block .str { color: #a5d6ff; }
+  .cmd-block .env-key { color: #d2a8ff; }
+  .cmd-block .env-val { color: #aff5b4; }
+  .flow-steps { margin: 20px 0; }
+  .flow-step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .flow-step:last-child { border-bottom: none; }
+  .flow-num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(99,102,241,0.2);
+    border: 1px solid rgba(99,102,241,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #818cf8;
+    font-family: 'Orbitron', sans-serif;
+  }
+  .flow-content { flex: 1; }
+  .flow-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .flow-desc { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+  .badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge-green  { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.4); }
+  .badge-orange { background: rgba(245,158,11,0.15);  color: #fbbf24; border: 1px solid rgba(245,158,11,0.4); }
+  .badge-red    { background: rgba(239,68,68,0.15);   color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
+  .badge-blue   { background: rgba(59,130,246,0.15);  color: #60a5fa; border: 1px solid rgba(59,130,246,0.4); }
+  .badge-purple { background: rgba(139,92,246,0.15);  color: #a78bfa; border: 1px solid rgba(139,92,246,0.4); }
+  .quota-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0; }
+  .quota-table th {
+    background: rgba(99,102,241,0.15);
+    color: #818cf8;
+    padding: 8px 14px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 1px;
+    font-family: 'Orbitron', sans-serif;
+  }
+  .quota-table td { padding: 8px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .quota-table tr:last-child td { border-bottom: none; }
+  .quota-table .ok   { color: #34d399; }
+  .quota-table .warn { color: #fbbf24; }
+  .quota-table .bad  { color: #f87171; }
+  .tip-list { list-style: none; padding: 0; margin: 12px 0; }
+  .tip-list li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 8px 0;
+    font-size: 13px;
+    line-height: 1.6;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .tip-list li:last-child { border-bottom: none; }
+  .tip-icon { flex-shrink: 0; width: 20px; text-align: center; }
+  .method-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  @media (max-width: 600px) { .method-compare { grid-template-columns: 1fr; } }
+  .method-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .method-card h4 { margin: 0 0 10px; font-size: 14px; }
+  .method-card p  { font-size: 12px; color: var(--text-dim); margin: 0 0 10px; }
+  .method-card ul { margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.8; color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../index.html">技術文件</a>
+    <span>›</span>
+    <a href="Firebase資料庫設計文件.html">Firebase 資料庫設計</a>
+    <span>›</span>
+    <span class="current">設定與資料更新指南</span>
+  </div>
+</nav>
+
+<header class="hero blue">
+  <div class="hero-badge blue">◆ SETUP GUIDE</div>
+  <h1 style="background:linear-gradient(135deg,#fff 0%,var(--accent-blue) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+    Firebase 設定與資料更新指南
+    <span>MECHARASHI — FIREBASE SETUP &amp; DATA WORKFLOW v1.0</span>
+  </h1>
+  <p class="hero-sub">環境變數設定 · 資料更新流程 · 節省 Firestore 讀取配額策略</p>
+  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.0 — 2026-05-16</div>
+</header>
+
+<main class="container">
+
+<!-- ═══ 0. 快速導覽 ═══ -->
+<section class="section">
+  <div class="section-label blue">00 — Quick Reference</div>
+  <div class="section-title">快速導覽</div>
+  <div class="section-desc">本文件的目的是讓開發者快速上手 Firebase 相關設定，以及在不消耗過多讀取配額的前提下更新遊戲資料。</div>
+
+  <div class="card-grid">
+    <div class="card blue">
+      <div class="card-icon">⚙️</div>
+      <h3>環境變數設定</h3>
+      <p>兩份 env 檔案：<code>.env.local</code>（前端 SDK）與 <code>.env.migration</code>（Admin SDK 遷移腳本），分別有不同用途與金鑰來源。</p>
+    </div>
+    <div class="card green">
+      <div class="card-icon">🔄</div>
+      <h3>資料更新三種方式</h3>
+      <p>① 遷移腳本（大量更新）② Firebase Console 直接編輯（單筆修正）③ 爬蟲 → JSON → 遷移（定期更新遊戲資料）</p>
+    </div>
+    <div class="card orange">
+      <div class="card-icon">💡</div>
+      <h3>節省讀取配額</h3>
+      <p>Firestore Emulator 讓本機開發完全不消耗線上配額；前端快取設定可大幅減少頁面切換時的讀取次數。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 1. 環境變數設定 ═══ -->
+<section class="section">
+  <div class="section-label blue">01 — Environment Variables</div>
+  <div class="section-title">環境變數設定</div>
+  <div class="section-desc">本專案有兩份環境變數檔案，用途不同，金鑰來源也不同。兩者都不應提交至 git（已加入 .gitignore）。</div>
+
+  <!-- .env.local -->
+  <div class="sub-h">⚙️ .env.local — 前端開發用（Vite + Firebase Web SDK）</div>
+
+  <div class="info-block">
+    <strong>📌 用途</strong>
+    前端 React 應用（<code>src/lib/firebase.ts</code>）讀取此設定初始化 Firebase Web SDK。<br>
+    僅在本機開發時需要；GitHub Pages 部署透過 GitHub Actions Secrets 注入同名變數。
+  </div>
+
+  <div class="cmd-block">
+    <span class="label">.env.local（複製自 .env.local.example，填入實際值）</span>
+<span class="comment"># 從 Firebase Console → Project Settings → Your apps → Web app → SDK setup 取得</span>
+<span class="env-key">VITE_FIREBASE_API_KEY</span>=<span class="env-val">AIzaSy_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx</span>
+<span class="env-key">VITE_FIREBASE_AUTH_DOMAIN</span>=<span class="env-val">your-project-id.firebaseapp.com</span>
+<span class="env-key">VITE_FIREBASE_PROJECT_ID</span>=<span class="env-val">your-project-id</span>
+<span class="env-key">VITE_FIREBASE_STORAGE_BUCKET</span>=<span class="env-val">your-project-id.firebasestorage.app</span>
+<span class="env-key">VITE_FIREBASE_MESSAGING_SENDER_ID</span>=<span class="env-val">123456789012</span>
+<span class="env-key">VITE_FIREBASE_APP_ID</span>=<span class="env-val">1:123456789012:web:abcdef1234567890</span>
+  </div>
+
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div class="flow-content">
+        <div class="flow-title">前往 Firebase Console</div>
+        <div class="flow-desc">開啟 <strong>console.firebase.google.com</strong> → 選擇專案（mecharashi-tools）</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div class="flow-content">
+        <div class="flow-title">取得 Web App 設定</div>
+        <div class="flow-desc">點選 ⚙️ Project Settings → Your apps → Web app（&lt;/&gt; 圖示）→ SDK setup and configuration → 選 Config</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div class="flow-content">
+        <div class="flow-title">複製並填入 .env.local</div>
+        <div class="flow-desc">把 firebaseConfig 物件的各欄位值對應填入 .env.local.example 並另存為 .env.local</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- .env.migration -->
+  <div class="sub-h" style="margin-top:32px;">⚙️ .env.migration — 遷移腳本用（Firebase Admin SDK）</div>
+
+  <div class="info-block">
+    <strong>📌 用途</strong>
+    <code>scripts/migrate-to-firestore.mjs</code> 使用 Firebase Admin SDK，以服務帳號身分繞過安全規則直接寫入 Firestore。<br>
+    <strong>絕對不要</strong>將服務帳號金鑰 JSON 或此 env 檔提交至 git。
+  </div>
+
+  <div class="cmd-block">
+    <span class="label">.env.migration（複製自 .env.migration.example，填入實際值）</span>
+<span class="env-key">FIREBASE_PROJECT_ID</span>=<span class="env-val">your-project-id</span>
+<span class="comment"># serviceAccountKey.json 的相對路徑（從 repo 根目錄計算）</span>
+<span class="env-key">GOOGLE_APPLICATION_CREDENTIALS</span>=<span class="env-val">./serviceAccountKey.json</span>
+  </div>
+
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div class="flow-content">
+        <div class="flow-title">產生服務帳號金鑰</div>
+        <div class="flow-desc">Firebase Console → ⚙️ Project Settings → Service accounts → <strong>Generate new private key</strong> → 下載 JSON</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div class="flow-content">
+        <div class="flow-title">放置金鑰檔案</div>
+        <div class="flow-desc">將下載的 JSON 重命名為 <code>serviceAccountKey.json</code> 並放在 repo 根目錄（已在 .gitignore 中排除）</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div class="flow-content">
+        <div class="flow-title">填入 .env.migration</div>
+        <div class="flow-desc">複製 .env.migration.example 為 .env.migration，填入 FIREBASE_PROJECT_ID 和金鑰路徑</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-block">
+    <strong>⚠️ 安全提醒</strong>
+    服務帳號金鑰擁有繞過所有 Firestore Security Rules 的完整寫入權限。<br>
+    不要分享給不需要執行遷移腳本的人；不要上傳至任何公開位置；定期至 Firebase Console 檢查服務帳號是否有不必要的舊金鑰。
+  </div>
+</section>
+
+<!-- ═══ 2. 資料更新三種方式 ═══ -->
+<section class="section">
+  <div class="section-label blue">02 — Data Update Methods</div>
+  <div class="section-title">資料更新流程</div>
+  <div class="section-desc">根據更新規模與場景選擇適合的方式。</div>
+
+  <div class="method-compare">
+    <div class="method-card">
+      <h4>🔄 方式 A：遷移腳本（大量更新）</h4>
+      <div class="badge-row"><span class="badge badge-green">推薦</span><span class="badge badge-orange">需 Admin 金鑰</span></div>
+      <p>適合：新版本遊戲資料上線、多筆資料同步更新、初次建立資料庫</p>
+      <ul>
+        <li>來源：public/data/*.json（爬蟲結果）</li>
+        <li>工具：scripts/migrate-to-firestore.mjs</li>
+        <li>支援 dry-run 預覽模式</li>
+        <li>可指定只遷移特定 collection</li>
+      </ul>
+    </div>
+    <div class="method-card">
+      <h4>✏️ 方式 B：Firebase Console 直接編輯</h4>
+      <div class="badge-row"><span class="badge badge-blue">單筆修正</span><span class="badge badge-purple">無需金鑰</span></div>
+      <p>適合：修正個別資料錯誤、補充缺漏欄位、臨時調整單一文件</p>
+      <ul>
+        <li>在瀏覽器 Firebase Console 直接操作</li>
+        <li>無需本機環境或程式碼</li>
+        <li>操作量大時效率低</li>
+        <li>無法批量，不留版本記錄</li>
+      </ul>
+    </div>
+    <div class="method-card">
+      <h4>🕷️ 方式 C：爬蟲 → JSON → 遷移</h4>
+      <div class="badge-row"><span class="badge badge-green">推薦</span><span class="badge badge-orange">需 Admin 金鑰</span></div>
+      <p>適合：遊戲更新後定期同步最新機師/機甲/模組資料</p>
+      <ul>
+        <li>Step 1：執行爬蟲腳本更新 JSON</li>
+        <li>Step 2：確認 JSON 資料正確</li>
+        <li>Step 3：執行遷移腳本推送至 Firestore</li>
+        <li>JSON 做為版本快照留存</li>
+      </ul>
+    </div>
+    <div class="method-card">
+      <h4>🛠️ 方式 D：管理後台（Admin Page）</h4>
+      <div class="badge-row"><span class="badge badge-orange">開發中</span><span class="badge badge-blue">需管理員帳號</span></div>
+      <p>適合：非技術背景的維護者直接在網站後台新增/修改單筆資料</p>
+      <ul>
+        <li>前端 UI 直接調用 firestoreApi.ts 寫入</li>
+        <li>需登入且擁有 ADMIN role</li>
+        <li>Phase 4+ 才會實作</li>
+        <li>不需要本機開發環境</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 方式 A 詳細 -->
+  <div class="sub-h">🔄 方式 A：遷移腳本詳細步驟</div>
+
+  <div class="cmd-block">
+    <span class="label">Terminal — 遷移腳本用法</span>
+<span class="comment"># 1. 先用 dry-run 確認資料格式無誤（不會寫入 Firestore）</span>
+<span class="cmd">npm run migrate:dry</span>
+
+<span class="comment"># 2. 確認後執行實際遷移（全部 collections）</span>
+<span class="cmd">npm run migrate</span>
+
+<span class="comment"># 3. 只更新特定 collection（節省寫入次數）</span>
+<span class="cmd">node scripts/migrate-to-firestore.mjs</span> <span class="flag">--only=</span><span class="str">modules</span>
+<span class="cmd">node scripts/migrate-to-firestore.mjs</span> <span class="flag">--only=</span><span class="str">pilots</span>
+<span class="cmd">node scripts/migrate-to-firestore.mjs</span> <span class="flag">--only=</span><span class="str">mechs</span>
+  </div>
+
+  <div class="info-block">
+    <strong>📋 可遷移的 collections</strong>
+    pilots、mechs、modules、weapons、backpacks、components、pilotResearch、globalResearch、enemies<br>
+    資料來源一律為 <code>public/data/{collection}.json</code>（爬蟲或手動維護的 JSON 檔案）
+  </div>
+
+  <!-- conditionalEffects 欄位說明 -->
+  <div class="sub-h" style="margin-top:32px;">🧩 modules — conditionalEffects 欄位（Array of Maps）</div>
+
+  <div class="info-block">
+    <strong>📌 Firestore 儲存型別</strong>
+    <code>conditionalEffects</code> 在 Firestore 中以 <strong>Array</strong> 型別儲存，陣列內每個元素為 <strong>Map</strong>（對應 <code>ConditionalEffect</code> 介面）。<br>
+    無條件效果的模組此欄位為空陣列；副模組同樣為空陣列。<br>
+    <strong>遷移腳本已自動處理預設值</strong>：modules.json 中若無 <code>conditionalEffects</code> 欄位，腳本會補上 <code>[]</code> 再寫入 Firestore。
+  </div>
+
+  <div class="cmd-block">
+    <span class="label">public/data/modules.json — conditionalEffects 欄位範例</span>
+<span class="comment">// 有條件效果的模組（每獲得增益傷害+6%，上限30%，持續2回合）</span>
+{
+  <span class="env-key">"id"</span>: <span class="str">"mod_1023"</span>,
+  <span class="env-key">"name"</span>: <span class="str">"增益聯動Ⅱ"</span>,
+  <span class="env-key">"dmg"</span>: <span class="str">30</span>,
+  <span class="env-key">"conditionalEffects"</span>: [
+    {
+      <span class="env-key">"trigger"</span>: <span class="str">"perBuffHeld"</span>,
+      <span class="env-key">"stats"</span>: [<span class="str">"dmg"</span>],
+      <span class="env-key">"scale"</span>: <span class="str">6</span>,
+      <span class="env-key">"max"</span>: <span class="str">30</span>,
+      <span class="env-key">"duration"</span>: <span class="str">2</span>
+    }
+  ]
+}
+
+<span class="comment">// 無條件效果的模組</span>
+{
+  <span class="env-key">"id"</span>: <span class="str">"mod_1001"</span>,
+  <span class="env-key">"name"</span>: <span class="str">"精準射擊Ⅰ"</span>,
+  <span class="env-key">"conditionalEffects"</span>: []
+}
+  </div>
+
+  <div class="sub-h" style="margin-top:24px;">✏️ Firebase Console 手動新增 conditionalEffects 步驟</div>
+
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div class="flow-content">
+        <div class="flow-title">找到目標模組文件</div>
+        <div class="flow-desc">Firestore → modules collection → 搜尋目標 Document ID（如 <code>mod_1023</code>）</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div class="flow-content">
+        <div class="flow-title">新增 conditionalEffects 欄位</div>
+        <div class="flow-desc">點 <strong>Add field</strong> → 欄位名稱輸入 <code>conditionalEffects</code> → 型別選 <strong>array</strong> → 確認</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div class="flow-content">
+        <div class="flow-title">新增陣列元素（Map）</div>
+        <div class="flow-desc">在 conditionalEffects 陣列下點 <strong>Add item</strong> → 型別選 <strong>map</strong> → 展開後逐一 Add field 填入各子欄位：<br>
+          <code>trigger</code>（string）、<code>stats</code>（array of string）、<code>scale</code>（number）、<code>max</code>（number）、<code>duration</code>（number）等</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div class="flow-content">
+        <div class="flow-title">同步回 modules.json</div>
+        <div class="flow-desc">在 <code>public/data/modules.json</code> 找到對應模組，手動補上相同的 <code>conditionalEffects</code> 內容，確保下次遷移不覆蓋</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-block">
+    <strong>⚠️ stats 欄位型別注意</strong>
+    Firestore Console 中 <code>stats</code> 必須建立為 <strong>array</strong>，陣列內每個元素型別為 <strong>string</strong>（如 <code>"dmg"</code>、<code>"acc_rate"</code>）。<br>
+    若誤設為單一 string 而非 array，前端 <code>conditionalEffect.stats.map(...)</code> 將拋錯。
+  </div>
+
+  <!-- 方式 C 詳細 -->
+  <div class="sub-h">🕷️ 方式 C：爬蟲 → 遷移完整流程</div>
+
+  <div class="cmd-block">
+    <span class="label">Terminal — 遊戲資料更新完整流程</span>
+<span class="comment"># Step 1：執行爬蟲更新機師資料（以機師為例）</span>
+<span class="cmd">npm run scrape:v3</span>
+<span class="comment"># 或強制重爬所有（忽略快取）</span>
+<span class="cmd">npm run scrape:v3:force</span>
+
+<span class="comment"># Step 2：執行爬蟲更新機甲資料</span>
+<span class="cmd">npm run scrape:mechs</span>
+
+<span class="comment"># Step 3：確認 JSON 資料（建議用 git diff 查看異動）</span>
+<span class="cmd">git diff public/data/pilots.json</span>
+<span class="cmd">git diff public/data/mechs.json</span>
+
+<span class="comment"># Step 4：dry-run 驗證格式</span>
+<span class="cmd">npm run migrate:dry</span>
+
+<span class="comment"># Step 5：推送至 Firestore</span>
+<span class="cmd">npm run migrate</span>
+<span class="comment"># 或只更新有變動的 collections</span>
+<span class="cmd">node scripts/migrate-to-firestore.mjs</span> <span class="flag">--only=</span><span class="str">pilots</span>
+<span class="cmd">node scripts/migrate-to-firestore.mjs</span> <span class="flag">--only=</span><span class="str">mechs</span>
+  </div>
+
+  <!-- 方式 B 詳細 -->
+  <div class="sub-h">✏️ 方式 B：Firebase Console 直接編輯步驟</div>
+
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div class="flow-content">
+        <div class="flow-title">開啟 Firestore 資料庫</div>
+        <div class="flow-desc">Firebase Console → 左側選單 Firestore Database → Data 標籤</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div class="flow-content">
+        <div class="flow-title">導航至目標文件</div>
+        <div class="flow-desc">選擇 Collection（如 pilots） → 找到目標 Document（以 Document ID 搜尋）</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div class="flow-content">
+        <div class="flow-title">編輯欄位</div>
+        <div class="flow-desc">點選欄位旁的鉛筆圖示直接修改值；新增欄位用 Add field；完成後點 Update</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div class="flow-content">
+        <div class="flow-title">（可選）同步回 JSON</div>
+        <div class="flow-desc">若 Console 修改的值未反映到 public/data/*.json，下次執行遷移腳本會被覆蓋。手動編輯 JSON 以保持一致。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 3. 節省讀取配額 ═══ -->
+<section class="section">
+  <div class="section-label blue">03 — Quota Saving</div>
+  <div class="section-title">節省 Firestore 讀取配額</div>
+  <div class="section-desc">Firestore Spark（免費）方案每日上限：50,000 讀取、20,000 寫入、20,000 刪除。以下是有效節省配額的策略。</div>
+
+  <table class="quota-table">
+    <tr><th>操作</th><th>讀取消耗</th><th>說明</th></tr>
+    <tr><td>讀取整個 pilots collection（~50 筆）</td><td class="warn">50 次</td><td>每筆 document 算 1 次讀取</td></tr>
+    <tr><td>讀取整個 modules collection（~200 筆）</td><td class="warn">200 次</td><td>每次重整頁面都重新讀取的話很快消耗</td></tr>
+    <tr><td>讀取單一 document</td><td class="ok">1 次</td><td>詳情頁按需讀取效率最高</td></tr>
+    <tr><td>查詢不命中索引（報錯）</td><td class="bad">仍計費</td><td>失敗的查詢也計算讀取次數</td></tr>
+    <tr><td>使用 Firestore Emulator</td><td class="ok">0 次（本機）</td><td>完全不消耗線上配額</td></tr>
+  </table>
+
+  <!-- Emulator -->
+  <div class="sub-h">🔥 策略 1：使用 Firestore Emulator（最有效）</div>
+
+  <div class="info-block">
+    <strong>💡 原理</strong>
+    Firebase 提供本機 Emulator，讓開發時的所有 Firestore 讀寫都在本機進行，完全不消耗線上配額。
+    匯入一次線上資料快照後，後續開發都可離線進行。
+  </div>
+
+  <div class="cmd-block">
+    <span class="label">Terminal — Firestore Emulator 設定與使用</span>
+<span class="comment"># 安裝 Firebase CLI（全域，只需一次）</span>
+<span class="cmd">npm install -g firebase-tools</span>
+
+<span class="comment"># 登入 Firebase</span>
+<span class="cmd">firebase login</span>
+
+<span class="comment"># 初始化 Emulator（在 repo 根目錄執行，選 Firestore）</span>
+<span class="cmd">firebase init emulators</span>
+
+<span class="comment"># 啟動 Emulator（預設 Port: 8080）</span>
+<span class="cmd">firebase emulators:start --only firestore</span>
+
+<span class="comment"># 匯入線上資料（先匯出備份，再匯入 Emulator）</span>
+<span class="cmd">firebase firestore:export ./emulator-backup</span>
+<span class="cmd">firebase emulators:start --only firestore --import=./emulator-backup</span>
+  </div>
+
+  <div class="cmd-block">
+    <span class="label">src/lib/firebase.ts — 加入 Emulator 連線（開發環境自動切換）</span>
+<span class="comment">import { connectFirestoreEmulator } from 'firebase/firestore'</span>
+
+<span class="comment">// 在 getFirestore(app) 之後加入：</span>
+<span class="cmd">if</span> (import.meta.env.<span class="env-key">DEV</span> && import.meta.env.<span class="env-key">VITE_USE_EMULATOR</span> === <span class="str">'true'</span>) {
+  connectFirestoreEmulator(db, <span class="str">'localhost'</span>, <span class="str">8080</span>)
+}
+  </div>
+
+  <div class="cmd-block">
+    <span class="label">.env.local — 加入 Emulator 控制開關</span>
+<span class="comment"># 設為 true 時連線 Emulator，false 或不設定則連線線上 Firestore</span>
+<span class="env-key">VITE_USE_EMULATOR</span>=<span class="env-val">true</span>
+  </div>
+
+  <!-- 前端快取 -->
+  <div class="sub-h" style="margin-top:32px;">⚡ 策略 2：前端快取（減少重複讀取）</div>
+
+  <div class="info-block">
+    <strong>💡 原理</strong>
+    目前的 <code>useFirestore.ts</code> hooks 使用 React <code>useEffect</code> + <code>useState</code>，每次元件 mount 都會重新向 Firestore 讀取。
+    透過以下方式可以大幅減少重複讀取。
+  </div>
+
+  <ul class="tip-list">
+    <li>
+      <span class="tip-icon">①</span>
+      <div>
+        <strong>Module-level 快取（最簡單）</strong><br>
+        在 <code>firestoreApi.ts</code> 加入 module-level 變數快取，同一次頁面 session 內只讀取一次。<br>
+        <span style="color:var(--text-dim);font-size:12px;">適合不需要即時更新的靜態遊戲資料（pilots、mechs、modules 等）</span>
+      </div>
+    </li>
+    <li>
+      <span class="tip-icon">②</span>
+      <div>
+        <strong>React Context + Provider（中等複雜度）</strong><br>
+        建立 <code>GameDataContext</code> 在 App 層級載入一次，所有子元件共享同一份資料。<br>
+        <span style="color:var(--text-dim);font-size:12px;">避免同一頁面多個元件各自觸發相同 collection 的讀取</span>
+      </div>
+    </li>
+    <li>
+      <span class="tip-icon">③</span>
+      <div>
+        <strong>React Query 或 SWR（最完整）</strong><br>
+        引入 <code>@tanstack/react-query</code>，設定 <code>staleTime</code>（如 5 分鐘），自動處理快取、重試、背景更新。<br>
+        <span style="color:var(--text-dim);font-size:12px;">適合未來流量增加後的正式方案</span>
+      </div>
+    </li>
+  </ul>
+
+  <div class="cmd-block">
+    <span class="label">src/lib/firestoreApi.ts — 簡單 Module-level 快取範例</span>
+<span class="comment">// 在檔案頂部加入快取 Map</span>
+<span class="cmd">const</span> _cache = <span class="cmd">new</span> Map&lt;string, unknown[]&gt;()
+
+<span class="cmd">async function</span> fetchCollectionCached&lt;T&gt;(name: string): Promise&lt;T[]&gt; {
+  <span class="cmd">if</span> (_cache.has(name)) <span class="cmd">return</span> _cache.get(name) <span class="cmd">as</span> T[]
+  <span class="cmd">const</span> result = <span class="cmd">await</span> fetchCollection&lt;T&gt;(name)
+  _cache.set(name, result)
+  <span class="cmd">return</span> result
+}
+
+<span class="comment">// 改用 fetchCollectionCached 取代 fetchCollection（靜態資料）</span>
+<span class="cmd">export const</span> getPilots = () =&gt; fetchCollectionCached&lt;Pilot&gt;(<span class="str">'pilots'</span>)
+<span class="cmd">export const</span> getMechs  = () =&gt; fetchCollectionCached&lt;Mech&gt;(<span class="str">'mechs'</span>)
+<span class="cmd">export const</span> getModules = () =&gt; fetchCollectionCached&lt;Module&gt;(<span class="str">'modules'</span>)
+  </div>
+
+  <!-- 其他策略 -->
+  <div class="sub-h" style="margin-top:32px;">📋 策略 3：其他節省配額的好習慣</div>
+
+  <ul class="tip-list">
+    <li>
+      <span class="tip-icon">✅</span>
+      <div>
+        <strong>開發時使用 Emulator，不要直接連線上 Firestore</strong><br>
+        設定 <code>VITE_USE_EMULATOR=true</code>，讀寫完全在本機，零配額消耗
+      </div>
+    </li>
+    <li>
+      <span class="tip-icon">✅</span>
+      <div>
+        <strong>遷移前一定要先用 dry-run</strong><br>
+        <code>npm run migrate:dry</code> 不會寫入 Firestore，可確認資料格式再執行實際遷移
+      </div>
+    </li>
+    <li>
+      <span class="tip-icon">✅</span>
+      <div>
+        <strong>只遷移有變動的 collection</strong><br>
+        用 <code>--only=mechs</code> 指定 collection，不要每次都全量遷移所有資料
+      </div>
+    </li>
+    <li>
+      <span class="tip-icon">✅</span>
+      <div>
+        <strong>使用 Firebase Console 的 Usage 頁面監控配額</strong><br>
+        Firebase Console → Usage and billing → 可查看每日讀寫次數趨勢
+      </div>
+    </li>
+    <li>
+      <span class="tip-icon">⚠️</span>
+      <div>
+        <strong>避免在列表頁面讀取完整 document 後再做前端篩選</strong><br>
+        例如讀取所有 pilots 後再 filter 職業，不如使用 Firestore <code>where</code> 查詢或前端快取後篩選
+      </div>
+    </li>
+    <li>
+      <span class="tip-icon">⚠️</span>
+      <div>
+        <strong>詳情頁盡量使用列表頁的快取資料</strong><br>
+        從機師列表跳到機師詳情時，若列表資料已在快取，可直接使用，不需再發一次 <code>getDoc</code>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<!-- ═══ 4. GitHub Actions 部署設定 ═══ -->
+<section class="section">
+  <div class="section-label blue">04 — CI/CD</div>
+  <div class="section-title">GitHub Actions 部署設定</div>
+  <div class="section-desc">GitHub Pages 部署時需要把 Firebase 設定以 Secrets 注入，避免將金鑰硬編碼在程式碼中。</div>
+
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div class="flow-content">
+        <div class="flow-title">在 GitHub 設定 Secrets</div>
+        <div class="flow-desc">GitHub repo → Settings → Secrets and variables → Actions → New repository secret<br>
+          依序新增：<code>VITE_FIREBASE_API_KEY</code>、<code>VITE_FIREBASE_AUTH_DOMAIN</code>、<code>VITE_FIREBASE_PROJECT_ID</code>、<code>VITE_FIREBASE_STORAGE_BUCKET</code>、<code>VITE_FIREBASE_MESSAGING_SENDER_ID</code>、<code>VITE_FIREBASE_APP_ID</code>
+        </div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div class="flow-content">
+        <div class="flow-title">在 workflow 中使用 Secrets</div>
+        <div class="flow-desc">確認 <code>.github/workflows/deploy.yml</code> 的 build 步驟有傳入 env 變數（參考以下範例）</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cmd-block">
+    <span class="label">.github/workflows/deploy.yml — build 步驟 env 設定</span>
+- name: Build
+  <span class="cmd">run</span>: npm run build
+  <span class="cmd">env</span>:
+    <span class="env-key">VITE_FIREBASE_API_KEY</span>: <span class="env-val">${{ secrets.VITE_FIREBASE_API_KEY }}</span>
+    <span class="env-key">VITE_FIREBASE_AUTH_DOMAIN</span>: <span class="env-val">${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}</span>
+    <span class="env-key">VITE_FIREBASE_PROJECT_ID</span>: <span class="env-val">${{ secrets.VITE_FIREBASE_PROJECT_ID }}</span>
+    <span class="env-key">VITE_FIREBASE_STORAGE_BUCKET</span>: <span class="env-val">${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}</span>
+    <span class="env-key">VITE_FIREBASE_MESSAGING_SENDER_ID</span>: <span class="env-val">${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}</span>
+    <span class="env-key">VITE_FIREBASE_APP_ID</span>: <span class="env-val">${{ secrets.VITE_FIREBASE_APP_ID }}</span>
+  </div>
+
+  <div class="note-block">
+    <strong>⚠️ VITE_ 前綴說明</strong>
+    Vite 只會將 <code>VITE_</code> 開頭的環境變數暴露給前端程式碼（<code>import.meta.env.VITE_*</code>）。<br>
+    其餘變數在 build 時不會打包進前端 bundle，可安全存放其他 CI 用途的 secrets。
+  </div>
+</section>
+
+<!-- ═══ 5. 常見問題 ═══ -->
+<section class="section">
+  <div class="section-label blue">05 — Troubleshooting</div>
+  <div class="section-title">常見問題排查</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table blue-head">
+      <tr><th>問題</th><th>可能原因</th><th>解法</th></tr>
+      <tr>
+        <td>前端讀取資料失敗（permission-denied）</td>
+        <td>Firestore Security Rules 未正確設定，或 Collection 名稱拼錯</td>
+        <td>Firebase Console → Firestore → Rules 確認 allow read: if true 已設定；檢查 collection 名稱大小寫</td>
+      </tr>
+      <tr>
+        <td>遷移腳本失敗：Firebase Admin 初始化失敗</td>
+        <td>.env.migration 未建立、serviceAccountKey.json 路徑錯誤</td>
+        <td>確認 .env.migration 存在並填入正確值；確認 serviceAccountKey.json 在 repo 根目錄</td>
+      </tr>
+      <tr>
+        <td>遷移後資料在前端沒有更新</td>
+        <td>前端快取未失效（module-level cache）</td>
+        <td>重新整理頁面（強制 F5）；或暫時清空 _cache Map</td>
+      </tr>
+      <tr>
+        <td>Firestore 讀取次數異常偏高</td>
+        <td>元件重複 mount、沒有快取機制、onSnapshot 即時監聽</td>
+        <td>加入 module-level 快取；避免使用 onSnapshot（改用 getDocs）；確認 React useEffect 依賴陣列正確</td>
+      </tr>
+      <tr>
+        <td>Firebase Console 修改了資料但遷移後被覆蓋</td>
+        <td>遷移腳本用 setDoc 覆寫整份文件</td>
+        <td>Console 修改後同步更新對應的 public/data/*.json，讓 JSON 成為唯一資料來源</td>
+      </tr>
+      <tr>
+        <td>build 時 Firebase 變數未注入（undefined）</td>
+        <td>GitHub Actions Secrets 未設定或名稱不符</td>
+        <td>確認 Settings → Secrets 有所有 VITE_FIREBASE_* 變數；確認 workflow env 中引用了正確 secret 名稱</td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 · 技術文件 · Firebase 設定與資料更新指南 —
+  <a href="Firebase資料庫設計文件.html" style="color:var(--accent-cyan);text-decoration:none;">← Firebase 資料庫設計文件</a>
+  &nbsp;|&nbsp;
+  <a href="../index.html" style="color:var(--accent-cyan);text-decoration:none;">技術文件總覽</a>
+</footer>
+
+</body>
+</html>

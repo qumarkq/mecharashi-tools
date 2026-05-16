@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>系統架構 — 鋼嵐工具站技術文件</title>
+<link rel="stylesheet" href="../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../index.html">技術文件</a>
+    <span>›</span>
+    <span>架構設計</span>
+    <span>›</span>
+    <span class="current">系統架構</span>
+  </div>
+</nav>
+
+<header class="hero blue">
+  <div class="hero-badge blue">◆ Architecture</div>
+  <h1>系統架構<span>SYSTEM ARCHITECTURE</span></h1>
+  <p class="hero-sub">前後端架構、部署方式、技術選型</p>
+  <div class="version-badge" style="background:var(--accent-blue);">v2.0 — Firebase Firestore</div>
+</header>
+
+<main class="container">
+
+<section class="section">
+  <div class="section-label blue">概覽</div>
+  <div class="section-title">架構說明</div>
+  <div class="section-desc">前端部署於 GitHub Pages；Firebase Firestore 統一管理所有遊戲資料與用戶資料。管理者透過網站後台直接讀寫 Firestore，無需 CI/CD。</div>
+
+  <div class="changed-block">
+    <strong>🔄 v2.0 架構重大調整：靜態 JSON → Firebase Firestore</strong>
+    舊架構：Google Sheets → GitHub Actions → Static JSON → 前端讀取。<br>
+    新架構：管理後台 → Firestore 遊戲資料 → 前端即時讀取。<br>
+    優點：資料即時更新、複雜關聯（模組↔機甲、技能↔BUFF）可直接透過 Document ID 引用、型別枚舉化消除不一致。
+  </div>
+
+  <div class="arch-diagram">
+    <div class="arch-flow">
+      <div class="arch-node user"><strong>👤 玩家</strong><br>瀏覽 / 模擬 / 儲存配裝</div>
+      <div class="arch-arrow">⟷</div>
+      <div class="arch-node frontend"><strong>🌐 GitHub Pages</strong><br>React + TypeScript<br>Firebase SDK</div>
+      <div class="arch-arrow">⟷</div>
+      <div class="arch-node auth"><strong>🔥 Firebase Firestore</strong><br>遊戲資料 + 用戶資料</div>
+    </div>
+    <br>
+    <div class="arch-flow">
+      <div class="arch-node data"><strong>🛠️ 管理員</strong><br>管理後台（AdminPage）</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node auth"><strong>🔥 Firestore</strong><br>直接讀寫遊戲資料</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node frontend"><strong>🔐 Firebase Auth</strong><br>Google 登入 + 角色驗證</div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label blue">技術選型</div>
+  <div class="section-title">Tech Stack</div>
+
+  <div class="sub-h">前端框架</div>
+  <div class="tech-row">
+    <span class="tech-tag primary">React 18</span>
+    <span class="tech-tag primary">TypeScript</span>
+    <span class="tech-tag primary">Vite</span>
+  </div>
+
+  <div class="sub-h">樣式 &amp; 路由</div>
+  <div class="tech-row">
+    <span class="tech-tag secondary">Tailwind CSS</span>
+    <span class="tech-tag secondary">React Router</span>
+  </div>
+
+  <div class="sub-h">後端 &amp; 資料庫</div>
+  <div class="tech-row">
+    <span class="tech-tag tertiary">Firebase Auth</span>
+    <span class="tech-tag tertiary">Cloud Firestore</span>
+    <span class="tech-tag tertiary">Firebase Storage</span>
+  </div>
+
+  <div class="sub-h">其他工具</div>
+  <div class="tech-row">
+    <span class="tech-tag">html2canvas</span>
+    <span class="tech-tag">GitHub Pages</span>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label blue">資料流</div>
+  <div class="section-title">資料讀取層設計</div>
+
+  <div class="card-grid">
+    <div class="card blue">
+      <div class="card-icon">📖</div>
+      <h3>遊戲資料讀取</h3>
+      <p>前端透過 Firebase SDK 直接查詢 Firestore Collections（pilots / mechs / weapons 等），使用 React Hooks 封裝資料讀取邏輯，支援快取策略。</p>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">👤</div>
+      <h3>用戶資料讀取</h3>
+      <p>Firebase Auth 取得 UID 後，讀取 <code>users/{uid}/profile</code> 與 <code>users/{uid}/builds</code>。未登入用戶的科研設定暫存於 localStorage。</p>
+    </div>
+    <div class="card green">
+      <div class="card-icon">🛠️</div>
+      <h3>管理後台寫入</h3>
+      <p>管理員登入後，透過 AdminPage 直接對 Firestore 進行 CRUD 操作。角色驗證透過 Firebase Auth custom claims 實作。</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label blue">部署</div>
+  <div class="section-title">部署架構</div>
+
+  <div class="card-grid">
+    <div class="card cyan">
+      <div class="card-icon">🚀</div>
+      <h3>GitHub Pages</h3>
+      <p>前端靜態資源部署至 GitHub Pages。推送 main 分支自動觸發 GitHub Actions 建置並部署。</p>
+    </div>
+    <div class="card orange">
+      <div class="card-icon">🔥</div>
+      <h3>Firebase</h3>
+      <p>Firestore、Auth、Storage 使用 Firebase Spark（免費方案）起步，流量成長後可升級至 Blaze 計費方案。</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 技術文件 · 系統架構 — <a href="../index.html" style="color:var(--accent-cyan);text-decoration:none;">← 技術文件總覽</a>
+</footer>
+
+</body>
+</html>

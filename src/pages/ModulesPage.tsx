@@ -1,77 +1,204 @@
-import { useState, useEffect } from 'react'
-import type { Module, Mech } from '../types'
-import { fetchData, assetUrl } from '../utils/assets'
+import { useState } from 'react'
+import { createPortal } from 'react-dom'
+import { assetUrl } from '../utils/assets'
+import { useModules, useMechNameMap } from '../hooks/useFirestore'
+import { ModuleSlot, ModuleRarity, MechPartPosition } from '../types/enums'
+import type { Module, ModuleLevel } from '../types'
 
 const SLOT_LABELS: Record<string, string> = {
-  '4mod': '四格模組',
-  '8mod': '八格模組',
-  fixed: '固定模組',
+  [ModuleSlot.SLOT_4]:    '特性模組',
+  [ModuleSlot.SLOT_8]:    '8級模組',
+  [ModuleSlot.UNIVERSAL]: '通用模組',
 }
 
 const SLOT_STYLES: Record<string, string> = {
-  '4mod': 'text-accent-orange bg-accent-orange/10 border-accent-orange/30',
-  '8mod': 'text-accent-blue bg-accent-blue/10 border-accent-blue/30',
-  fixed: 'text-accent-green bg-accent-green/10 border-accent-green/30',
+  [ModuleSlot.SLOT_4]:    'text-accent-orange bg-accent-orange/10 border-accent-orange/30',
+  [ModuleSlot.SLOT_8]:    'text-accent-blue bg-accent-blue/10 border-accent-blue/30',
+  [ModuleSlot.UNIVERSAL]: 'text-accent-green bg-accent-green/10 border-accent-green/30',
 }
 
 const PART_LABELS: Record<string, string> = {
-  torso: '軀幹',
-  leftArm: '左臂',
-  rightArm: '右臂',
-  legs: '腿部',
+  [MechPartPosition.TORSO]:     '軀幹',
+  [MechPartPosition.LEFT_ARM]:  '左臂',
+  [MechPartPosition.RIGHT_ARM]: '右臂',
+  [MechPartPosition.LEGS]:      '腿部',
 }
 
 const RARITY_STYLES: Record<string, string> = {
-  SSR: 'text-accent-yellow bg-accent-yellow/10 border-accent-yellow/40',
-  SR: 'text-accent-purple bg-accent-purple/10 border-accent-purple/40',
-  R: 'text-accent-blue bg-accent-blue/10 border-accent-blue/40',
+  [ModuleRarity.S]: 'text-accent-yellow bg-accent-yellow/10 border-accent-yellow/40',
+  [ModuleRarity.A]: 'text-accent-purple bg-accent-purple/10 border-accent-purple/40',
+}
+
+const CATALOG_SLOTS = [ModuleSlot.SLOT_4, ModuleSlot.SLOT_8, ModuleSlot.UNIVERSAL] as const
+
+
+type StatKey = Exclude<keyof ModuleLevel, 'level' | 'description'>
+
+const STAT_LABELS: Array<{ key: StatKey; label: string; color: string; suffix: string; prefix?: string }> = [
+  { key: 'dmg',              label: '傷害',     color: 'text-accent-orange', suffix: '%' },
+  { key: 'crit_rate',        label: '暴擊',     color: 'text-accent-yellow', suffix: '%' },
+  { key: 'critDmg',          label: '爆傷',     color: 'text-accent-red',    suffix: '%' },
+  { key: 'acc_rate',         label: '命中',     color: 'text-accent-blue',   suffix: '%' },
+  { key: 'firepower_rate',   label: '火力',     color: 'text-accent-green',  suffix: '%' },
+  { key: 'armor_rate',       label: '護甲',     color: 'text-accent-cyan',   suffix: '%' },
+  { key: 'output_bonus',     label: '出力',     color: 'text-accent-purple', suffix: '' },
+  { key: 'dodge_rate',       label: '回避',     color: 'text-accent-blue',   suffix: '%' },
+  { key: 'durable_rate',     label: '耐久',     color: 'text-accent-green',  suffix: '%' },
+  { key: 'dmg_resist_rate',  label: '減傷',     color: 'text-accent-cyan',   suffix: '%', prefix: '-' },
+  { key: 'crit_resist_rate', label: '抗暴',     color: 'text-accent-yellow', suffix: '%', prefix: '-' },
+  { key: 'dmg_assault',      label: '突擊傷害', color: 'text-accent-orange', suffix: '%' },
+  { key: 'dmg_melee',        label: '格鬥傷害', color: 'text-accent-orange', suffix: '%' },
+  { key: 'dmg_shooting',     label: '射擊傷害', color: 'text-accent-orange', suffix: '%' },
+  { key: 'dmg_tactical',     label: '戰術傷害', color: 'text-accent-orange', suffix: '%' },
+  { key: 'dmg_blade',        label: '刀傷害',   color: 'text-accent-orange', suffix: '%' },
+  { key: 'dmg_polearm',      label: '槍傷害',   color: 'text-accent-orange', suffix: '%' },
+  { key: 'dmg_missile',      label: '飛彈傷害', color: 'text-accent-orange', suffix: '%' },
+  { key: 'dmg_rocket',       label: '火箭傷害', color: 'text-accent-orange', suffix: '%' },
+  { key: 'dmg_shotgun',      label: '散彈傷害', color: 'text-accent-orange', suffix: '%' },
+  { key: 'dmg_machinegun',   label: '機槍傷害', color: 'text-accent-orange', suffix: '%' },
+  { key: 'dmg_railgun',      label: '軌道傷害', color: 'text-accent-orange', suffix: '%' },
+  { key: 'dmg_sniper',       label: '狙擊傷害', color: 'text-accent-orange', suffix: '%' },
+  { key: 'dmg_counter',      label: '反擊傷害', color: 'text-accent-red',    suffix: '%' },
+  { key: 'dmg_enemy_phase',  label: '敵回傷害', color: 'text-accent-red',    suffix: '%' },
+]
+
+function LevelTooltip({ mod, pinned }: { mod: Module; pinned: boolean }) {
+  const levels = mod.levels ?? []
+  if (levels.length === 0) return null
+
+  const activeStats = STAT_LABELS.filter(({ key }) =>
+    levels.some((lv) => ((lv[key] as number | undefined) ?? 0) > 0)
+  )
+
+  return (
+    <div className="w-72 bg-bg-card border border-border-accent rounded-xl p-4 shadow-2xl">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-bold text-accent-orange">{mod.name}</span>
+        <span className="text-[10px] text-text-dim">各等級效果{pinned ? ' · 📌' : ''}</span>
+      </div>
+      <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+        {levels.map((lv) => (
+          <div key={lv.level} className="bg-bg-dark rounded-lg p-2.5">
+            <div className="flex items-start gap-2">
+              <span className="text-[10px] px-1.5 py-0.5 rounded border text-accent-orange bg-accent-orange/10 border-accent-orange/30 font-bold flex-shrink-0">
+                Lv.{lv.level}
+              </span>
+              {lv.description && (
+                <span className="text-[11px] text-text-secondary leading-tight">{lv.description}</span>
+              )}
+            </div>
+            {activeStats.length > 0 && (
+              <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 pl-1">
+                {activeStats.map(({ key, label, color, suffix, prefix }) => {
+                  const val = (lv[key] as number | undefined) ?? 0
+                  if (!val) return null
+                  return (
+                    <span key={key} className={`text-[11px] ${color}`}>
+                      {label}{prefix ?? '+'}{val}{suffix}
+                    </span>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      {!pinned && (
+        <p className="text-[10px] text-text-dim mt-2 text-center">點擊模組固定此視窗</p>
+      )}
+    </div>
+  )
+}
+
+interface TooltipState {
+  modId: string
+  x: number
+  y: number
 }
 
 export default function ModulesPage() {
-  const [modules, setModules] = useState<Module[]>([])
-  const [mechs, setMechs] = useState<Mech[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [slotFilter, setSlotFilter] = useState('')
-  const [mechFilter, setMechFilter] = useState('')
-  const [rarityFilter, setRarityFilter] = useState('')
+  const { data: modules, loading, error: modulesError } = useModules()
+  const { data: mechNameMap } = useMechNameMap()
 
-  useEffect(() => {
-    Promise.all([
-      fetchData<Module[]>('modules.json'),
-      fetchData<Mech[]>('mechs.json'),
-    ])
-      .then(([mods, ms]) => {
-        setModules(mods)
-        setMechs(ms)
-      })
-      .finally(() => setLoading(false))
-  }, [])
+  const [searchText, setSearchText] = useState('')
+  const [searchByName, setSearchByName] = useState(true)
+  const [searchByDesc, setSearchByDesc] = useState(true)
+  const [slotFilters, setSlotFilters] = useState<Set<string>>(new Set())
+  const [rarityFilter, setRarityFilter] = useState<string | null>(null)
+  const [showBuiltIn, setShowBuiltIn] = useState(false)
 
-  const mechMap = Object.fromEntries(mechs.map((m) => [m.id, m.name]))
-  const boundMechIds = [...new Set(modules.map((m) => m.boundMechId).filter(Boolean))] as string[]
-  const rarities = [...new Set(modules.map((m) => m.rarity))]
+  const [hoverTooltip, setHoverTooltip] = useState<TooltipState | null>(null)
+  const [pinnedTooltip, setPinnedTooltip] = useState<TooltipState | null>(null)
 
-  const getSlotKey = (slot: string) => {
-    if (slot === '4mod' || slot === '8mod' || slot === 'fixed') return slot
-    if (slot.startsWith('fixed_')) return 'fixed'
-    return slot
-  }
+  // Catalog-eligible count (slot exclusion only, ignoring user filters)
+  const catalogCount = modules.filter(
+    (m) => m.slot !== ModuleSlot.BUILT_IN && m.slot !== ModuleSlot.EXCLUSIVE
+  ).length
 
   const filtered = modules.filter((m) => {
-    if (slotFilter && getSlotKey(m.slot) !== slotFilter) return false
-    if (mechFilter && m.boundMechId !== mechFilter) return false
+    if (m.slot === ModuleSlot.EXCLUSIVE) return false
+    if (m.slot === ModuleSlot.BUILT_IN && !showBuiltIn) return false
+    if (slotFilters.size > 0 && !slotFilters.has(m.slot)) return false
     if (rarityFilter && m.rarity !== rarityFilter) return false
-    if (search) {
-      const q = search.toLowerCase()
-      return (
-        m.name.toLowerCase().includes(q) ||
-        m.description.toLowerCase().includes(q) ||
-        (m.boundMechId && mechMap[m.boundMechId]?.toLowerCase().includes(q))
-      )
+    if (searchText.trim()) {
+      const q = searchText.trim().toLowerCase()
+      const matchName = searchByName && m.name.toLowerCase().includes(q)
+      const matchDesc = searchByDesc && (m.description ?? '').toLowerCase().includes(q)
+      if (!matchName && !matchDesc) return false
     }
     return true
   })
+
+  const toggleSlot = (slot: string) => {
+    setSlotFilters((prev) => {
+      const next = new Set(prev)
+      if (next.has(slot)) next.delete(slot)
+      else next.add(slot)
+      return next
+    })
+  }
+
+  const computePos = (cardEl: HTMLDivElement): { x: number; y: number } => {
+    const rect = cardEl.getBoundingClientRect()
+    const tooltipW = 296
+    const x = rect.right + 8 + tooltipW > window.innerWidth ? rect.left - tooltipW - 8 : rect.right + 8
+    const y = Math.max(8, Math.min(rect.top, window.innerHeight - 360))
+    return { x, y }
+  }
+
+  const handleMouseEnter = (modId: string, cardEl: HTMLDivElement) => {
+    if (pinnedTooltip) return
+    const mod = modules.find((m) => m.id === modId)
+    if (!mod?.levels?.length) return
+    setHoverTooltip({ modId, ...computePos(cardEl) })
+  }
+
+  const handleMouseLeave = () => {
+    if (!pinnedTooltip) setHoverTooltip(null)
+  }
+
+  const handleCardClick = (modId: string, cardEl: HTMLDivElement, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const mod = modules.find((m) => m.id === modId)
+    if (!mod?.levels?.length) {
+      setPinnedTooltip(null)
+      return
+    }
+    if (pinnedTooltip?.modId === modId) {
+      setPinnedTooltip(null)
+    } else {
+      setPinnedTooltip({ modId, ...computePos(cardEl) })
+      setHoverTooltip(null)
+    }
+  }
+
+  const handleContainerClick = () => {
+    setPinnedTooltip(null)
+  }
+
+  const activeTooltip = pinnedTooltip ?? hoverTooltip
+  const activeModId = activeTooltip?.modId ?? null
+  const activeMod = activeModId ? modules.find((m) => m.id === activeModId) : null
 
   const filterBtn = (active: boolean) =>
     `px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
@@ -81,71 +208,127 @@ export default function ModulesPage() {
     }`
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
+    <div className="max-w-7xl mx-auto px-4 py-12" onClick={handleContainerClick}>
+
+      {activeMod && activeTooltip && createPortal(
+        <div
+          className="fixed z-50 pointer-events-none"
+          style={{ left: activeTooltip.x, top: activeTooltip.y }}
+        >
+          <LevelTooltip mod={activeMod} pinned={!!pinnedTooltip} />
+        </div>,
+        document.body
+      )}
+
       <div className="mb-8">
         <span className="text-xs text-accent-orange tracking-[3px] uppercase font-[Orbitron,sans-serif]">
           Database
         </span>
         <h1 className="text-3xl font-bold mt-2">模組圖鑑</h1>
         <p className="text-text-secondary mt-2">
-          四格模組、八格模組、固定模組完整列表，含綁定機甲與技能效果。共 {modules.length} 個模組。
+          特性模組、8級模組、通用模組完整列表，含對應機甲與技能效果。
         </p>
       </div>
 
       {/* Filters */}
-      <div className="bg-bg-card border border-border rounded-xl p-4 mb-6 flex flex-col gap-3">
-        <input
-          type="text"
-          placeholder="搜尋模組名稱、效果或綁定機甲..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-bg-dark border border-border rounded-lg px-4 py-2 text-sm text-text-primary placeholder-text-dim outline-none focus:border-border-accent"
-        />
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs text-text-dim mr-1">槽位</span>
-          <button className={filterBtn(!slotFilter)} onClick={() => setSlotFilter('')}>全部</button>
-          <button className={filterBtn(slotFilter === '4mod')} onClick={() => setSlotFilter(slotFilter === '4mod' ? '' : '4mod')}>四格模組</button>
-          <button className={filterBtn(slotFilter === '8mod')} onClick={() => setSlotFilter(slotFilter === '8mod' ? '' : '8mod')}>八格模組</button>
-          <button className={filterBtn(slotFilter === 'fixed')} onClick={() => setSlotFilter(slotFilter === 'fixed' ? '' : 'fixed')}>固定模組</button>
+      <div className="bg-bg-card border border-border rounded-xl p-4 mb-6 flex flex-col gap-3" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            placeholder="搜尋模組..."
+            className="flex-1 bg-bg-dark border border-border rounded-lg px-3 py-1.5 text-sm text-text-primary placeholder:text-text-dim focus:outline-none focus:border-border-accent"
+          />
+          {(['name', 'desc'] as const).map((scope) => {
+            const checked = scope === 'name' ? searchByName : searchByDesc
+            const setter = scope === 'name' ? setSearchByName : setSearchByDesc
+            const label  = scope === 'name' ? '名稱' : '能力'
+            return (
+              <label key={scope} className="flex items-center gap-1.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(e) => setter(e.target.checked)}
+                  className="accent-accent-orange w-3.5 h-3.5"
+                />
+                <span className="text-xs text-text-secondary">{label}</span>
+              </label>
+            )
+          })}
         </div>
         <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs text-text-dim mr-1">稀有度</span>
-          <button className={filterBtn(!rarityFilter)} onClick={() => setRarityFilter('')}>全部</button>
-          {rarities.map((r) => (
-            <button key={r} className={filterBtn(rarityFilter === r)} onClick={() => setRarityFilter(rarityFilter === r ? '' : r)}>{r}</button>
+          <span className="text-xs text-text-dim mr-1">模組類型</span>
+          <button className={filterBtn(slotFilters.size === 0)} onClick={() => setSlotFilters(new Set())}>全部</button>
+          {CATALOG_SLOTS.map((slot) => (
+            <button
+              key={slot}
+              className={filterBtn(slotFilters.has(slot))}
+              onClick={() => toggleSlot(slot)}
+            >
+              {SLOT_LABELS[slot]}
+            </button>
           ))}
         </div>
         <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs text-text-dim mr-1">綁定機甲</span>
-          <button className={filterBtn(!mechFilter)} onClick={() => setMechFilter('')}>全部</button>
-          <select
-            value={mechFilter}
-            onChange={(e) => setMechFilter(e.target.value)}
-            className="bg-bg-dark border border-border rounded-lg px-3 py-1.5 text-xs text-text-secondary outline-none focus:border-border-accent"
-          >
-            <option value="">選擇機甲...</option>
-            {boundMechIds.map((id) => (
-              <option key={id} value={id}>{mechMap[id] || id}</option>
-            ))}
-          </select>
+          <label className="flex items-center gap-1.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={showBuiltIn}
+              onChange={(e) => setShowBuiltIn(e.target.checked)}
+              className="accent-accent-orange w-3.5 h-3.5"
+            />
+            <span className="text-xs text-text-secondary">顯示副模組</span>
+          </label>
+        </div>
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-xs text-text-dim mr-1">稀有度</span>
+          <button className={filterBtn(rarityFilter === null)} onClick={() => setRarityFilter(null)}>全部</button>
+          {([ModuleRarity.S, ModuleRarity.A] as const).map((r) => (
+            <button
+              key={r}
+              className={filterBtn(rarityFilter === r)}
+              onClick={() => setRarityFilter(prev => prev === r ? null : r)}
+            >
+              {r}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Results */}
+      {modulesError && (
+        <div className="bg-accent-red/10 border border-accent-red/30 rounded-xl px-4 py-3 mb-4 text-sm text-accent-red">
+          資料載入失敗：{modulesError.message}
+        </div>
+      )}
+
       {loading ? (
         <div className="text-center py-20 text-text-dim">載入中...</div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-text-dim">找不到符合條件的模組</div>
+        <div className="text-center py-20 text-text-dim">
+          {catalogCount === 0
+            ? modules.length === 0
+              ? 'Firestore 尚無模組資料，請執行 scrape-modules.js 爬蟲後再遷移。'
+              : '所有模組均為副模組（已排除），請執行 scrape-modules.js 更新特性/8級/通用模組。'
+            : '找不到符合條件的模組'}
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map((mod) => {
-            const slotKey = getSlotKey(mod.slot)
-            const slotStyle = SLOT_STYLES[slotKey] || SLOT_STYLES['fixed']
+            const slotStyle = SLOT_STYLES[mod.slot] || SLOT_STYLES[ModuleSlot.UNIVERSAL]
             const rarityStyle = RARITY_STYLES[mod.rarity] || ''
+            const hasLevels = (mod.levels?.length ?? 0) > 0
+            const isPinned = pinnedTooltip?.modId === mod.id
             return (
               <div
                 key={mod.id}
-                className="bg-bg-card border border-border rounded-xl p-4 hover:border-border-accent transition-colors"
+                className={`bg-bg-card border rounded-xl p-4 transition-colors ${
+                  hasLevels ? 'cursor-pointer' : ''
+                } ${isPinned ? 'border-accent-orange' : 'border-border hover:border-border-accent'}`}
+                onMouseEnter={(e) => handleMouseEnter(mod.id, e.currentTarget)}
+                onMouseLeave={handleMouseLeave}
+                onClick={(e) => handleCardClick(mod.id, e.currentTarget, e)}
               >
                 <div className="flex items-start gap-3">
                   {mod.icon && (
@@ -153,6 +336,7 @@ export default function ModulesPage() {
                       src={assetUrl(mod.icon)}
                       alt={mod.name}
                       className="w-12 h-12 rounded-lg object-cover bg-bg-dark border border-border flex-shrink-0"
+                      onError={(e) => { e.currentTarget.style.display = 'none' }}
                     />
                   )}
                   <div className="flex-1 min-w-0">
@@ -162,26 +346,50 @@ export default function ModulesPage() {
                         {mod.rarity}
                       </span>
                       <span className={`text-[10px] px-1.5 py-0.5 rounded border ${slotStyle}`}>
-                        {SLOT_LABELS[slotKey] || '固定模組'}
+                        {SLOT_LABELS[mod.slot] || mod.slot}
                       </span>
+                      {hasLevels && (
+                        <span className="text-[10px] text-text-dim ml-auto">
+                          {isPinned ? '📌' : '◉ 等級效果'}
+                        </span>
+                      )}
                     </div>
                     {mod.boundMechId && (
                       <div className="text-[11px] text-text-dim mb-1">
-                        綁定：<span className="text-accent-cyan">{mechMap[mod.boundMechId] || mod.boundMechId}</span>
-                        {mod.boundPart && (
-                          <span className="ml-2 text-accent-purple">({PART_LABELS[mod.boundPart] || mod.boundPart})</span>
+                        對應機甲：<span className="text-accent-cyan">{mod.boundMechId}</span>
+                        {mod.boundPart && (Array.isArray(mod.boundPart) ? mod.boundPart.length > 0 : true) && (
+                          <span className="ml-2 text-accent-purple">
+                            ({(Array.isArray(mod.boundPart) ? mod.boundPart : [mod.boundPart as string])
+                              .map((p) => PART_LABELS[p] ?? p)
+                              .join('・')})
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {(Array.isArray(mod.source) && mod.source.length > 0) && (
+                      <div className="text-[11px] text-text-dim mb-1">
+                        來源：<span className="text-text-secondary">{mod.source.join('、')}</span>
+                        {Array.isArray(mod.dismantleMechIds) && mod.dismantleMechIds.length > 0 && (
+                          <span className="ml-1 text-accent-cyan">（{mod.dismantleMechIds.map((id) => mechNameMap[id] ?? id).join('・')}）</span>
                         )}
                       </div>
                     )}
                     <p className="text-xs text-text-secondary leading-relaxed whitespace-pre-line">
                       {mod.description}
                     </p>
-                    {(mod.dmg > 0 || mod.crit > 0 || mod.critDmg > 0 || mod.acc > 0) && (
-                      <div className="flex gap-3 mt-2 text-[11px]">
+                    {(mod.dmg > 0 || (mod.crit_rate ?? 0) > 0 || mod.critDmg > 0 || (mod.acc_rate ?? 0) > 0 || (mod.firepower_rate ?? 0) > 0 || (mod.armor_rate ?? 0) > 0 || (mod.output_bonus ?? 0) > 0 || (mod.dodge_rate ?? 0) > 0 || (mod.durable_rate ?? 0) > 0 || (mod.dmg_resist_rate ?? 0) > 0 || (mod.crit_resist_rate ?? 0) > 0) && (
+                      <div className="flex gap-3 mt-2 text-[11px] flex-wrap">
                         {mod.dmg > 0 && <span className="text-accent-orange">傷害+{mod.dmg}%</span>}
-                        {mod.crit > 0 && <span className="text-accent-yellow">暴擊+{mod.crit}%</span>}
+                        {(mod.crit_rate ?? 0) > 0 && <span className="text-accent-yellow">暴擊+{mod.crit_rate}%</span>}
                         {mod.critDmg > 0 && <span className="text-accent-red">爆傷+{mod.critDmg}%</span>}
-                        {mod.acc > 0 && <span className="text-accent-blue">命中+{mod.acc}%</span>}
+                        {(mod.acc_rate ?? 0) > 0 && <span className="text-accent-blue">命中+{mod.acc_rate}%</span>}
+                        {(mod.firepower_rate ?? 0) > 0 && <span className="text-accent-green">火力+{mod.firepower_rate}%</span>}
+                        {(mod.armor_rate ?? 0) > 0 && <span className="text-accent-cyan">護甲+{mod.armor_rate}%</span>}
+                        {(mod.output_bonus ?? 0) > 0 && <span className="text-accent-purple">出力+{mod.output_bonus}</span>}
+                        {(mod.dodge_rate ?? 0) > 0 && <span className="text-accent-blue">回避+{mod.dodge_rate}%</span>}
+                        {(mod.durable_rate ?? 0) > 0 && <span className="text-accent-green">耐久+{mod.durable_rate}%</span>}
+                        {(mod.dmg_resist_rate ?? 0) > 0 && <span className="text-accent-cyan">減傷-{mod.dmg_resist_rate}%</span>}
+                        {(mod.crit_resist_rate ?? 0) > 0 && <span className="text-accent-yellow">抗暴-{mod.crit_resist_rate}%</span>}
                       </div>
                     )}
                   </div>

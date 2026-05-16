@@ -15,6 +15,10 @@ out/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.migration
+
+# Firebase Admin SDK 服務帳號金鑰（絕對不能提交）
+serviceAccountKey.json
 
 # Editor
 .vscode/

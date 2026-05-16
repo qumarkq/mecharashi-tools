@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>globalResearch — 全域科研 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../index.html">技術文件</a>
+    <span>›</span>
+    <span>資料模型</span>
+    <span>›</span>
+    <span class="current">globalResearch</span>
+  </div>
+</nav>
+
+<header class="hero orange">
+  <div class="hero-badge">◆ Data Model</div>
+  <h1>globalResearch<span>全域科研 · GLOBAL RESEARCH</span></h1>
+  <p class="hero-sub">機師科研（依職業）/ 機甲科研（依裝甲）/ 武器科研（依種類）— 玩家自行輸入等級</p>
+  <div class="version-badge">NEW v1.1</div>
+</header>
+
+<main class="container">
+
+<section class="section">
+  <div class="section-label">設計說明</div>
+  <div class="section-title">全域科研系統概覽</div>
+  <div class="section-desc">全域科研因玩家不同而異，網站提供「科研設定」頁讓玩家手動輸入自己各項科研的等級，系統自動計算對應加成。</div>
+
+  <div class="info-block">
+    <strong>📋 玩家輸入機制</strong>
+    登入用戶的科研設定存於 Firestore <code>users/{uid}/profile.globalResearch</code>，下次登入自動帶入。<br>
+    未登入用戶的科研設定暫存於 localStorage。<br>
+    globalResearch Collection 定義的是加成的計算規則（定義表），不是玩家個人資料。
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label">Schema — 機師科研</div>
+  <div class="section-title">pilotResearchByClass（依職業分類）</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>className</td><td>PilotClass (Enum)</td><td>職業名（格鬥家/突擊手/狙擊手/戰術家/守護者/機械師）</td></tr>
+      <tr class="group-header"><td colspan="3">▎固定值加成 flatBonus（滿等級時的數值）</td></tr>
+      <tr><td>&nbsp;├ melee</td><td>number</td><td>格鬥素質 +（如 +2244）</td></tr>
+      <tr><td>&nbsp;├ defense</td><td>number</td><td>防禦素質 +（如 +2244）</td></tr>
+      <tr><td>&nbsp;├ assault</td><td>number</td><td>突擊素質 +（如 +1800）</td></tr>
+      <tr><td>&nbsp;└ …</td><td>number</td><td>其他素質對應加成</td></tr>
+      <tr class="group-header"><td colspan="3">▎百分比加成 percentBonus</td></tr>
+      <tr><td>&nbsp;├ melee</td><td>number</td><td>格鬥素質 × %（如 +20%）</td></tr>
+      <tr><td>&nbsp;└ …</td><td>number</td><td>其他素質對應百分比加成</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label">Schema — 機甲科研</div>
+  <div class="section-title">mechResearchByType（依裝甲類型分類）</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>armorType</td><td>ArmorType (Enum)</td><td>裝甲類型（輕型/中型/重型）</td></tr>
+      <tr class="group-header"><td colspan="3">▎固定值加成 flatBonus（滿等級時）</td></tr>
+      <tr><td>&nbsp;├ torsoHP</td><td>number</td><td>軀幹耐久 +（如 +6029）</td></tr>
+      <tr><td>&nbsp;├ legHP</td><td>number</td><td>腿部耐久 +（如 +4529）</td></tr>
+      <tr><td>&nbsp;├ leftArmHP / rightArmHP</td><td>number</td><td>手臂耐久 +（如 +3035）</td></tr>
+      <tr><td>&nbsp;├ antiCrit</td><td>number</td><td>抗暴 +（如 +2164）</td></tr>
+      <tr><td>&nbsp;├ evasion</td><td>number</td><td>閃避 +（如 +2544）</td></tr>
+      <tr><td>&nbsp;├ accuracy</td><td>number</td><td>命中 +（如 +1698）</td></tr>
+      <tr><td>&nbsp;├ firepower</td><td>number</td><td>火力 +（如 +2944）</td></tr>
+      <tr><td>&nbsp;├ torsoArmor</td><td>number</td><td>軀幹護甲 +（如 +294）</td></tr>
+      <tr><td>&nbsp;└ legArmor</td><td>number</td><td>腿部護甲 +（如 +196）</td></tr>
+      <tr class="group-header"><td colspan="3">▎百分比加成 percentBonus</td></tr>
+      <tr><td>&nbsp;├ torsoHP / legHP / …</td><td>number</td><td>耐久 × %（如 +19%）</td></tr>
+      <tr><td>&nbsp;└ firepower / antiCrit / …</td><td>number</td><td>火力/抗暴等 × %（如 +9%）</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label">Schema — 武器科研</div>
+  <div class="section-title">weaponResearchByType（依武器種類分類）</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>weaponType</td><td>string</td><td>武器種類（刀劍/拳套/重機槍…）</td></tr>
+      <tr class="group-header"><td colspan="3">▎加成 bonus</td></tr>
+      <tr><td>&nbsp;├ attack</td><td>number</td><td>攻擊力 +（如 +462）</td></tr>
+      <tr><td>&nbsp;├ accuracy</td><td>number</td><td>命中 +（如 +1900）</td></tr>
+      <tr><td>&nbsp;└ crit</td><td>number</td><td>暴擊 +（如 +2598）</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label">相關文件</div>
+  <div class="section-title">關聯資料</div>
+  <div class="doc-grid">
+    <a class="doc-item" href="pilotResearch.html">
+      <div class="doc-tag">Collection</div>
+      <h4>🔬 pilotResearch</h4>
+      <p>各機師的個別科研，與全域科研互補</p>
+    </a>
+    <a class="doc-item" href="../../03_頁面規劃/08_科研設定/index.html">
+      <div class="doc-tag">Page</div>
+      <h4>🔬 科研設定頁</h4>
+      <p>玩家輸入科研等級的頁面規劃</p>
+    </a>
+    <a class="doc-item" href="../03_遊戲機制/傷害公式.html">
+      <div class="doc-tag">Mechanic</div>
+      <h4>⚔️ 傷害公式</h4>
+      <p>全域科研的火力加成如何代入傷害計算</p>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 · 資料模型 · globalResearch — <a href="../index.html" style="color:var(--accent-cyan);text-decoration:none;">← 技術文件總覽</a>
+</footer>
+
+</body>
+</html>

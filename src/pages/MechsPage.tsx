@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import type { Mech } from '../types'
-import { fetchData } from '../utils/assets'
+import { useMechs } from '../hooks/useFirestore'
 
 const ARMOR_TYPES = ['輕型', '中甲', '重型']
 
@@ -32,15 +31,8 @@ function StatBar({ label, value, max }: { label: string; value: number; max: num
 }
 
 export default function MechsPage() {
-  const [mechs, setMechs] = useState<Mech[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: mechs, loading } = useMechs()
   const [armorFilter, setArmorFilter] = useState('')
-
-  useEffect(() => {
-    fetchData<Mech[]>('mechs.json')
-      .then(setMechs)
-      .finally(() => setLoading(false))
-  }, [])
 
   const filtered = mechs.filter((m) => !armorFilter || m.armorType === armorFilter)
 

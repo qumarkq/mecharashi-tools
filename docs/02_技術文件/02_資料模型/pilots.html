@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pilots — 機師資料模型 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../index.html">技術文件</a>
+    <span>›</span>
+    <span>資料模型</span>
+    <span>›</span>
+    <span class="current">pilots</span>
+  </div>
+</nav>
+
+<header class="hero cyan">
+  <div class="hero-badge cyan">◆ Data Model</div>
+  <h1>pilots<span>機師資料 · PILOT DATA</span></h1>
+  <p class="hero-sub">六維屬性、AP 系統、技能、天賦、神經驅動、個別科研</p>
+</header>
+
+<main class="container">
+
+<section class="section">
+  <div class="section-label cyan">Schema</div>
+  <div class="section-title">欄位定義</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>id</td><td>string</td><td>唯一識別碼</td></tr>
+      <tr><td>name</td><td>string</td><td>機師顯示名稱</td></tr>
+      <tr><td>rarity</td><td>ItemRarity (Enum)</td><td>稀有度：S / A / B（機師不使用 EX）</td></tr>
+      <tr><td>class</td><td>PilotClass (Enum)</td><td>職業：突擊手 / 狙擊手 / 戰術家 / 格鬥家 / 守護者 / 機械師 / 調構師</td></tr>
+      <tr class="group-header"><td colspan="3">▎六維屬性 stats</td></tr>
+      <tr><td>&nbsp;├ melee</td><td>number</td><td>格鬥</td></tr>
+      <tr><td>&nbsp;├ assault</td><td>number</td><td>突擊</td></tr>
+      <tr><td>&nbsp;├ shooting</td><td>number</td><td>射擊</td></tr>
+      <tr><td>&nbsp;├ tactics</td><td>number</td><td>戰術</td></tr>
+      <tr><td>&nbsp;├ defense</td><td>number</td><td>防禦</td></tr>
+      <tr><td>&nbsp;└ engineering</td><td>number</td><td>工程</td></tr>
+      <tr class="group-header"><td colspan="3">▎AP 系統 ap</td></tr>
+      <tr><td>&nbsp;├ init</td><td>number</td><td>初始 AP</td></tr>
+      <tr><td>&nbsp;├ max</td><td>number</td><td>AP 上限</td></tr>
+      <tr><td>&nbsp;└ recovery</td><td>number</td><td>AP 回覆量</td></tr>
+      <tr><td>license</td><td>LicenseType (Enum)</td><td>駕駛許可：輕型 / 中型 / 重型</td></tr>
+      <tr><td>masterLevel</td><td>string</td><td>駕駛等級</td></tr>
+      <tr><td>attack</td><td>number</td><td>攻擊素質</td></tr>
+      <tr><td>defense</td><td>number</td><td>防禦素質</td></tr>
+      <tr class="group-header"><td colspan="3">▎技能列表 skills[]</td></tr>
+      <tr><td>&nbsp;├ name</td><td>string</td><td>技能名稱</td></tr>
+      <tr><td>&nbsp;├ dmg</td><td>number</td><td>增傷加成 %</td></tr>
+      <tr><td>&nbsp;├ crit</td><td>number</td><td>暴擊率加成</td></tr>
+      <tr><td>&nbsp;├ critDmg</td><td>number</td><td>暴擊傷害加成 %</td></tr>
+      <tr><td>&nbsp;└ acc</td><td>number</td><td>命中率加成</td></tr>
+      <tr class="group-header"><td colspan="3">▎天賦列表 talents[]（結構同 skills[]）</td></tr>
+      <tr><td>&nbsp;├ name</td><td>string</td><td>天賦名稱</td></tr>
+      <tr><td>&nbsp;└ dmg / crit / critDmg / acc</td><td>number</td><td>加成數值</td></tr>
+      <tr class="group-header"><td colspan="3">▎神經驅動 neuralDrive[]（結構同 skills[]）</td></tr>
+      <tr><td>&nbsp;├ name</td><td>string</td><td>神經驅動選項名稱</td></tr>
+      <tr><td>&nbsp;└ dmg / crit / critDmg / acc</td><td>number</td><td>加成數值</td></tr>
+      <tr><td>lore</td><td>string</td><td>角色故事（Markdown 格式）</td></tr>
+      <tr><td>portrait</td><td>string</td><td>立繪圖片路徑 /images/pilots/{id}.png</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label cyan">相關文件</div>
+  <div class="section-title">關聯資料</div>
+  <div class="doc-grid">
+    <a class="doc-item" href="pilotResearch.html">
+      <div class="doc-tag">Collection</div>
+      <h4>🔬 pilotResearch</h4>
+      <p>各機師的個別科研選項，透過 pilotId 與 pilots 關聯</p>
+    </a>
+    <a class="doc-item" href="../01_架構設計/Firestore集合總覽.html">
+      <div class="doc-tag">Overview</div>
+      <h4>🔥 Collections 總覽</h4>
+      <p>查看所有 Collection 對照表</p>
+    </a>
+    <a class="doc-item" href="../../03_頁面規劃/02_機師/index.html">
+      <div class="doc-tag">Page</div>
+      <h4>👤 機師圖鑑 &amp; 詳情頁</h4>
+      <p>此資料用於機師列表頁與詳情頁的 UI 規劃</p>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 · 資料模型 · pilots — <a href="../index.html" style="color:var(--accent-cyan);text-decoration:none;">← 技術文件總覽</a>
+</footer>
+
+</body>
+</html>

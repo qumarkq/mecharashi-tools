@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>skills / buffs — 技能庫與BUFF定義 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../index.html">技術文件</a>
+    <span>›</span>
+    <span>資料模型</span>
+    <span>›</span>
+    <span class="current">skills / buffs</span>
+  </div>
+</nav>
+
+<header class="hero" style="background:radial-gradient(ellipse 80% 50% at 50% 0%, rgba(168,85,247,0.12) 0%, transparent 60%), var(--bg-dark);">
+  <div class="hero-badge purple">◆ NEW v2.0</div>
+  <h1 style="background:linear-gradient(135deg,#fff 0%,var(--accent-purple) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">skills / buffs<span style="-webkit-text-fill-color:var(--text-secondary);">技能庫 &amp; BUFF 定義</span></h1>
+  <p class="hero-sub">可跨實體引用的共用技能模板 + BUFF 定義庫</p>
+  <div class="version-badge" style="background:var(--accent-purple);">NEW v2.0</div>
+</header>
+
+<main class="container">
+
+<section class="section">
+  <div class="section-label purple">設計說明</div>
+  <div class="section-title">skills Collection</div>
+  <div class="section-desc">可跨實體引用的共用技能定義庫。</div>
+
+  <div class="changed-block">
+    <strong>🆕 v2.0 新增：skills Collection</strong>
+    機師的 talents / skills / neuralDrive 仍以嵌入方式存於 pilots 文件中（讀取效率優先）。<br>
+    skills Collection 存放可被多個實體引用的技能模板（如武器/模組共用技能效果）。<br>
+    欄位含 tags[]（分類標籤）、buffIds[]（技能觸發的 BUFF 列表）等。
+  </div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>id</td><td>string</td><td>唯一識別碼（如 "skill_001_增傷"）</td></tr>
+      <tr><td>name</td><td>string</td><td>技能名稱</td></tr>
+      <tr><td>type</td><td>string</td><td>技能類型（被動技能/主動技能）</td></tr>
+      <tr><td>activation</td><td>SkillActivation (Enum)?</td><td>生效方式（武器技能適用）：carry / equip / use</td></tr>
+      <tr><td>description</td><td>string</td><td>效果描述文字</td></tr>
+      <tr><td>dmg / crit / critDmg / acc</td><td>number</td><td>可量化的加成數值</td></tr>
+      <tr><td>tags[]</td><td>string[]</td><td>分類標籤（如 ["增傷", "被動"]）</td></tr>
+      <tr><td>buffIds[]</td><td>string[]</td><td>此技能觸發的 BUFF ID 列表（關聯 buffs Collection）</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label purple">Schema</div>
+  <div class="section-title">buffs Collection</div>
+
+  <div class="changed-block">
+    <strong>🆕 v2.0 新增：buffs Collection（初始版本）</strong>
+    BUFF 定義庫，任何技能、模組、武器均可透過 buffIds[] 陣列引用。<br>
+    初始版本僅含基本描述欄位，後續版本再擴充效果計算欄位。
+  </div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>狀態</th><th>說明</th></tr>
+      <tr><td>id</td><td>string</td><td>✅ v1.0</td><td>唯一識別碼（如 "buff_001_增傷"）</td></tr>
+      <tr><td>name</td><td>string</td><td>✅ v1.0</td><td>BUFF 名稱（如 "護甲強化"）</td></tr>
+      <tr><td>description</td><td>string</td><td>✅ v1.0</td><td>BUFF 效果描述文字</td></tr>
+      <tr><td>icon</td><td>string?</td><td>✅ v1.0</td><td>圖示路徑（可留空）</td></tr>
+      <tr><td>duration</td><td>number?</td><td>🔜 預留</td><td>持續回合數，null = 永久</td></tr>
+      <tr><td>maxStack</td><td>number?</td><td>🔜 預留</td><td>最大疊加層數</td></tr>
+      <tr><td>effects[]</td><td>array?</td><td>🔜 預留</td><td>具體效果列表 — 待設計</td></tr>
+      <tr><td>buffType</td><td>string?</td><td>🔜 預留</td><td>BUFF 類型分類（增益/減益/控制/護盾）— 待枚舉</td></tr>
+    </table>
+  </div>
+
+  <div class="note-block">
+    <strong>⚠️ 後續擴充</strong>
+    v1.0 先建立基本架構（id + name + description + icon），確保技能可以引用 BUFF ID。<br>
+    待遊戲 BUFF 機制研究完整後，再補充 duration / maxStack / effects[] / buffType 等計算欄位。
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label purple">相關文件</div>
+  <div class="section-title">關聯資料</div>
+  <div class="doc-grid">
+    <a class="doc-item" href="weapons.html">
+      <div class="doc-tag">Collection</div>
+      <h4>🔫 weapons</h4>
+      <p>武器 skills[] 中的技能可引用 skills Collection</p>
+    </a>
+    <a class="doc-item" href="modules.html">
+      <div class="doc-tag">Collection</div>
+      <h4>🧩 modules</h4>
+      <p>模組效果描述未來可透過 buffIds[] 連結 BUFF 定義</p>
+    </a>
+    <a class="doc-item" href="../01_架構設計/Firestore集合總覽.html">
+      <div class="doc-tag">Overview</div>
+      <h4>🔥 Collections 總覽</h4>
+      <p>所有 Collection 管理方式對照表</p>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 · 資料模型 · skills / buffs — <a href="../index.html" style="color:var(--accent-cyan);text-decoration:none;">← 技術文件總覽</a>
+</footer>
+
+</body>
+</html>

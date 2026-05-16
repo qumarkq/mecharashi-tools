@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>技術文件總覽 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <span class="current">技術文件</span>
+  </div>
+</nav>
+
+<header class="hero blue">
+  <div class="hero-badge blue">◆ TECHNICAL DOCS</div>
+  <h1>技術文件<span>TECHNICAL DOCUMENTATION</span></h1>
+  <p class="hero-sub">系統架構、資料模型、遊戲機制、Firebase 設計</p>
+</header>
+
+<main class="container">
+
+<section class="section">
+  <div class="section-label blue">01 — Architecture</div>
+  <div class="section-title">架構設計</div>
+  <div class="section-desc">系統整體架構與 Firestore Collections 總覽。</div>
+  <div class="doc-grid">
+    <a class="doc-item" href="01_架構設計/系統架構.html">
+      <div class="doc-tag">Architecture</div>
+      <h4>🏗️ 系統架構</h4>
+      <p>前後端架構、部署方式、技術選型（React / Firebase / GitHub Pages）</p>
+    </a>
+    <a class="doc-item" href="01_架構設計/Firestore集合總覽.html">
+      <div class="doc-tag">Database</div>
+      <h4>🔥 Firestore Collections 總覽</h4>
+      <p>所有 Collection 一覽、型別枚舉化說明、管理方式對照表</p>
+    </a>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label blue">02 — Data Models</div>
+  <div class="section-title">資料模型</div>
+  <div class="section-desc">各 Collection / JSON 資料的欄位定義與說明。</div>
+  <div class="doc-grid">
+    <a class="doc-item" href="02_資料模型/pilots.html">
+      <div class="doc-tag">Collection</div>
+      <h4>👤 pilots — 機師資料</h4>
+      <p>六維屬性、AP、技能、天賦、神經驅動、個別科研</p>
+    </a>
+    <a class="doc-item" href="02_資料模型/mechs.html">
+      <div class="doc-tag">Collection</div>
+      <h4>🤖 mechs — 機甲資料</h4>
+      <p>部件詳細資料（火力/耐久/護甲）、出力/重量、副模組引用</p>
+    </a>
+    <a class="doc-item" href="02_資料模型/weapons.html">
+      <div class="doc-tag">Collection</div>
+      <h4>🔫 weapons — 武器資料</h4>
+      <p>武器屬性、元件插槽、固定/浮動改裝、技能（三種生效方式）</p>
+    </a>
+    <a class="doc-item" href="02_資料模型/backpacks.html">
+      <div class="doc-tag">Collection</div>
+      <h4>🎒 backpacks — 背包資料</h4>
+      <p>背包技能、重量、機甲裝甲類型限制</p>
+    </a>
+    <a class="doc-item" href="02_資料模型/modules.html">
+      <div class="doc-tag">Collection</div>
+      <h4>🧩 modules — 模組資料</h4>
+      <p>4模/8模/通用/副模組，各等級效果、綁定機甲/部位</p>
+    </a>
+    <a class="doc-item" href="02_資料模型/components.html">
+      <div class="doc-tag">Collection</div>
+      <h4>⚡ components — 元件資料</h4>
+      <p>觸元件（觸發條件）+ 應元件（觸發後效果）結構定義</p>
+    </a>
+    <a class="doc-item" href="02_資料模型/pilotResearch.html">
+      <div class="doc-tag">Collection</div>
+      <h4>🔬 pilotResearch — 機師個別科研</h4>
+      <p>機師/機甲/武裝特質三欄位、選項互斥規則</p>
+    </a>
+    <a class="doc-item" href="02_資料模型/globalResearch.html">
+      <div class="doc-tag">Collection</div>
+      <h4>🌐 globalResearch — 全域科研</h4>
+      <p>機師科研（依職業）、機甲科研（依裝甲）、武器科研（依種類）</p>
+    </a>
+    <a class="doc-item" href="02_資料模型/skills_buffs.html">
+      <div class="doc-tag">Collection · NEW v2.0</div>
+      <h4>✨ skills / buffs — 技能庫 &amp; BUFF 定義</h4>
+      <p>可跨實體引用的共用技能模板與 BUFF 定義庫</p>
+    </a>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label blue">03 — Game Mechanics</div>
+  <div class="section-title">遊戲機制</div>
+  <div class="section-desc">傷害計算公式與配裝模擬器操作流程。</div>
+  <div class="doc-grid">
+    <a class="doc-item" href="03_遊戲機制/傷害公式.html">
+      <div class="doc-tag">Formula</div>
+      <h4>⚔️ 傷害公式</h4>
+      <p>核心傷害公式、總攻擊展開、期望值計算、增傷來源匯整</p>
+    </a>
+    <a class="doc-item" href="03_遊戲機制/配裝模擬器流程.html">
+      <div class="doc-tag">Flow</div>
+      <h4>🔧 配裝模擬器流程</h4>
+      <p>Step 1–8 操作流程、自動篩選邏輯、匯出分享圖規格</p>
+    </a>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label blue">04 — Firebase</div>
+  <div class="section-title">Firebase 資料庫設計</div>
+  <div class="section-desc">完整 Firestore Schema、安全規則、複合索引策略。</div>
+  <div class="doc-grid">
+    <a class="doc-item" href="04_Firebase/Firebase資料庫設計文件.html">
+      <div class="doc-tag">Firebase · v1.0</div>
+      <h4>🔥 Firebase 資料庫設計文件</h4>
+      <p>Security Rules、複合索引、Enum 型別定義、遷移腳本說明</p>
+    </a>
+    <a class="doc-item" href="04_Firebase/Firebase設定與資料更新指南.html">
+      <div class="doc-tag">Firebase · Setup</div>
+      <h4>⚙️ Firebase 設定與資料更新指南</h4>
+      <p>環境變數設定、三種資料更新方式、節省 Firestore 讀取配額策略、CI/CD 部署、常見問題排查</p>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 技術文件 — 回到 <a href="../01_規劃書/鋼嵐工具站_規劃書.html" style="color:var(--accent-cyan);text-decoration:none;">專案規劃書</a>
+</footer>
+
+</body>
+</html>
