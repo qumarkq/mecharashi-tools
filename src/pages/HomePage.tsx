@@ -1,49 +1,72 @@
-import { Link } from 'react-router-dom'
-
-const quickLinks = [
-  { to: '/pilots', label: '機師圖鑑', icon: '👤', desc: '查看所有機師資料與六維屬性', color: 'accent-cyan' },
-  { to: '/mechs', label: '機甲圖鑑', icon: '🤖', desc: '瀏覽機甲部件與模組配置', color: 'accent-green' },
-  { to: '/weapons', label: '武器圖鑑', icon: '🔫', desc: '武器技能、元件插槽與改裝', color: 'accent-purple' },
-  { to: '/backpacks', label: '背包圖鑑', icon: '🎒', desc: '背包效果與裝配限制', color: 'accent-pink' },
-  { to: '/simulator', label: '配裝模擬器', icon: '⚔️', desc: '傷害計算與 A/B 對比', color: 'accent-orange' },
-  { to: '/research', label: '科研設定', icon: '🔬', desc: '配置你的全域科研等級', color: 'accent-blue' },
-]
-
 export default function HomePage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative py-20 px-6 text-center border-b border-border">
+      <section className="relative py-16 px-6 text-center border-b border-border">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(255,107,43,0.12)_0%,transparent_60%)]" />
-        <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 border border-accent-orange rounded-full text-xs text-accent-orange tracking-[3px] uppercase mb-8 bg-accent-orange/5">
+        <div className="relative z-10 flex flex-col items-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 border border-accent-orange rounded-full text-xs text-accent-orange tracking-[3px] uppercase mb-6 bg-accent-orange/5">
             ◆ COMMUNITY TOOLKIT
           </div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-wider mb-4 bg-gradient-to-br from-white to-accent-orange bg-clip-text text-transparent font-[Orbitron,sans-serif]">
-            鋼嵐工具站
+          <h1 className="text-4xl md:text-6xl font-black tracking-wider bg-gradient-to-br from-white to-accent-orange bg-clip-text text-transparent font-[Orbitron,sans-serif]">
+            獾迎！
           </h1>
-          <p className="text-text-secondary text-lg max-w-xl mx-auto">
-            傷害模擬器 · 配裝計算器 · 角色資料庫 · 攻略百科
+          <img
+            src={`${import.meta.env.BASE_URL}images/cat_no_bg.png`}
+            alt="吉祥物"
+            className="w-52 md:w-64 object-contain pointer-events-none"
+          />
+          <p className="text-text-secondary text-lg whitespace-nowrap mx-auto mt-6">
+            傷害模擬器(沒做完) · 配裝計算器(沒做完) · 角色資料庫 · 模組資料庫 · 攻略百科(等你加入)
           </p>
         </div>
       </section>
 
-      {/* Quick Links */}
-      <section className="max-w-6xl mx-auto px-4 py-16">
-        <h2 className="text-2xl font-bold mb-8">快速入口</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {quickLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className="group block bg-bg-card border border-border rounded-xl p-6 no-underline transition-all hover:bg-bg-card-hover hover:border-border-accent hover:-translate-y-0.5"
-            >
-              <div className="text-3xl mb-3">{link.icon}</div>
-              <h3 className="text-base font-bold text-text-primary mb-1">{link.label}</h3>
-              <p className="text-sm text-text-dim">{link.desc}</p>
-            </Link>
-          ))}
+      {/* Welcome Section */}
+      <section className="max-w-xl mx-auto px-4 py-16 flex flex-col items-center gap-10">
+
+        {/* Welcome card */}
+        <div className="relative w-full group">
+          {/* Ambient glow */}
+          <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-accent-orange/25 via-accent-purple/15 to-accent-orange/25 blur-xl opacity-50 group-hover:opacity-80 transition-opacity duration-700" />
+          <div className="relative bg-bg-card border border-border-accent rounded-2xl overflow-hidden">
+            {/* Top accent bar */}
+            <div className="h-0.5 bg-gradient-to-r from-transparent via-accent-orange to-transparent" />
+            <div className="px-10 py-10 text-center">
+              <p className="text-2xl md:text-3xl font-bold text-text-primary leading-relaxed mb-5">
+                你的到來真是讓人獾天喜地！
+              </p>
+              <p className="text-text-secondary text-base leading-loose">
+                因為是免費的，所以關於使用者的提議<br />
+                我們都會仔細聆聽...吧？
+              </p>
+              {/* Divider dots */}
+              <div className="mt-8 flex items-center justify-center gap-2">
+                <div className="h-px w-20 bg-gradient-to-r from-transparent to-border-accent" />
+                <div className="w-1.5 h-1.5 rounded-full bg-accent-orange" />
+                <div className="h-px w-20 bg-gradient-to-l from-transparent to-border-accent" />
+              </div>
+            </div>
+            {/* Bottom accent bar */}
+            <div className="h-0.5 bg-gradient-to-r from-transparent via-accent-orange to-transparent" />
+          </div>
         </div>
+
+        {/* Sticker badge */}
+        <div
+          className="select-none shadow-2xl"
+          style={{ transform: 'rotate(-1.5deg)' }}
+        >
+          <div className="rounded-lg overflow-hidden border-2 border-gray-600 w-52 ring-4 ring-gray-900">
+            <div className="bg-[#1a1a1a] text-white text-center text-xl font-black py-4 tracking-[0.4em]">
+              意見接受
+            </div>
+            <div className="bg-yellow-400 text-gray-900 text-center text-xl font-black py-4 tracking-[0.4em]">
+              態度依舊
+            </div>
+          </div>
+        </div>
+
       </section>
     </div>
   )
