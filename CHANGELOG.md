@@ -4,7 +4,11 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [Unreleased] - 2026-05-14
+## [Unreleased] - 2026-05-16
+
+### ⚠ 重大變更
+
+- 資料層遷移至 Firestore，整合 Firebase 認證 (`eac6e87`)
 
 ### ✨ 新功能
 
