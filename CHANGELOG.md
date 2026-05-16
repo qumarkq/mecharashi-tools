@@ -19,6 +19,7 @@
 
 ### 🐛 修復
 
+- **scripts**: 修正爬蟲腳本模組 schema 與文件規範不符 (`0cad3a9`)
 - **page**: 機甲屬性火力與剩餘出力改從部件累加計算 (`958991d`)
 - **scraper**: 修正 CHANGELOG 自動 commit 過濾 regex 支援中文訊息 (`f0145d0`)
 
