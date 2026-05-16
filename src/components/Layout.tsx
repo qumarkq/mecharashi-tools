@@ -1,6 +1,10 @@
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+
+type FontSize = 'sm' | 'md' | 'lg'
+const FONT_SIZE_MAP: Record<FontSize, string> = { sm: '14px', md: '16px', lg: '18px' }
+const FONT_SIZE_LABELS: Record<FontSize, string> = { sm: '小', md: '中', lg: '大' }
 
 const navItems = [
   { to: '/', label: '首頁', icon: '🏠' },
@@ -17,8 +21,16 @@ const navItems = [
 
 export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [fontSize, setFontSize] = useState<FontSize>(
+    () => (localStorage.getItem('fontSize') as FontSize) || 'md'
+  )
   const { user, userProfile, loading, signOut, openAuthModal } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    document.documentElement.style.fontSize = FONT_SIZE_MAP[fontSize]
+    localStorage.setItem('fontSize', fontSize)
+  }, [fontSize])
 
   const handleSignOut = async () => {
     await signOut()
@@ -60,6 +72,22 @@ export default function Layout() {
 
           {/* User area */}
           <div className="flex items-center gap-2 shrink-0">
+            {/* Font size toggle */}
+            <div className="flex items-center bg-bg-card border border-border rounded-lg overflow-hidden">
+              {(['sm', 'md', 'lg'] as const).map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setFontSize(size)}
+                  className={`px-2 py-1 text-xs transition-colors cursor-pointer ${
+                    fontSize === size
+                      ? 'bg-accent-orange/20 text-accent-orange'
+                      : 'text-text-dim hover:text-text-secondary'
+                  }`}
+                >
+                  {FONT_SIZE_LABELS[size]}
+                </button>
+              ))}
+            </div>
             {!loading && (
               user ? (
                 <div className="flex items-center gap-2">

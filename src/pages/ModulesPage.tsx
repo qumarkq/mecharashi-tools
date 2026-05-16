@@ -62,6 +62,14 @@ const STAT_LABELS: Array<{ key: StatKey; label: string; color: string; suffix: s
   { key: 'dmg_enemy_phase',  label: '敵回傷害', color: 'text-accent-red',    suffix: '%' },
 ]
 
+function highlightNumbers(text: string): React.ReactNode[] {
+  return text.split(/(\d+(?:\.\d+)?%?|%)/).map((part, i) =>
+    i % 2 === 1
+      ? <span key={i} className="text-accent-red font-bold">{part}</span>
+      : part
+  )
+}
+
 function LevelTooltip({ mod, pinned }: { mod: Module; pinned: boolean }) {
   const levels = mod.levels ?? []
   if (levels.length === 0) return null
@@ -84,7 +92,7 @@ function LevelTooltip({ mod, pinned }: { mod: Module; pinned: boolean }) {
                 Lv.{lv.level}
               </span>
               {lv.description && (
-                <span className="text-[11px] text-text-secondary leading-tight">{lv.description}</span>
+                <span className="text-[11px] text-text-secondary leading-tight">{highlightNumbers(lv.description)}</span>
               )}
             </div>
             {activeStats.length > 0 && (
@@ -375,7 +383,7 @@ export default function ModulesPage() {
                       </div>
                     )}
                     <p className="text-xs text-text-secondary leading-relaxed whitespace-pre-line">
-                      {mod.description}
+                      {highlightNumbers(mod.description ?? '')}
                     </p>
                     {(mod.dmg > 0 || (mod.crit_rate ?? 0) > 0 || mod.critDmg > 0 || (mod.acc_rate ?? 0) > 0 || (mod.firepower_rate ?? 0) > 0 || (mod.armor_rate ?? 0) > 0 || (mod.output_bonus ?? 0) > 0 || (mod.dodge_rate ?? 0) > 0 || (mod.durable_rate ?? 0) > 0 || (mod.dmg_resist_rate ?? 0) > 0 || (mod.crit_resist_rate ?? 0) > 0) && (
                       <div className="flex gap-3 mt-2 text-[11px] flex-wrap">
