@@ -31,6 +31,7 @@
 
 ### 🔧 維護
 
+- **layout**: 更新頁尾免責聲明文字 (`2a6abe7`)
 - 更新 .gitignore 並修正 pre-push hook CI 跳過問題 (`8dcddc6`)
 
 ---
