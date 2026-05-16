@@ -21,8 +21,9 @@ if [ -n "$(git status --porcelain CHANGELOG.md)" ]; then
   git add CHANGELOG.md
 
   if [ -n "$PUSHED_COMMITS" ]; then
+    FIRST_COMMIT=$(echo "$PUSHED_COMMITS" | head -1)
     COMMIT_LIST=$(echo "$PUSHED_COMMITS" | sed 's/^/- /')
-    git commit -m "chore: 自動更新 CHANGELOG.md" -m "包含：
+    git commit -m "chore: 自動更新 CHANGELOG.md — $FIRST_COMMIT" -m "包含：
 $COMMIT_LIST"
   else
     git commit -m "chore: 自動更新 CHANGELOG.md"
