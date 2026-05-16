@@ -20,6 +20,10 @@ out/
 # Firebase Admin SDK 服務帳號金鑰（絕對不能提交）
 serviceAccountKey.json
 
+# Firebase Emulator 匯出的測試使用者資料（含個人資訊）
+-
+*.csv
+
 # Editor
 .vscode/
 .idea/

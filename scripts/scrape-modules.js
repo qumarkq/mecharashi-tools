@@ -440,7 +440,7 @@ async function scrapeWikiModules(existingMap, downloadedIcons) {
       'dmg_blade','dmg_polearm','dmg_missile','dmg_rocket',
       'dmg_shotgun','dmg_machinegun','dmg_heavy_machinegun',
       'dmg_railgun','dmg_funnel','dmg_sniper_light','dmg_sniper',
-      'dmg_fist','dmg_pile','dmg_chainsaw',
+      'dmg_fist','dmg_pile','dmg_chainsaw','dmg_flamethrower',
       'dmg_counter','dmg_enemy_phase',
     ];
     for (const f of topWeaponFields) {
