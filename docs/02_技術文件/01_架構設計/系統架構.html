@@ -123,6 +123,7 @@
       <div class="card-icon">🚀</div>
       <h3>GitHub Pages</h3>
       <p>前端靜態資源部署至 GitHub Pages。推送 main 分支自動觸發 GitHub Actions 建置並部署。</p>
+      <p style="margin-top:0.75rem;font-size:0.85em;opacity:0.85;"><strong>SPA 路由支援：</strong>由於 GitHub Pages 是靜態伺服器，直接訪問子路徑（如 <code>/modules</code>）會 404。解法：<code>public/404.html</code> 將路徑編碼至 query string 後跳轉回根目錄；<code>index.html</code> 在 React 載入前以 <code>history.replaceState</code> 還原正確路徑，使 React Router (<code>BrowserRouter</code>) 正常運作。</p>
     </div>
     <div class="card orange">
       <div class="card-icon">🔥</div>
