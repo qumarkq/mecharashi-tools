@@ -173,7 +173,7 @@ export default function Layout() {
       {/* Footer */}
       <footer className="border-t border-border py-8 text-center text-text-dim text-sm">
         <p>鋼嵐工具站 — Mecharashi Community Toolkit</p>
-        <p className="mt-1">本站為玩家社群工具，與官方無關</p>
+        <p className="mt-1">本站是氣吉敗壞的豹吉自己摸出來的，與官方無關，但99%圖片資源都來源於官方WIKI</p>
         <div className="mt-4 flex items-center justify-center gap-4">
           <NavLink
             to="/profile"
