@@ -22,6 +22,7 @@
 
 ### 🐛 修復
 
+- **mech**: module4Id/module8Id 改為選填；修正部件卡佈局及左右臂順序 (`5399367`)
 - **deploy**: 修正 GitHub Pages SPA 直連子路徑 404 問題 (`9ac987c`)
 - **scripts**: 修正爬蟲腳本模組 schema 與文件規範不符 (`0cad3a9`)
 - **page**: 機甲屬性火力與剩餘出力改從部件累加計算 (`958991d`)
