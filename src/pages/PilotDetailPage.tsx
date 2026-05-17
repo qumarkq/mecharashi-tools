@@ -2,6 +2,7 @@ import { useState, useRef, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, Link } from 'react-router-dom'
 import type { PilotStats, NeuralDrive } from '../types'
+import { formatWeaponReq } from '../types'
 type NdLevel = NeuralDrive['levels'][number]
 import { assetUrl } from '../utils/assets'
 import { usePilot, usePilotExclusiveWeapon } from '../hooks/useFirestore'
@@ -604,7 +605,7 @@ export default function PilotDetailPage() {
                       )}
                       {sk.weapon && (
                         <span className="text-[10px] text-text-dim bg-bg-card border border-border px-2 py-0.5 rounded">
-                          {sk.weapon}
+                          {formatWeaponReq(sk.weapon)}
                         </span>
                       )}
                     </div>

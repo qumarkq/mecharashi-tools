@@ -1,5 +1,34 @@
 // ─── 技能 / Buff 共用型別（PLAN-001）────────────────────────────────────────
 
+/**
+ * 武器技能的武器需求。
+ * logic='or'  → categories 中任一種武器即可觸發
+ * logic='and' → 必須同時持有 categories 中所有武器（通常為雙持同種）
+ * logic='dual'→ 雙持：leftHand / rightHand 各自指定武器種類（null = 任意）
+ */
+export interface WeaponRequirement {
+  logic: 'or' | 'and' | 'dual'
+  /** logic='or'/'and' 時：武器種類列表 */
+  categories?: string[]
+  /** logic='dual' 時：左手武器種類；null 表示任意 */
+  leftHand?: string | null
+  /** logic='dual' 時：右手武器種類；null 表示任意 */
+  rightHand?: string | null
+}
+
+/** 將 WeaponRequirement 格式化為顯示用字串（向後相容 string 型別） */
+export function formatWeaponReq(weapon: WeaponRequirement | string | undefined): string {
+  if (!weapon) return ''
+  if (typeof weapon === 'string') return weapon
+  if (weapon.logic === 'dual') {
+    const l = weapon.leftHand ?? '任意'
+    const r = weapon.rightHand ?? '任意'
+    return `雙持 左:${l} 右:${r}`
+  }
+  const sep = weapon.logic === 'and' ? ' + ' : ' / '
+  return (weapon.categories ?? []).join(sep)
+}
+
 /** 觸發條件（顯示給玩家的說明標籤，計算器不自動判斷） */
 export interface SkillCondition {
   trigger:         string
@@ -54,8 +83,8 @@ export interface PilotSkill {
   ap?: string
   /** 冷卻回合數；指令技能（type=指令技能）才有 */
   cd?: string
-  /** 限定武器類別；武器技能（type=武器技能）才有 */
-  weapon?: string
+  /** 限定武器需求；武器技能（type=武器技能）才有 */
+  weapon?: WeaponRequirement | string
   description: string
   icon: string
   iconLocal: string

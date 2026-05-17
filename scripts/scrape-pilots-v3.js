@@ -268,6 +268,40 @@ const DRIVE_MAP = {
 };
 
 // ════════════════════════════════════════════════════════════
+// 武器需求解析（WeaponRequirement）
+// ════════════════════════════════════════════════════════════
+/**
+ * 將 API 的 matchingWeaponType 字串解析為 WeaponRequirement 物件。
+ *
+ * 格式規則（根據實際 API 資料調整）：
+ *   "刀劍+拳套"  → dual  { leftHand: '刀劍', rightHand: '拳套' }
+ *   "A+B+C"      → and   { categories: ['A','B','C'] }
+ *   "機槍/重機槍" → or    { categories: ['機槍','重機槍'] }
+ *   "狙擊步槍"   → or    { categories: ['狙擊步槍'] }
+ *   ""  / null   → undefined（技能無武器限制）
+ */
+function parseWeaponRequirement(raw) {
+  const text = s2t(raw || '').trim();
+  if (!text) return undefined;
+
+  // 雙持特定組合（左+右）或 AND 邏輯
+  if (text.includes('+')) {
+    const parts = text.split('+').map(s => s.trim()).filter(Boolean);
+    if (parts.length === 2) return { logic: 'dual', leftHand: parts[0], rightHand: parts[1] };
+    return { logic: 'and', categories: parts };
+  }
+
+  // OR 邏輯（任一武器即可）
+  if (/[\/、，,]/.test(text)) {
+    const cats = text.split(/[\/、，,]/).map(s => s.trim()).filter(Boolean);
+    return { logic: 'or', categories: cats };
+  }
+
+  // 單一武器
+  return { logic: 'or', categories: [text] };
+}
+
+// ════════════════════════════════════════════════════════════
 // 組裝機師 JSON
 // ════════════════════════════════════════════════════════════
 function buildPilotJson(detail, index) {
@@ -372,7 +406,7 @@ function buildPilotJson(detail, index) {
           type:        unit.skill.type || '',
           ap:          unit.skill.Ap || '',
           cd:          unit.skill.CD || '',
-          weapon:      s2t(unit.skill.matchingWeaponType || ''),
+          weapon:      parseWeaponRequirement(unit.skill.matchingWeaponType),
           description: s2t(cleanRichText(unit.skill.SpecificEffects || unit.skill.describe || '')),
           icon:        unit.skill.SkillIcon || '',
           iconLocal:   unit.skill.SkillIcon ? `/images/skills/${unit.skill.SkillIcon}.png` : '',
@@ -401,7 +435,7 @@ function buildPilotJson(detail, index) {
       unitType:    u.unitType,
       ap:          u.skill.ap || '',
       cd:          u.skill.cd || '',
-      weapon:      u.skill.weapon || '',
+      weapon:      u.skill.weapon,
       description: u.skill.description,
       icon:        u.skill.icon,
       iconLocal:   u.skill.iconLocal,

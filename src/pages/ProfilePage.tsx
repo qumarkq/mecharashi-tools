@@ -51,7 +51,7 @@ export default function ProfilePage() {
           <div className="text-5xl mb-4">🔐</div>
           <h2 className="text-xl font-bold mb-2">請先登入</h2>
           <p className="text-text-dim text-sm mb-6">
-            登入後可儲存配裝紀錄、同步科研設定，以及管理個人資料。
+            登入後可儲存配裝紀錄，以及管理個人資料。
           </p>
           <button
             onClick={openAuthModal}
@@ -85,12 +85,6 @@ export default function ProfilePage() {
           <div className="text-sm text-text-dim truncate">{user.email}</div>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
-          <Link
-            to="/research"
-            className="px-4 py-2 text-sm bg-accent-blue/10 text-accent-blue border border-accent-blue/30 rounded-lg hover:bg-accent-blue/20 transition-colors no-underline text-center"
-          >
-            🔬 科研設定
-          </Link>
           <button
             onClick={signOut}
             className="px-4 py-2 text-sm bg-bg-dark text-text-dim border border-border rounded-lg hover:text-text-primary hover:border-border-accent transition-colors cursor-pointer"

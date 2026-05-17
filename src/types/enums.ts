@@ -107,6 +107,7 @@ export type SkillActivation = typeof SkillActivation[keyof typeof SkillActivatio
 export const MechRestriction = {
   NONE:       'none',
   LIGHT_ONLY: 'light',
+  MEDIUM_ONLY:'medium',
   HEAVY_ONLY: 'heavy',
 } as const;
 export type MechRestriction = typeof MechRestriction[keyof typeof MechRestriction];
