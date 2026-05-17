@@ -4,7 +4,7 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [Unreleased] - 2026-05-16
+## [Unreleased] - 2026-05-17
 
 ### ⚠ 重大變更
 
@@ -12,6 +12,7 @@
 
 ### ✨ 新功能
 
+- **pilot/mech**: 機師/機甲詳情頁改版；新增專屬模組/武器、模組等級 Tooltip、技能 Buff 型別系統 (`7064fc4`)
 - **layout**: 新增全域字體大小切換（小/中/大），以 localStorage 持久化；模組描述與等級彈窗數字 % 紅色標示 (`65813ae`)
 - **home**: 改版首頁為吉祥物歡迎頁，移除快速入口 (`fdc7614`)
 - **page**: 詳情頁新增剩餘出力顯示、重構部件卡片佈局 (`75a9471`)
