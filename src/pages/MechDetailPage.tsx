@@ -196,30 +196,30 @@ function ModuleGroupLabel({ label, accent }: { label: string; accent: string }) 
 
 function PartCard({ part, name }: { part: MechPart; name: string }) {
   return (
-    <div className="bg-bg-dark border border-border rounded-xl p-3 flex flex-col h-full">
-      <div className="flex items-center gap-2 mb-2">
-        {part.icon && (
-          <img
-            src={assetUrl(part.icon)}
-            alt={name}
-            className="w-10 h-10 rounded-lg bg-bg-card border border-border object-contain flex-shrink-0"
-            onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
-          />
-        )}
-        <div>
+    <div className="bg-bg-dark border border-border rounded-xl p-3 flex flex-row gap-3 h-full">
+      {part.icon && (
+        <img
+          src={assetUrl(part.icon)}
+          alt={name}
+          className="w-10 h-10 rounded-lg bg-bg-card border border-border object-contain flex-shrink-0 self-start mt-0.5"
+          onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+        />
+      )}
+      <div className="flex-1 min-w-0 flex flex-col">
+        <div className="mb-1.5">
           <p className="font-bold text-sm text-text-primary leading-tight">{name}</p>
           <p className="text-[10px] text-text-dim leading-tight">{part.interface}</p>
         </div>
-      </div>
-      <div className="flex-1 divide-y divide-border">
-        {PART_STAT_KEYS.filter(({ key }) => part[key] != null).map(({ key, label }) => (
-          <div key={key} className="flex justify-between items-center py-1">
-            <span className="text-[11px] text-text-dim">{label}</span>
-            <span className="text-[11px] text-text-primary font-medium font-[JetBrains_Mono,monospace]">
-              {(part[key] as number).toLocaleString()}
-            </span>
-          </div>
-        ))}
+        <div className="flex-1 divide-y divide-border">
+          {PART_STAT_KEYS.filter(({ key }) => part[key] != null).map(({ key, label }) => (
+            <div key={key} className="flex justify-between items-center py-1">
+              <span className="text-[11px] text-text-dim">{label}</span>
+              <span className="text-[11px] text-text-primary font-medium font-[JetBrains_Mono,monospace]">
+                {(part[key] as number).toLocaleString()}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -409,7 +409,7 @@ export default function MechDetailPage() {
             <div />
             {torso ? <PartCard part={torso} name="軀幹" /> : <div />}
             <div />
-            {leftArm ? <PartCard part={leftArm} name="左臂" /> : <div />}
+            {rightArm ? <PartCard part={rightArm} name="右臂" /> : <div />}
             <div className="bg-bg-card border border-border rounded-xl flex items-center justify-center min-h-[200px]">
               {mech.portrait && (
                 <img
@@ -420,7 +420,7 @@ export default function MechDetailPage() {
                 />
               )}
             </div>
-            {rightArm ? <PartCard part={rightArm} name="右臂" /> : <div />}
+            {leftArm ? <PartCard part={leftArm} name="左臂" /> : <div />}
             <div />
             {legs ? <PartCard part={legs} name="腿部" /> : <div />}
             <div />

@@ -289,10 +289,10 @@ export interface Mech {
     rightArm: MechPart
     legs: MechPart
   }
-  /** → modules.json 四格模組 ID */
-  module4Id: string
-  /** → modules.json 八格模組 ID */
-  module8Id: string
+  /** → modules.json 四格模組 ID；無特性模組的機甲可省略 */
+  module4Id?: string
+  /** → modules.json 八格模組 ID；無8級模組的機甲可省略 */
+  module8Id?: string
   /** → modules.json 固定模組 ID 列表（多數機甲1個，特殊機甲可有多個） */
   moduleFixedIds: string[]
   portrait?: string

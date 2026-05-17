@@ -71,8 +71,8 @@
       <tr><td>&nbsp;├ antiRiot</td><td>number?</td><td>抗暴（僅軀幹有）</td></tr>
       <tr><td>&nbsp;└ icon</td><td>string?</td><td>部件圖示路徑 /images/mechs/{機甲名}/{position}.png</td></tr>
       <tr class="group-header"><td colspan="3">▎副模組引用（指向 modules Collection）</td></tr>
-      <tr><td>module4Id</td><td>string</td><td>副模組 ID（4模組槽位）→ modules Collection</td></tr>
-      <tr><td>module8Id</td><td>string</td><td>副模組 ID（8模組槽位）→ modules Collection</td></tr>
+      <tr><td>module4Id</td><td>string?</td><td>特性模組 ID（4模組槽位）→ modules Collection；無特性模組的機甲可省略</td></tr>
+      <tr><td>module8Id</td><td>string?</td><td>8級模組 ID（8模組槽位）→ modules Collection；無8級模組的機甲可省略</td></tr>
       <tr><td>moduleFixedIds</td><td>string[]</td><td>固定副模組 ID 列表（可多個）→ modules Collection</td></tr>
       <tr class="group-header"><td colspan="3">▎圖片路徑</td></tr>
       <tr><td>portrait</td><td>string</td><td>完整立繪 /images/mechs/{name}/portrait.png</td></tr>

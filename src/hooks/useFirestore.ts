@@ -126,14 +126,20 @@ export function useMechWithModules(id: string | undefined): HookResult<MechWithM
       .then(([mech, modules]) => {
         if (!mech) { setData(null); return }
         const find = (mid: string) => modules.find((m) => m.id === mid) ?? null
+        const exclusiveMods = modules.filter(
+          (m) => m.boundMechId === mech.id && m.slot === ModuleSlot.EXCLUSIVE
+        )
+        const exclusiveIds = new Set(exclusiveMods.map((m) => m.id))
+        const mod4Candidate = mech.module4Id ? find(mech.module4Id) : null
+        const mod8Candidate = mech.module8Id ? find(mech.module8Id) : null
         setData({
           mech,
-          mod4:          find(mech.module4Id),
-          mod8:          find(mech.module8Id),
-          fixedMods:     (mech.moduleFixedIds ?? []).map(find).filter((m): m is Module => m !== null),
-          exclusiveMods: modules.filter(
-            (m) => m.boundMechId === mech.id && m.slot === ModuleSlot.EXCLUSIVE
-          ),
+          mod4: mod4Candidate?.slot === ModuleSlot.SLOT_4 ? mod4Candidate : null,
+          mod8: mod8Candidate?.slot === ModuleSlot.SLOT_8 ? mod8Candidate : null,
+          fixedMods: (mech.moduleFixedIds ?? [])
+            .map(find)
+            .filter((m): m is Module => m !== null && m.slot === ModuleSlot.BUILT_IN && !exclusiveIds.has(m.id)),
+          exclusiveMods,
         })
       })
       .catch((e: unknown) => setError(e instanceof Error ? e : new Error(String(e))))

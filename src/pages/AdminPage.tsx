@@ -1259,7 +1259,7 @@ function MechEditPanel({
           <Field label="四格模組 (4mod)">
             <select
               value={form.module4Id ?? ''}
-              onChange={(e) => setForm((f) => ({ ...f, module4Id: e.target.value }))}
+              onChange={(e) => setForm((f) => ({ ...f, module4Id: e.target.value || undefined }))}
               className="input-field"
             >
               <option value="">（未設定）</option>
@@ -1277,7 +1277,7 @@ function MechEditPanel({
           <Field label="八格模組 (8mod)">
             <select
               value={form.module8Id ?? ''}
-              onChange={(e) => setForm((f) => ({ ...f, module8Id: e.target.value }))}
+              onChange={(e) => setForm((f) => ({ ...f, module8Id: e.target.value || undefined }))}
               className="input-field"
             >
               <option value="">（未設定）</option>
