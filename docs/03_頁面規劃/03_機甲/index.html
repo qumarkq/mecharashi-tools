@@ -44,7 +44,20 @@
   </div>
 
   <div class="sub-h">卡片內容</div>
-  <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">機甲半身圖、機甲名稱、裝甲類型標籤、稀有度、總火力/出力/重量簡覽。</p>
+  <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">機甲立繪（頂部圖片區）、裝甲類型標籤（疊加於圖片左上角）、機甲名稱、出力/重量簡覽、火力/閃避/移動力長條圖、各部件耐久數值。</p>
+
+  <div class="sub-h">立繪圖片來源優先序</div>
+  <div class="tech-row">
+    <span class="tech-tag primary">Firestore mech.portrait 欄位</span>
+    <span class="tech-tag secondary">Fallback：/images/mechs/{機甲名}.png</span>
+    <span class="tech-tag">載入失敗則隱藏圖片區</span>
+  </div>
+
+  <div class="sub-h">卡片互動</div>
+  <div class="tech-row">
+    <span class="tech-tag">Hover 立繪輕微放大（scale-105）</span>
+    <span class="tech-tag">圖片底部漸層融合卡片背景</span>
+  </div>
 </section>
 
 <section class="section" id="detail">

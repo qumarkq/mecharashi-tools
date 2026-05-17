@@ -49,23 +49,42 @@
       <tr class="group-header"><td colspan="3">▎AP 系統 ap</td></tr>
       <tr><td>&nbsp;├ init</td><td>number</td><td>初始 AP</td></tr>
       <tr><td>&nbsp;├ max</td><td>number</td><td>AP 上限</td></tr>
-      <tr><td>&nbsp;└ recovery</td><td>number</td><td>AP 回覆量</td></tr>
+      <tr><td>&nbsp;└ recovery</td><td>number</td><td>AP 回復量</td></tr>
       <tr><td>license</td><td>LicenseType (Enum)</td><td>駕駛許可：輕型 / 中型 / 重型</td></tr>
       <tr><td>masterLevel</td><td>string</td><td>駕駛等級</td></tr>
       <tr><td>attack</td><td>number</td><td>攻擊素質</td></tr>
       <tr><td>defense</td><td>number</td><td>防禦素質</td></tr>
-      <tr class="group-header"><td colspan="3">▎技能列表 skills[]</td></tr>
+      <tr class="group-header"><td colspan="3">▎技能列表 skills[] — PilotSkill（PLAN-001）</td></tr>
+      <tr><td colspan="3" style="font-size:12px;color:var(--text-dim);padding:4px 14px;">涵蓋仿生電腦各核心單元解鎖的所有技能：職業技能（職業單元）、主動/指令/必殺/被動/武器技能（核心單元）</td></tr>
       <tr><td>&nbsp;├ name</td><td>string</td><td>技能名稱</td></tr>
-      <tr><td>&nbsp;├ dmg</td><td>number</td><td>增傷加成 %</td></tr>
-      <tr><td>&nbsp;├ crit</td><td>number</td><td>暴擊率加成</td></tr>
-      <tr><td>&nbsp;├ critDmg</td><td>number</td><td>暴擊傷害加成 %</td></tr>
-      <tr><td>&nbsp;└ acc</td><td>number</td><td>命中率加成</td></tr>
-      <tr class="group-header"><td colspan="3">▎天賦列表 talents[]（結構同 skills[]）</td></tr>
+      <tr><td>&nbsp;├ type</td><td>SkillType (Enum)</td><td>技能類型：<strong>被動技能</strong> / <strong>主動技能</strong> / <strong>指令技能</strong>（Order，有 CD）</td></tr>
+      <tr><td>&nbsp;├ ap</td><td>string?</td><td>AP 消耗；主動 / 指令 / 必殺 / 武器技能適用</td></tr>
+      <tr><td>&nbsp;├ cd</td><td>string?</td><td>冷卻回合數；指令技能才有，對應 API 的 CD 欄位（計算器不用此欄位，僅供顯示）</td></tr>
+      <tr><td>&nbsp;├ weapon</td><td>string?</td><td>限定武器類別；主動技能中需特定武器者填入，對應 API matchingWeaponType</td></tr>
+      <tr><td>&nbsp;├ description</td><td>string</td><td>效果描述文字</td></tr>
+      <tr><td>&nbsp;├ icon / iconLocal</td><td>string</td><td>技能圖示路徑</td></tr>
+      <tr><td>&nbsp;├ effects</td><td>SkillEffect[]</td><td>可量化效果列表（空陣列 = 待填入）；計算器加總所有 active 技能的 effects</td></tr>
+      <tr><td>&nbsp;└ buffIds</td><td>string[]</td><td>技能觸發的 Buff ID 列表（API BufCarried 以 "/" 分割轉換）</td></tr>
+      <tr class="group-header"><td colspan="3">▎天賦列表 talents[] — PilotTalent（PLAN-001）</td></tr>
       <tr><td>&nbsp;├ name</td><td>string</td><td>天賦名稱</td></tr>
-      <tr><td>&nbsp;└ dmg / crit / critDmg / acc</td><td>number</td><td>加成數值</td></tr>
-      <tr class="group-header"><td colspan="3">▎神經驅動 neuralDrive[]（結構同 skills[]）</td></tr>
-      <tr><td>&nbsp;├ name</td><td>string</td><td>神經驅動選項名稱</td></tr>
-      <tr><td>&nbsp;└ dmg / crit / critDmg / acc</td><td>number</td><td>加成數值</td></tr>
+      <tr><td>&nbsp;├ type</td><td>string</td><td>技能類型（通常為「被動技能」）</td></tr>
+      <tr><td>&nbsp;├ description</td><td>string</td><td>初始（0–2 星）效果描述</td></tr>
+      <tr><td>&nbsp;├ descriptionMax</td><td>string</td><td>滿星（3–5 星）效果描述</td></tr>
+      <tr><td>&nbsp;├ icon / iconLocal</td><td>string</td><td>技能圖示路徑</td></tr>
+      <tr><td>&nbsp;├ effects</td><td>SkillEffect[]</td><td>可量化效果列表（空陣列 = 待填入）</td></tr>
+      <tr><td>&nbsp;├ enhancedEffects</td><td>SkillEffect[]?</td><td>裝備專屬武器後的加強版效果；省略或空陣列表示無加強版</td></tr>
+      <tr><td>&nbsp;└ buffIds</td><td>string[]</td><td>天賦觸發的 Buff ID 列表</td></tr>
+      <tr class="group-header"><td colspan="3">▎神經驅動 neuralDrive[] — NeuralDrive（PLAN-001）</td></tr>
+      <tr><td>&nbsp;├ name</td><td>string</td><td>神經驅動區塊名稱</td></tr>
+      <tr><td>&nbsp;├ icon</td><td>string</td><td>圖示路徑</td></tr>
+      <tr><td>&nbsp;├ slots</td><td>string[]</td><td>插槽類型說明列表</td></tr>
+      <tr class="group-header"><td colspan="3">&nbsp;└ levels[] — NeuralDriveLevel（每個激活閾值）</td></tr>
+      <tr><td>&nbsp;&nbsp;&nbsp;├ level</td><td>number</td><td>激活層級（1 起；α / β 分區最多 3 層，γ 分區最多 6 層）</td></tr>
+      <tr><td>&nbsp;&nbsp;&nbsp;├ minSum</td><td>number</td><td>最低激活算力值；α / β 通常為 1 / 4 / 7，γ 可達 1 / 4 / 7 / 10 / 13 / 16</td></tr>
+      <tr><td>&nbsp;&nbsp;&nbsp;├ effect</td><td>string</td><td>效果描述文字</td></tr>
+      <tr><td>&nbsp;&nbsp;&nbsp;├ skillName / skillIcon / iconLocal</td><td>string</td><td>此層被動技能名稱與圖示</td></tr>
+      <tr><td>&nbsp;&nbsp;&nbsp;├ effects</td><td>SkillEffect[]</td><td>可量化效果列表（空陣列 = 待填入）</td></tr>
+      <tr><td>&nbsp;&nbsp;&nbsp;└ buffIds</td><td>string[]</td><td>激活此層時觸發的 Buff ID 列表</td></tr>
       <tr><td>lore</td><td>string</td><td>角色故事（Markdown 格式）</td></tr>
       <tr><td>portrait</td><td>string</td><td>立繪圖片路徑 /images/pilots/{id}.png</td></tr>
     </table>

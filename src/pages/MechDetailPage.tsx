@@ -1,12 +1,28 @@
+import { useState, useLayoutEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useParams, Link } from 'react-router-dom'
 import type { MechPart, Module } from '../types'
+import { MechPartPosition } from '../types/enums'
 import { assetUrl } from '../utils/assets'
 import { useMechWithModules } from '../hooks/useFirestore'
+import { STAT_LABELS, highlightNumbers } from '../utils/moduleStats'
 
 const ARMOR_STYLES: Record<string, string> = {
   輕型: 'text-accent-cyan bg-accent-cyan/10 border-accent-cyan/40',
   中甲: 'text-accent-green bg-accent-green/10 border-accent-green/40',
   重型: 'text-accent-red bg-accent-red/10 border-accent-red/40',
+}
+
+const PART_LABELS: Record<string, string> = {
+  [MechPartPosition.TORSO]:     '軀幹',
+  [MechPartPosition.LEFT_ARM]:  '左臂',
+  [MechPartPosition.RIGHT_ARM]: '右臂',
+  [MechPartPosition.LEGS]:      '腿部',
+}
+
+const RARITY_STYLES: Record<string, string> = {
+  S: 'text-accent-yellow bg-accent-yellow/10 border-accent-yellow/40',
+  A: 'text-accent-purple bg-accent-purple/10 border-accent-purple/40',
 }
 
 type NumericPartStatKey = 'durable' | 'firepower' | 'weight' | 'output' | 'antiRiot' | 'hit' | 'dodge' | 'move'
@@ -21,6 +37,162 @@ const PART_STAT_KEYS: { key: NumericPartStatKey; label: string }[] = [
   { key: 'dodge',     label: '閃避'  },
   { key: 'move',      label: '移動力' },
 ]
+
+
+function LevelTooltip({ mod, pinned }: { mod: Module; pinned: boolean }) {
+  const levels = mod.levels ?? []
+  if (levels.length === 0) return null
+
+  const activeStats = STAT_LABELS.filter(({ key }) =>
+    levels.some((lv) => ((lv[key] as number | undefined) ?? 0) > 0)
+  )
+
+  return (
+    <div className="w-72 max-h-[min(90vh,_600px)] flex flex-col bg-bg-card border border-border-accent rounded-xl p-4 shadow-2xl">
+      <div className="flex items-center justify-between mb-3 flex-shrink-0">
+        <span className="text-xs font-bold text-accent-orange">{mod.name}</span>
+        <span className="text-[10px] text-text-dim">各等級效果{pinned ? ' · 📌' : ''}</span>
+      </div>
+      <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-2">
+        {levels.map((lv) => (
+          <div key={lv.level} className="bg-bg-dark rounded-lg p-2.5">
+            <div className="flex items-start gap-2">
+              <span className="text-[10px] px-1.5 py-0.5 rounded border text-accent-orange bg-accent-orange/10 border-accent-orange/30 font-bold flex-shrink-0">
+                Lv.{lv.level}
+              </span>
+              {lv.description && (
+                <span className="text-[11px] text-text-secondary leading-tight">{highlightNumbers(lv.description)}</span>
+              )}
+            </div>
+            {activeStats.length > 0 && (
+              <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 pl-1">
+                {activeStats.map(({ key, label, color, suffix, prefix }) => {
+                  const val = (lv[key] as number | undefined) ?? 0
+                  if (!val) return null
+                  return (
+                    <span key={key} className={`text-[11px] ${color}`}>
+                      {label}{prefix ?? '+'}{val}{suffix}
+                    </span>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      {!pinned && (
+        <p className="text-[10px] text-text-dim mt-2 text-center flex-shrink-0">點擊模組固定此視窗</p>
+      )}
+    </div>
+  )
+}
+
+interface ModuleCardProps {
+  mod: Module
+  showBoundPart?: boolean
+  isPinned: boolean
+  onEnter: (el: HTMLDivElement) => void
+  onLeave: () => void
+  onClick: (el: HTMLDivElement, e: React.MouseEvent) => void
+}
+
+function ModuleCard({ mod, showBoundPart, isPinned, onEnter, onLeave, onClick }: ModuleCardProps) {
+  const hasLevels = (mod.levels?.length ?? 0) > 0
+  const rarityStyle = RARITY_STYLES[mod.rarity] ?? ''
+  const parts = showBoundPart && mod.boundPart && mod.boundPart.length > 0
+    ? (Array.isArray(mod.boundPart) ? mod.boundPart : [mod.boundPart as string]).map((p) => PART_LABELS[p] ?? p).join('・')
+    : null
+
+  return (
+    <div
+      className={`bg-bg-dark rounded-xl border p-4 transition-colors ${
+        hasLevels ? 'cursor-pointer' : ''
+      } ${isPinned ? 'border-accent-orange' : 'border-border hover:border-border-accent'}`}
+      onMouseEnter={(e) => onEnter(e.currentTarget)}
+      onMouseLeave={onLeave}
+      onClick={(e) => onClick(e.currentTarget, e)}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        {mod.icon && (
+          <img
+            src={assetUrl(mod.icon)}
+            alt=""
+            className="w-8 h-8 rounded-lg bg-bg-card border border-border object-cover flex-shrink-0"
+            onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+          />
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <p className="font-bold text-sm text-text-primary">{mod.name}</p>
+            {rarityStyle && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded border ${rarityStyle}`}>{mod.rarity}</span>
+            )}
+            {hasLevels && (
+              <span className="text-[10px] text-text-dim ml-auto flex-shrink-0">
+                {isPinned ? '📌' : '◉ 等級效果'}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {parts && (
+        <div className="text-[11px] text-text-dim mb-2">
+          綁定部位：<span className="text-accent-purple font-medium">{parts}</span>
+        </div>
+      )}
+
+      <p className="text-xs text-text-secondary leading-relaxed whitespace-pre-line">
+        {highlightNumbers(mod.description ?? '')}
+      </p>
+
+      {(mod.dmg > 0 || (mod.crit_rate ?? 0) > 0 || mod.critDmg > 0 || (mod.acc_rate ?? 0) > 0
+        || (mod.firepower_rate ?? 0) > 0 || (mod.armor_rate ?? 0) > 0 || (mod.output_bonus ?? 0) > 0
+        || (mod.dodge_rate ?? 0) > 0 || (mod.durable_rate ?? 0) > 0
+        || (mod.dmg_resist_rate ?? 0) > 0 || (mod.crit_resist_rate ?? 0) > 0) && (
+        <div className="flex gap-2 mt-2 text-[11px] flex-wrap">
+          {mod.dmg > 0                        && <ModStat label="傷害" value={`+${mod.dmg}%`} color="text-accent-orange" />}
+          {(mod.crit_rate ?? 0) > 0           && <ModStat label="暴擊" value={`+${mod.crit_rate}%`} color="text-accent-yellow" />}
+          {mod.critDmg > 0                    && <ModStat label="爆傷" value={`+${mod.critDmg}%`} color="text-accent-red" />}
+          {(mod.acc_rate ?? 0) > 0            && <ModStat label="命中" value={`+${mod.acc_rate}%`} color="text-accent-blue" />}
+          {(mod.firepower_rate ?? 0) > 0      && <ModStat label="火力" value={`+${mod.firepower_rate}%`} color="text-accent-green" />}
+          {(mod.armor_rate ?? 0) > 0          && <ModStat label="護甲" value={`+${mod.armor_rate}%`} color="text-accent-cyan" />}
+          {(mod.output_bonus ?? 0) > 0        && <ModStat label="出力" value={`+${mod.output_bonus}`} color="text-accent-purple" />}
+          {(mod.dodge_rate ?? 0) > 0          && <ModStat label="回避" value={`+${mod.dodge_rate}%`} color="text-accent-blue" />}
+          {(mod.durable_rate ?? 0) > 0        && <ModStat label="耐久" value={`+${mod.durable_rate}%`} color="text-accent-green" />}
+          {(mod.dmg_resist_rate ?? 0) > 0     && <ModStat label="減傷" value={`-${mod.dmg_resist_rate}%`} color="text-accent-cyan" />}
+          {(mod.crit_resist_rate ?? 0) > 0    && <ModStat label="抗暴" value={`-${mod.crit_resist_rate}%`} color="text-accent-yellow" />}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ModStat({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <span className="text-[11px] bg-bg-card border border-border rounded px-2 py-0.5">
+      <span className="text-text-dim">{label} </span>
+      <span className={`${color} font-bold`}>{value}</span>
+    </span>
+  )
+}
+
+function EmptyModuleSlot() {
+  return (
+    <div className="bg-bg-dark/50 border border-dashed border-border rounded-xl p-4 flex items-center justify-center min-h-[72px]">
+      <span className="text-xs text-text-dim">未設定</span>
+    </div>
+  )
+}
+
+function ModuleGroupLabel({ label, accent }: { label: string; accent: string }) {
+  return (
+    <div className="flex items-center gap-2 mb-2">
+      <div className={`w-0.5 h-3.5 rounded-full ${accent}`} />
+      <span className="text-[11px] text-text-dim tracking-wider">{label}</span>
+    </div>
+  )
+}
 
 function PartCard({ part, name }: { part: MechPart; name: string }) {
   return (
@@ -53,58 +225,6 @@ function PartCard({ part, name }: { part: MechPart; name: string }) {
   )
 }
 
-function ModuleCard({ mod, label, color }: { mod: Module | null; label: string; color: string }) {
-  if (!mod) {
-    return (
-      <div className={`bg-bg-dark rounded-xl border ${color} p-4 opacity-50`}>
-        <p className="text-[10px] text-text-dim uppercase tracking-widest mb-1">{label}</p>
-        <p className="text-xs text-text-dim">未設定</p>
-      </div>
-    )
-  }
-  return (
-    <div className={`bg-bg-dark rounded-xl border ${color} p-4`}>
-      <p className="text-[10px] text-text-dim uppercase tracking-widest mb-1">{label}</p>
-      <div className="flex items-center gap-2 mb-2">
-        {mod.icon && (
-          <img
-            src={assetUrl(mod.icon)}
-            alt=""
-            className="w-6 h-6 rounded"
-            onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
-          />
-        )}
-        <p className="font-bold text-sm text-text-primary">{mod.name}</p>
-      </div>
-      <p className="text-xs text-text-secondary leading-relaxed">{mod.description}</p>
-      {(mod.dmg || mod.crit_rate || mod.critDmg || mod.acc_rate || mod.firepower_rate) ? (
-        <div className="flex flex-wrap gap-2 mt-2">
-          {mod.dmg                        ? <ModStat label="增傷" value={`+${mod.dmg}%`}                  /> : null}
-          {mod.crit_rate                  ? <ModStat label="爆率" value={`+${mod.crit_rate}`}             /> : null}
-          {mod.critDmg                    ? <ModStat label="爆傷" value={`+${mod.critDmg}%`}              /> : null}
-          {mod.acc_rate                   ? <ModStat label="命中" value={`+${mod.acc_rate}`}              /> : null}
-          {(mod.firepower_rate ?? 0) > 0  ? <ModStat label="火力" value={`+${mod.firepower_rate}%`}      /> : null}
-          {(mod.armor_rate ?? 0) > 0      ? <ModStat label="護甲" value={`+${mod.armor_rate}%`}          /> : null}
-          {(mod.output_bonus ?? 0) > 0    ? <ModStat label="出力" value={`+${mod.output_bonus}`}         /> : null}
-          {(mod.dodge_rate ?? 0) > 0      ? <ModStat label="回避" value={`+${mod.dodge_rate}%`}          /> : null}
-          {(mod.durable_rate ?? 0) > 0    ? <ModStat label="耐久" value={`+${mod.durable_rate}%`}        /> : null}
-          {(mod.dmg_resist_rate ?? 0) > 0 ? <ModStat label="減傷" value={`-${mod.dmg_resist_rate}%`}     /> : null}
-          {(mod.crit_resist_rate ?? 0) > 0? <ModStat label="抗暴" value={`-${mod.crit_resist_rate}%`}    /> : null}
-        </div>
-      ) : null}
-    </div>
-  )
-}
-
-function ModStat({ label, value }: { label: string; value: string }) {
-  return (
-    <span className="text-[11px] bg-bg-card border border-border rounded px-2 py-0.5">
-      <span className="text-text-dim">{label} </span>
-      <span className="text-accent-orange font-bold">{value}</span>
-    </span>
-  )
-}
-
 function AttrRow({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="flex justify-between items-center py-2 border-b border-border last:border-0">
@@ -114,9 +234,54 @@ function AttrRow({ label, value }: { label: string; value: string | number }) {
   )
 }
 
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="text-xs text-accent-orange tracking-[3px] uppercase font-[Orbitron,sans-serif] mb-3">
+      {children}
+    </div>
+  )
+}
+
+interface TooltipState { modId: string; x: number; anchorTop: number }
+
+function computePos(cardEl: HTMLDivElement): { x: number; anchorTop: number } {
+  const rect = cardEl.getBoundingClientRect()
+  const tooltipW = 296
+  const x = rect.right + 8 + tooltipW > window.innerWidth ? rect.left - tooltipW - 8 : rect.right + 8
+  return { x, anchorTop: rect.top }
+}
+
+function TooltipPortal({ mod, pinned, x, anchorTop }: {
+  mod: Module; pinned: boolean; x: number; anchorTop: number
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [top, setTop] = useState(anchorTop)
+
+  useLayoutEffect(() => {
+    if (!ref.current) return
+    const h = ref.current.offsetHeight
+    setTop(Math.max(8, Math.min(anchorTop, window.innerHeight - h - 8)))
+  }, [anchorTop, mod.id])
+
+  return createPortal(
+    <div
+      ref={ref}
+      className={`fixed z-50 ${pinned ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      style={{ left: x, top }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <LevelTooltip mod={mod} pinned={pinned} />
+    </div>,
+    document.body
+  )
+}
+
 export default function MechDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { data, loading } = useMechWithModules(id)
+
+  const [hoverTooltip,  setHoverTooltip]  = useState<TooltipState | null>(null)
+  const [pinnedTooltip, setPinnedTooltip] = useState<TooltipState | null>(null)
 
   if (loading) {
     return (
@@ -137,7 +302,7 @@ export default function MechDetailPage() {
     )
   }
 
-  const { mech, mod4, mod8, fixedMods } = data
+  const { mech, mod4, mod8, fixedMods, exclusiveMods } = data
   const armorCls = ARMOR_STYLES[mech.armorType] ?? 'text-text-secondary bg-bg-card border-border'
 
   const torso    = mech.parts?.torso    && typeof mech.parts.torso    !== 'number' ? mech.parts.torso    as MechPart : null
@@ -150,8 +315,55 @@ export default function MechDetailPage() {
   const totalWeight = [torso, leftArm, rightArm, legs].reduce((sum, p) => sum + (p?.weight ?? 0), 0)
   const remainingOutput = mech.output - totalWeight
 
+  const allMods = [mod4, mod8, ...fixedMods, ...exclusiveMods].filter(Boolean) as Module[]
+
+  const handleEnter = (modId: string, cardEl: HTMLDivElement) => {
+    if (pinnedTooltip) return
+    const mod = allMods.find((m) => m.id === modId)
+    if (!mod?.levels?.length) return
+    setHoverTooltip({ modId, ...computePos(cardEl) })
+  }
+
+  const handleLeave = () => {
+    if (!pinnedTooltip) setHoverTooltip(null)
+  }
+
+  const handleClick = (modId: string, cardEl: HTMLDivElement, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const mod = allMods.find((m) => m.id === modId)
+    if (!mod?.levels?.length) { setPinnedTooltip(null); return }
+    if (pinnedTooltip?.modId === modId) {
+      setPinnedTooltip(null)
+    } else {
+      setPinnedTooltip({ modId, ...computePos(cardEl) })
+      setHoverTooltip(null)
+    }
+  }
+
+  const activeTooltip = pinnedTooltip ?? hoverTooltip
+  const activeMod = activeTooltip ? allMods.find((m) => m.id === activeTooltip.modId) : null
+
+  const moduleCardProps = (mod: Module) => ({
+    mod,
+    isPinned: pinnedTooltip?.modId === mod.id,
+    onEnter:  (el: HTMLDivElement) => handleEnter(mod.id, el),
+    onLeave:  handleLeave,
+    onClick:  (el: HTMLDivElement, e: React.MouseEvent) => handleClick(mod.id, el, e),
+  })
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
+    <div className="max-w-5xl mx-auto px-4 py-10" onClick={() => setPinnedTooltip(null)}>
+
+      {activeMod && activeTooltip && (
+        <TooltipPortal
+          key={activeTooltip.modId}
+          mod={activeMod}
+          pinned={!!pinnedTooltip}
+          x={activeTooltip.x}
+          anchorTop={activeTooltip.anchorTop}
+        />
+      )}
+
       <Link
         to="/mechs"
         className="inline-flex items-center gap-1 text-sm text-text-dim hover:text-text-primary no-underline mb-6 transition-colors"
@@ -167,7 +379,7 @@ export default function MechDetailPage() {
         <h1 className="text-3xl font-black">{mech.name}</h1>
       </div>
 
-      {/* 機甲屬性 — 四部位總和，耐久各部位獨立不列，護甲不顯示 */}
+      {/* 機甲屬性 */}
       <div className="bg-bg-card border border-border rounded-xl p-5 mb-6">
         <SectionLabel>機甲屬性</SectionLabel>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8">
@@ -175,7 +387,6 @@ export default function MechDetailPage() {
           <AttrRow label="閃避" value={mech.evasion.toLocaleString()} />
           <AttrRow label="移動力" value={mech.mobility} />
           <AttrRow label="重量" value={mech.weight.toLocaleString()} />
-          {/* 出力 + 剩餘出力 同列顯示 */}
           <div className="flex justify-between items-center py-2 border-b border-border col-span-2 sm:col-span-2">
             <span className="text-text-dim text-sm">出力</span>
             <div className="flex items-center gap-3">
@@ -190,16 +401,14 @@ export default function MechDetailPage() {
         </div>
       </div>
 
-      {/* 部件資訊 — 駕駛艙佈局 */}
+      {/* 部件資訊 */}
       <div className="mb-6">
         <SectionLabel>部件資訊（滿級）</SectionLabel>
         {hasParts ? (
           <div className="grid grid-cols-3 gap-3 items-stretch">
-            {/* Row 1 — 軀幹 */}
             <div />
             {torso ? <PartCard part={torso} name="軀幹" /> : <div />}
             <div />
-            {/* Row 2 — 左臂 | 主圖 | 右臂 */}
             {leftArm ? <PartCard part={leftArm} name="左臂" /> : <div />}
             <div className="bg-bg-card border border-border rounded-xl flex items-center justify-center min-h-[200px]">
               {mech.portrait && (
@@ -212,7 +421,6 @@ export default function MechDetailPage() {
               )}
             </div>
             {rightArm ? <PartCard part={rightArm} name="右臂" /> : <div />}
-            {/* Row 3 — 腿部 */}
             <div />
             {legs ? <PartCard part={legs} name="腿部" /> : <div />}
             <div />
@@ -223,22 +431,50 @@ export default function MechDetailPage() {
       </div>
 
       {/* 機甲模組 */}
-      <div>
+      <div onClick={(e) => e.stopPropagation()}>
         <SectionLabel>機甲模組</SectionLabel>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <ModuleCard mod={mod4} label="四模組" color="border-border" />
-          <ModuleCard mod={mod8} label="八模組" color="border-accent-orange/30" />
-          {fixedMods.length > 0
-            ? fixedMods.map((fm, idx) => (
-                <ModuleCard
-                  key={fm.id}
-                  mod={fm}
-                  label={fixedMods.length === 1 ? '額外模組' : `額外模組 ${idx + 1}`}
-                  color="border-accent-cyan/30"
-                />
-              ))
-            : <ModuleCard mod={null} label="額外模組" color="border-accent-cyan/30" />
-          }
+        <div className="space-y-5">
+
+          {/* 特性模組 + 8級模組 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <ModuleGroupLabel label="特性模組" accent="bg-accent-orange" />
+              {mod4 ? <ModuleCard {...moduleCardProps(mod4)} /> : <EmptyModuleSlot />}
+            </div>
+            <div>
+              <ModuleGroupLabel label="8級模組" accent="bg-accent-blue" />
+              {mod8 ? <ModuleCard {...moduleCardProps(mod8)} /> : <EmptyModuleSlot />}
+            </div>
+          </div>
+
+          {/* 副模組 */}
+          <div>
+            <ModuleGroupLabel label="副模組" accent="bg-accent-green" />
+            {fixedMods.length > 0 ? (
+              <div className={`grid grid-cols-1 ${fixedMods.length > 1 ? 'md:grid-cols-2' : ''} gap-4`}>
+                {fixedMods.map((m) => <ModuleCard key={m.id} {...moduleCardProps(m)} />)}
+              </div>
+            ) : (
+              <EmptyModuleSlot />
+            )}
+          </div>
+
+          {/* 專屬模組 */}
+          <div>
+            <ModuleGroupLabel label="專屬模組" accent="bg-accent-cyan" />
+            {exclusiveMods.length > 0 ? (
+              <div className={`grid grid-cols-1 ${exclusiveMods.length > 1 ? 'md:grid-cols-2' : ''} gap-4`}>
+                {exclusiveMods.map((m) => (
+                  <ModuleCard key={m.id} {...moduleCardProps(m)} showBoundPart />
+                ))}
+              </div>
+            ) : (
+              <div className="bg-bg-dark/50 border border-dashed border-border rounded-xl p-4 flex items-center justify-center min-h-[48px]">
+                <span className="text-xs text-text-dim">此機甲無專屬模組</span>
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
 
@@ -249,14 +485,6 @@ export default function MechDetailPage() {
           <p className="text-sm text-text-secondary leading-relaxed whitespace-pre-line">{mech.lore}</p>
         </div>
       )}
-    </div>
-  )
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="text-xs text-accent-orange tracking-[3px] uppercase font-[Orbitron,sans-serif] mb-3">
-      {children}
     </div>
   )
 }

@@ -17,7 +17,7 @@ export default function HomePage() {
             className="w-52 md:w-64 object-contain pointer-events-none"
           />
           <p className="text-text-secondary text-lg whitespace-nowrap mx-auto mt-6">
-            傷害模擬器(沒做完) · 配裝計算器(沒做完) · 角色資料庫 · 模組資料庫 · 攻略百科(等你加入)
+            傷害模擬器(沒做完) · 配裝計算器(沒做完) · 角色資料庫 · 機甲資料庫 · 模組資料庫 · 武器資料庫(沒做完) · 元件資料庫(沒做完) · 攻略百科(等你加入)
           </p>
         </div>
       </section>

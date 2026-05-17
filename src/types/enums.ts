@@ -116,8 +116,42 @@ export type MechRestriction = typeof MechRestriction[keyof typeof MechRestrictio
 export const SkillType = {
   PASSIVE: '被動技能',
   ACTIVE:  '主動技能',
+  COMMAND: '指令技能',  // Order — 有 CD，消耗 AP
 } as const;
 export type SkillType = typeof SkillType[keyof typeof SkillType];
+
+// 技能觸發條件類型（顯示標籤用，非計算觸發）
+export const PilotSkillTrigger = {
+  ALWAYS:          'always',
+  ON_ATTACK:       'onAttack',
+  ON_COUNTER:      'onCounter',
+  ON_AP_SKILL:     'onApSkill',
+  WEAPON_CATEGORY: 'weaponCategory',
+  DUAL_WIELD:      'dualWield',
+  HP_BELOW:        'hpBelow',
+  FIRST_ATTACK:    'firstAttack',
+  ENEMY_PHASE:     'enemyPhase',
+  ALLY_HAS_BUFF:   'allyHasBuff',
+} as const;
+export type PilotSkillTrigger = typeof PilotSkillTrigger[keyof typeof PilotSkillTrigger];
+
+// 技能效果受益對象（隊伍計算器用）
+export const SkillScope = {
+  SELF: 'self',
+  ALLY: 'ally',
+  TEAM: 'team',
+} as const;
+export type SkillScope = typeof SkillScope[keyof typeof SkillScope];
+
+// Buff 類型
+export const BuffType = {
+  STAT_BOOST: 'statBoost',
+  RESOURCE:   'resource',
+  STATE:      'state',
+  DEBUFF:     'debuff',
+  CONTROL:    'control',
+} as const;
+export type BuffType = typeof BuffType[keyof typeof BuffType];
 
 // ─── 元件 ────────────────────────────────────────────────────────────────────
 

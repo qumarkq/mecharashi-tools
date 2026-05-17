@@ -12,14 +12,16 @@
  *   6. 輸出 public/data/pilots.json（繁體中文）
  *
  * 使用方式：
- *   node scripts/scrape-pilots-v3.js                     ← 全量 S 級機師
- *   node scripts/scrape-pilots-v3.js --pilot=葉夫根尼     ← 指定單一機師（繁體輸入）
- *   node scripts/scrape-pilots-v3.js --no-images          ← 只取文字不下載圖片
- *   node scripts/scrape-pilots-v3.js --force              ← 強制重抓（忽略已有資料）
- *   node scripts/scrape-pilots-v3.js --limit=3            ← 只跑前 N 個
- *   node scripts/scrape-pilots-v3.js --all                ← 含 SR/R 級別
- *   node scripts/scrape-pilots-v3.js --debug              ← 輸出 debug 資訊
- *   node scripts/scrape-pilots-v3.js --fetch-portraits    ← 僅補下載大立繪（無需重打 API）
+ *   node scripts/scrape-pilots-v3.js                          ← 全量 S 級機師（只新增）
+ *   node scripts/scrape-pilots-v3.js --pilot=葉夫根尼          ← 指定單一機師（繁體輸入）
+ *   node scripts/scrape-pilots-v3.js --no-images               ← 只取文字不下載圖片
+ *   node scripts/scrape-pilots-v3.js --force                   ← 強制重抓（忽略已有資料）
+ *   node scripts/scrape-pilots-v3.js --limit=3                 ← 只跑前 N 個
+ *   node scripts/scrape-pilots-v3.js --all                     ← 含 SR/R 級別
+ *   node scripts/scrape-pilots-v3.js --debug                   ← 輸出 debug 資訊
+ *   node scripts/scrape-pilots-v3.js --patch                   ← 補丁模式：重抓並合併差異欄位（保護 effects/buffIds）
+ *   node scripts/scrape-pilots-v3.js --patch --dump-json       ← 只產生暫存比對 JSON，不寫 Firestore
+ *   node scripts/scrape-pilots-v3.js --patch --pilot=葉夫根尼  ← 只補丁指定機師
  */
 
 import * as OpenCC from 'opencc-js';
@@ -50,6 +52,8 @@ const FORCE            = args.includes('--force');
 const ALL_QUALITY      = args.includes('--all');
 const DEBUG            = args.includes('--debug');
 const AUTO             = args.includes('--auto');    // 略過確認，直接寫入 Firestore
+const PATCH_MODE       = args.includes('--patch');   // 補丁模式：重抓並合併差異欄位
+const DUMP_JSON        = args.includes('--dump-json'); // 只輸出暫存 JSON，不寫 Firestore
 // --fetch-portraits 模式依賴本地 JSON，已停用（改用 --force 重新擷取）
 // const FETCH_PORTRAITS  = args.includes('--fetch-portraits');
 const SINGLE_PILOT_RAW = (args.find(a => a.startsWith('--pilot=')) || '').split('=')[1] || '';
@@ -316,7 +320,7 @@ function buildPilotJson(detail, index) {
       descriptionMax: talentMax ? s2t(cleanRichText(talentMax.SpecificEffects)) : '',
       icon:        talentBase.SkillIcon,
       iconLocal:   `/images/skills/${talentBase.SkillIcon}.png`,
-      dmg: 0, crit: 0, critDmg: 0, acc: 0,
+      effects: [], buffIds: [],
     });
   }
 
@@ -335,6 +339,8 @@ function buildPilotJson(detail, index) {
         skillName:  s2t(eff.PassiveSkill?.name || ''),
         skillIcon:  eff.PassiveSkill?.SkillIcon || '',
         iconLocal:  eff.PassiveSkill?.SkillIcon ? `/images/skills/${eff.PassiveSkill.SkillIcon}.png` : '',
+        effects:    [],
+        buffIds:    [],
       }));
 
       neuralDrive.push({
@@ -342,7 +348,6 @@ function buildPilotJson(detail, index) {
         icon:  zone.IconPath || '',
         slots,
         levels,
-        dmg: 0, crit: 0, critDmg: 0, acc: 0,
       });
     }
   }
@@ -366,6 +371,7 @@ function buildPilotJson(detail, index) {
           name:        s2t(unit.skill.name || ''),
           type:        unit.skill.type || '',
           ap:          unit.skill.Ap || '',
+          cd:          unit.skill.CD || '',
           weapon:      s2t(unit.skill.matchingWeaponType || ''),
           description: s2t(cleanRichText(unit.skill.SpecificEffects || unit.skill.describe || '')),
           icon:        unit.skill.SkillIcon || '',
@@ -387,17 +393,20 @@ function buildPilotJson(detail, index) {
     .map(u => ({
       name:        u.skill.name,
       type:        u.skill.type === 'EquipmentSkill' ? '主動技能' :
-                   u.skill.type === 'Order' ? '指令技能' :
-                   u.skill.type === 'SpecialAssault' ? '必殺技能' :
-                   u.skill.type === 'PassiveSkill' ? '被動技能' :
+                   u.skill.type === 'Order'          ? '指令技能' :
+                   u.skill.type === 'SpecialAssault' ? '主動技能' :
+                   u.skill.type === 'PassiveSkill'   ? '被動技能' :
                    (!u.skill.type || u.skill.type === '') ? '被動技能' :
                    s2t(u.skill.type || ''),
+      unitType:    u.unitType,
       ap:          u.skill.ap || '',
-      weapon:      u.skill.weapon,
+      cd:          u.skill.cd || '',
+      weapon:      u.skill.weapon || '',
       description: u.skill.description,
       icon:        u.skill.icon,
       iconLocal:   u.skill.iconLocal,
-      dmg: 0, crit: 0, critDmg: 0, acc: 0,
+      effects:     [],
+      buffIds:     [],
     }))
     .filter((s, i, arr) => arr.findIndex(x => x.name === s.name) === i); // 去重
 
@@ -503,9 +512,227 @@ async function downloadPilotImages(pilot, detail) {
 }
 
 // ════════════════════════════════════════════════════════════
+// 補丁模式：合併函式（保護手動填寫的 effects / buffIds）
+// ════════════════════════════════════════════════════════════
+
+/**
+ * 以技能名稱為 key，合併 fresh API 資料與 Firestore 現有資料。
+ * - 覆寫：所有 API 欄位（cd / type / weapon / description / icon …）
+ * - 保護：effects / buffIds（手動維護，不覆寫）
+ * - 保護：Firestore 有但 API 沒有的技能（直接保留）
+ */
+function mergeSkillsArray(existing, fresh) {
+  if (!Array.isArray(existing)) return fresh || [];
+  const freshMap = new Map((fresh || []).map(s => [s.name, s]));
+  const merged = existing.map(skill => {
+    const freshSkill = freshMap.get(skill.name);
+    if (!freshSkill) return skill;
+    return {
+      ...freshSkill,
+      effects:  skill.effects  ?? [],
+      buffIds:  skill.buffIds  ?? [],
+    };
+  });
+  // 新增在 Firestore 沒有的技能（補全，不影響現有）
+  for (const freshSkill of (fresh || [])) {
+    if (!existing.find(s => s.name === freshSkill.name)) {
+      merged.push(freshSkill);
+    }
+  }
+  return merged;
+}
+
+/**
+ * 合併 talents[]：保護 effects / buffIds / enhancedEffects（手動維護）
+ */
+function mergeTalentsArray(existing, fresh) {
+  if (!Array.isArray(existing)) return fresh || [];
+  const freshMap = new Map((fresh || []).map(t => [t.name, t]));
+  return existing.map(talent => {
+    const freshTalent = freshMap.get(talent.name);
+    if (!freshTalent) return talent;
+    return {
+      ...freshTalent,
+      effects:         talent.effects         ?? [],
+      buffIds:         talent.buffIds         ?? [],
+      enhancedEffects: talent.enhancedEffects ?? undefined,
+    };
+  });
+}
+
+/**
+ * 合併 neuralDrive[]：保護各層的 effects / buffIds（手動維護）
+ */
+function mergeNeuralDriveArray(existing, fresh) {
+  if (!Array.isArray(existing)) return fresh || [];
+  const freshMap = new Map((fresh || []).map(z => [z.name, z]));
+  return existing.map(zone => {
+    const freshZone = freshMap.get(zone.name);
+    if (!freshZone) return zone;
+    const mergedLevels = (zone.levels || []).map((level, i) => {
+      const freshLevel = (freshZone.levels || [])[i];
+      if (!freshLevel) return level;
+      return {
+        ...freshLevel,
+        effects: level.effects ?? [],
+        buffIds: level.buffIds ?? [],
+      };
+    });
+    return { ...freshZone, levels: mergedLevels };
+  });
+}
+
+/** 淺層 JSON 比較（用於偵測陣列是否有差異） */
+function isDifferent(a, b) {
+  return JSON.stringify(a) !== JSON.stringify(b);
+}
+
+// ════════════════════════════════════════════════════════════
+// 補丁主流程
+// ════════════════════════════════════════════════════════════
+async function runPatchMode() {
+  console.log('');
+  console.log('╔══════════════════════════════════════════════╗');
+  console.log('║  鋼嵐工具站 — 機師補丁模式 (--patch)         ║');
+  console.log('╚══════════════════════════════════════════════╝');
+  if (DUMP_JSON) console.log('  ⚠  DUMP-JSON 模式 — 只輸出暫存 JSON，不寫入 Firestore');
+  if (AUTO)     console.log('  ⚠  AUTO 模式 — 略過確認直接寫入');
+  if (SINGLE_PILOT_RAW) console.log(`  指定機師：${SINGLE_PILOT_RAW}（簡體：${SINGLE_PILOT_CN}）`);
+  console.log('  保護欄位：effects / buffIds / enhancedEffects（不覆寫）');
+  console.log('');
+
+  const firebaseReady = initFirebase();
+  if (!firebaseReady) {
+    console.log('❌ Firebase 未連線，請確認 .env.migration 與服務帳號金鑰。');
+    process.exit(1);
+  }
+  console.log('🔥 Firebase 連線成功');
+
+  // 載入 Firestore 現有資料
+  process.stdout.write('📦 載入 Firestore 機師資料...');
+  const existingMap = await loadFirestorePilots(); // key: 簡體名
+  console.log(` ${existingMap.size} 個`);
+
+  // 取得 API 機師列表
+  console.log('📋 正在取得機師列表...');
+  const allPilots = await fetchPilotList();
+
+  let targets;
+  if (SINGLE_PILOT_CN) {
+    targets = allPilots.filter(p => p.PilotName === SINGLE_PILOT_CN || p.name === SINGLE_PILOT_CN);
+    if (targets.length === 0) {
+      targets = allPilots.filter(p => (p.PilotName || '').includes(SINGLE_PILOT_CN));
+    }
+  } else if (ALL_QUALITY) {
+    targets = allPilots;
+  } else {
+    targets = allPilots.filter(p => p.quality === 'SSR');
+  }
+
+  // 只補丁 Firestore 中已存在的機師
+  targets = targets.filter(p => existingMap.has(p.PilotName));
+  targets = targets.slice(0, LIMIT);
+  console.log(`  → 本次比對：${targets.length} 個（Firestore 已存在）`);
+  console.log('');
+
+  const patches = []; // { id, name, updates, diffSummary }
+
+  for (let i = 0; i < targets.length; i++) {
+    const pilot = targets[i];
+    const nameTW = s2t(pilot.PilotName);
+    const existing = existingMap.get(pilot.PilotName);
+    process.stdout.write(`  [${i + 1}/${targets.length}] ⏳ ${nameTW}...`);
+
+    try {
+      const detail = await fetchPilotDetail(pilot.ID);
+      const fresh = buildPilotJson(detail, 0);
+
+      const mergedSkills     = mergeSkillsArray(existing.skills, fresh.skills);
+      const mergedTalents    = mergeTalentsArray(existing.talents, fresh.talents);
+      const mergedNeuralDrive = mergeNeuralDriveArray(existing.neuralDrive, fresh.neuralDrive);
+
+      const updates = {};
+      const diffSummary = [];
+
+      if (isDifferent(existing.skills, mergedSkills)) {
+        updates.skills = mergedSkills;
+        diffSummary.push('skills');
+      }
+      if (isDifferent(existing.talents, mergedTalents)) {
+        updates.talents = mergedTalents;
+        diffSummary.push('talents');
+      }
+      if (isDifferent(existing.neuralDrive, mergedNeuralDrive)) {
+        updates.neuralDrive = mergedNeuralDrive;
+        diffSummary.push('neuralDrive');
+      }
+
+      if (Object.keys(updates).length > 0) {
+        patches.push({ id: existing.id, name: nameTW, updates, diffSummary });
+        process.stdout.write(` ✎ [${diffSummary.join(' / ')}]\n`);
+      } else {
+        process.stdout.write(' — 無差異\n');
+      }
+    } catch (err) {
+      process.stdout.write(` ✗ ${err.message}\n`);
+    }
+
+    if (i < targets.length - 1) {
+      await new Promise(r => setTimeout(r, 300));
+    }
+  }
+
+  console.log('');
+  console.log('═══════════════════════════════════════════');
+  console.log(`📊 補丁報告  — 需要更新：${patches.length} / ${targets.length} 個機師`);
+  if (patches.length > 0) {
+    patches.forEach(p => console.log(`   ✎  ${p.name.padEnd(12)} → ${p.diffSummary.join('、')}`));
+  }
+  console.log('');
+
+  if (patches.length === 0) {
+    console.log('✅ 所有機師資料已是最新，無需補丁。');
+    return;
+  }
+
+  // DUMP-JSON 模式：只輸出暫存 JSON
+  if (DUMP_JSON) {
+    const ts = new Date().toISOString().slice(0, 10);
+    const tmpPath = path.join(__dirname, `tmp-pilot-patch-${ts}.json`);
+    const output = patches.map(({ id, name, updates, diffSummary }) => ({
+      id, name, diffSummary, updates,
+    }));
+    fs.writeFileSync(tmpPath, JSON.stringify(output, null, 2), 'utf-8');
+    console.log(`📄 暫存比對 JSON 已輸出：${tmpPath}`);
+    console.log('   確認無誤後，移除 --dump-json 參數重新執行即可寫入 Firestore。');
+    return;
+  }
+
+  // 確認並寫入 Firestore
+  const confirmed = await promptConfirm(`將 ${patches.length} 個機師的差異欄位寫入 Firestore？[y/N] `);
+  if (!confirmed) { console.log('已取消。'); process.exit(0); }
+
+  process.stdout.write('🔥 寫入 Firestore...');
+  let written = 0;
+  for (let i = 0; i < patches.length; i += 500) {
+    const batch = db.batch();
+    patches.slice(i, i + 500).forEach(({ id, updates }) => {
+      batch.update(db.collection('pilots').doc(id), updates);
+    });
+    await batch.commit();
+    written += Math.min(500, patches.length - i);
+  }
+  console.log(` ${written} 筆完成`);
+  console.log('');
+  console.log(`✅ 補丁完成！${written} 個機師已更新。`);
+}
+
+// ════════════════════════════════════════════════════════════
 // 主流程
 // ════════════════════════════════════════════════════════════
 async function main() {
+  if (PATCH_MODE) { await runPatchMode(); return; }
+
   console.log('');
   console.log('╔══════════════════════════════════════════════╗');
   console.log('║  鋼嵐工具站 — 機師擷取腳本 v4 (Firebase 版)  ║');

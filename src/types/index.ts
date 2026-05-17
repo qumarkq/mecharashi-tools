@@ -1,3 +1,39 @@
+// ─── 技能 / Buff 共用型別（PLAN-001）────────────────────────────────────────
+
+/** 觸發條件（顯示給玩家的說明標籤，計算器不自動判斷） */
+export interface SkillCondition {
+  trigger:         string
+  weaponCategory?: string
+  hpThreshold?:    number
+  minApCost?:      number
+  targetClass?:    string
+}
+
+/** 單一可計算效果條目 */
+export interface SkillEffect {
+  /** 影響屬性，與 Module 平坦欄位名稱對齊：
+   *  'dmg' | 'crit' | 'critDmg' | 'acc'
+   *  'dmg_assault' | 'dmg_melee' | 'dmg_shooting' | 'dmg_tactical'
+   *  'dmg_blade' | 'dmg_machinegun' | ... (武器種類，同 Module)
+   *  'range' | 'armor_rate' | 'firepower_rate' | ... (其他屬性) */
+  stat:      string
+  value:     number
+  scope:     string
+  condition: SkillCondition | null
+}
+
+/** buffs Collection 文件 */
+export interface GameBuff {
+  id:          string
+  name:        string
+  description: string
+  icon?:       string
+  buffType:    string
+  maxStack?:   number
+  duration?:   number
+  effects:     SkillEffect[]
+}
+
 // ─── 機師 ──────────────────────────────────────────────────────────────────
 
 export interface PilotStats {
@@ -11,16 +47,20 @@ export interface PilotStats {
 
 export interface PilotSkill {
   name: string
+  /** SkillType enum：被動技能 / 主動技能 / 指令技能 / 必殺技能 / 武器技能 */
   type: string
+  /** biometicComputer 單元類型："0"=核心單元 "6"=職業單元 */
+  unitType?: string
   ap?: string
+  /** 冷卻回合數；指令技能（type=指令技能）才有 */
+  cd?: string
+  /** 限定武器類別；武器技能（type=武器技能）才有 */
   weapon?: string
   description: string
   icon: string
   iconLocal: string
-  dmg: number
-  crit: number
-  critDmg: number
-  acc: number
+  effects:  SkillEffect[]
+  buffIds:  string[]
 }
 
 export interface PilotTalent {
@@ -30,10 +70,9 @@ export interface PilotTalent {
   descriptionMax: string
   icon: string
   iconLocal: string
-  dmg: number
-  crit: number
-  critDmg: number
-  acc: number
+  effects:          SkillEffect[]
+  enhancedEffects?: SkillEffect[]
+  buffIds:          string[]
 }
 
 export interface NeuralDriveLevel {
@@ -43,6 +82,8 @@ export interface NeuralDriveLevel {
   skillName: string
   skillIcon: string
   iconLocal: string
+  effects: SkillEffect[]
+  buffIds: string[]
 }
 
 export interface NeuralDrive {
@@ -50,10 +91,6 @@ export interface NeuralDrive {
   icon: string
   slots: string[]
   levels: NeuralDriveLevel[]
-  dmg: number
-  crit: number
-  critDmg: number
-  acc: number
 }
 
 export interface Pilot {
@@ -281,11 +318,9 @@ export interface WeaponSkill {
   /** 生效方式："carry" 攜帶即生效 / "equip" 裝備中生效 / "use" 僅使用時生效 */
   activation: 'carry' | 'equip' | 'use'
   description: string
-  dmg?: number
-  crit?: number
-  critDmg?: number
-  acc?: number
-  enhancesTalent?: string
+  effects:             SkillEffect[]
+  buffIds:             string[]
+  enhancesTalentName?: string
 }
 
 export interface WeaponFixedModEffect {

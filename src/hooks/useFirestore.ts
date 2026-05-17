@@ -3,6 +3,7 @@ import type {
   Pilot, Mech, Module, Weapon, Backpack, Component,
   PilotResearch, GlobalResearch,
 } from '../types'
+import { ModuleSlot } from '../types/enums'
 import {
   getPilots, getPilot,
   getMechs, getMech,
@@ -110,6 +111,7 @@ export interface MechWithModules {
   mod4: Module | null
   mod8: Module | null
   fixedMods: Module[]
+  exclusiveMods: Module[]
 }
 
 export function useMechWithModules(id: string | undefined): HookResult<MechWithModules | null> {
@@ -126,9 +128,12 @@ export function useMechWithModules(id: string | undefined): HookResult<MechWithM
         const find = (mid: string) => modules.find((m) => m.id === mid) ?? null
         setData({
           mech,
-          mod4:      find(mech.module4Id),
-          mod8:      find(mech.module8Id),
-          fixedMods: (mech.moduleFixedIds ?? []).map(find).filter((m): m is Module => m !== null),
+          mod4:          find(mech.module4Id),
+          mod8:          find(mech.module8Id),
+          fixedMods:     (mech.moduleFixedIds ?? []).map(find).filter((m): m is Module => m !== null),
+          exclusiveMods: modules.filter(
+            (m) => m.boundMechId === mech.id && m.slot === ModuleSlot.EXCLUSIVE
+          ),
         })
       })
       .catch((e: unknown) => setError(e instanceof Error ? e : new Error(String(e))))
@@ -185,6 +190,25 @@ export function useWeapon(id: string | undefined): HookResult<Weapon | null> {
       .catch((e: unknown) => setError(e instanceof Error ? e : new Error(String(e))))
       .finally(() => setLoading(false))
   }, [id])
+
+  return { data, loading, error }
+}
+
+export function usePilotExclusiveWeapon(pilotName: string | undefined): HookResult<Weapon | null> {
+  const [data, setData] = useState<Weapon | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    if (!pilotName) { setLoading(false); return }
+    setLoading(true)
+    getWeapons()
+      .then((weapons) => {
+        setData(weapons.find((w) => w.isExclusive && w.exclusiveFor === pilotName) ?? null)
+      })
+      .catch((e: unknown) => setError(e instanceof Error ? e : new Error(String(e))))
+      .finally(() => setLoading(false))
+  }, [pilotName])
 
   return { data, loading, error }
 }

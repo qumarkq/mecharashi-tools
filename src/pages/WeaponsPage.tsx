@@ -181,9 +181,9 @@ export default function WeaponsPage() {
                             </span>
                           </div>
                           <p className="text-[11px] text-text-dim leading-relaxed">{sk.description}</p>
-                          {sk.enhancesTalent && (
+                          {sk.enhancesTalentName && (
                             <p className="text-[10px] text-accent-pink mt-1">
-                              天賦加強：{sk.enhancesTalent}
+                              天賦加強：{sk.enhancesTalentName}
                             </p>
                           )}
                         </div>

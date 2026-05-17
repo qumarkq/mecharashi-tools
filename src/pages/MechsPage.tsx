@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMechs } from '../hooks/useFirestore'
+import { assetUrl } from '../utils/assets'
 
 const ARMOR_TYPES = ['輕型', '中甲', '重型']
 
@@ -30,6 +31,22 @@ function StatBar({ label, value, max }: { label: string; value: number; max: num
   )
 }
 
+function MobilityGrid({ value }: { value: number }) {
+  return (
+    <div>
+      <div className="flex justify-between text-[11px] mb-1">
+        <span className="text-text-dim">移動</span>
+        <span className="text-accent-cyan font-[JetBrains_Mono,monospace] font-semibold">{value}</span>
+      </div>
+      <div className="flex gap-0.5">
+        {Array.from({ length: value }).map((_, i) => (
+          <div key={i} className="w-3 h-2.5 rounded-sm bg-accent-cyan" />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function MechsPage() {
   const { data: mechs, loading } = useMechs()
   const [armorFilter, setArmorFilter] = useState('')
@@ -45,7 +62,6 @@ export default function MechsPage() {
 
   const MAX_FP = Math.max(...mechs.map((m) => m.firepower), 1)
   const MAX_EV = Math.max(...mechs.map((m) => m.evasion), 1)
-  const MAX_MB = Math.max(...mechs.map((m) => m.mobility), 1)
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
@@ -93,7 +109,7 @@ export default function MechsPage() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-bg-card border border-border rounded-xl h-48 animate-pulse" />
+            <div key={i} className="bg-bg-card border border-border rounded-xl h-72 animate-pulse" />
           ))}
         </div>
       ) : (
@@ -104,21 +120,42 @@ export default function MechsPage() {
               <Link
                 key={mech.id}
                 to={`/mechs/${mech.id}`}
-                className="group block bg-bg-card border border-border rounded-xl p-5 no-underline transition-all hover:bg-bg-card-hover hover:border-border-accent hover:-translate-y-0.5"
+                className="group block bg-bg-card border border-border rounded-xl overflow-hidden no-underline transition-all hover:bg-bg-card-hover hover:border-border-accent hover:-translate-y-0.5"
               >
+                {/* Portrait */}
+                <div className="relative h-36 bg-bg-dark overflow-hidden">
+                  <img
+                    src={mech.portrait ? assetUrl(mech.portrait) : assetUrl(`images/mechs/${mech.name}.png`)}
+                    alt=""
+                    className="w-full h-full object-contain object-center transition-transform duration-300 group-hover:scale-105"
+                    onError={(e) => {
+                      const el = e.target as HTMLImageElement
+                      if (!el.dataset.fb) {
+                        el.dataset.fb = '1'
+                        el.src = assetUrl(`images/mechs/${mech.name}.png`)
+                      } else {
+                        el.style.display = 'none'
+                      }
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-bg-card via-transparent to-transparent" />
+                  {s && (
+                    <span
+                      className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold border ${s.bg} ${s.text} ${s.border}`}
+                    >
+                      {mech.armorType}
+                    </span>
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className="p-5">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="font-bold text-base text-text-primary group-hover:text-accent-orange transition-colors">
                       {mech.name}
                     </h3>
-                    {s && (
-                      <span
-                        className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold border ${s.bg} ${s.text} ${s.border}`}
-                      >
-                        {mech.armorType}
-                      </span>
-                    )}
                   </div>
                   <div className="text-right text-xs text-text-dim">
                     <p>
@@ -138,7 +175,7 @@ export default function MechsPage() {
                 <div className="space-y-2">
                   <StatBar label="火力" value={mech.firepower} max={MAX_FP} />
                   <StatBar label="閃避" value={mech.evasion} max={MAX_EV} />
-                  <StatBar label="移動" value={mech.mobility} max={MAX_MB} />
+                  <MobilityGrid value={mech.mobility} />
                 </div>
 
                 {/* Parts */}
@@ -157,6 +194,7 @@ export default function MechsPage() {
                     </div>
                   ))}
                 </div>
+                </div>{/* /p-5 */}
               </Link>
             )
           })}

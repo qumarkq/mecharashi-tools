@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { assetUrl } from '../utils/assets'
 import { useModules, useMechNameMap } from '../hooks/useFirestore'
 import { ModuleSlot, ModuleRarity, MechPartPosition } from '../types/enums'
-import type { Module, ModuleLevel } from '../types'
+import type { Module } from '../types'
+import { STAT_LABELS, highlightNumbers } from '../utils/moduleStats'
 
 const SLOT_LABELS: Record<string, string> = {
   [ModuleSlot.SLOT_4]:    '特性模組',
@@ -32,43 +33,6 @@ const RARITY_STYLES: Record<string, string> = {
 const CATALOG_SLOTS = [ModuleSlot.SLOT_4, ModuleSlot.SLOT_8, ModuleSlot.UNIVERSAL] as const
 
 
-type StatKey = Exclude<keyof ModuleLevel, 'level' | 'description'>
-
-const STAT_LABELS: Array<{ key: StatKey; label: string; color: string; suffix: string; prefix?: string }> = [
-  { key: 'dmg',              label: '傷害',     color: 'text-accent-orange', suffix: '%' },
-  { key: 'crit_rate',        label: '暴擊',     color: 'text-accent-yellow', suffix: '%' },
-  { key: 'critDmg',          label: '爆傷',     color: 'text-accent-red',    suffix: '%' },
-  { key: 'acc_rate',         label: '命中',     color: 'text-accent-blue',   suffix: '%' },
-  { key: 'firepower_rate',   label: '火力',     color: 'text-accent-green',  suffix: '%' },
-  { key: 'armor_rate',       label: '護甲',     color: 'text-accent-cyan',   suffix: '%' },
-  { key: 'output_bonus',     label: '出力',     color: 'text-accent-purple', suffix: '' },
-  { key: 'dodge_rate',       label: '回避',     color: 'text-accent-blue',   suffix: '%' },
-  { key: 'durable_rate',     label: '耐久',     color: 'text-accent-green',  suffix: '%' },
-  { key: 'dmg_resist_rate',  label: '減傷',     color: 'text-accent-cyan',   suffix: '%', prefix: '-' },
-  { key: 'crit_resist_rate', label: '抗暴',     color: 'text-accent-yellow', suffix: '%', prefix: '-' },
-  { key: 'dmg_assault',      label: '突擊傷害', color: 'text-accent-orange', suffix: '%' },
-  { key: 'dmg_melee',        label: '格鬥傷害', color: 'text-accent-orange', suffix: '%' },
-  { key: 'dmg_shooting',     label: '射擊傷害', color: 'text-accent-orange', suffix: '%' },
-  { key: 'dmg_tactical',     label: '戰術傷害', color: 'text-accent-orange', suffix: '%' },
-  { key: 'dmg_blade',        label: '刀傷害',   color: 'text-accent-orange', suffix: '%' },
-  { key: 'dmg_polearm',      label: '槍傷害',   color: 'text-accent-orange', suffix: '%' },
-  { key: 'dmg_missile',      label: '飛彈傷害', color: 'text-accent-orange', suffix: '%' },
-  { key: 'dmg_rocket',       label: '火箭傷害', color: 'text-accent-orange', suffix: '%' },
-  { key: 'dmg_shotgun',      label: '散彈傷害', color: 'text-accent-orange', suffix: '%' },
-  { key: 'dmg_machinegun',   label: '機槍傷害', color: 'text-accent-orange', suffix: '%' },
-  { key: 'dmg_railgun',      label: '軌道傷害', color: 'text-accent-orange', suffix: '%' },
-  { key: 'dmg_sniper',       label: '狙擊傷害', color: 'text-accent-orange', suffix: '%' },
-  { key: 'dmg_counter',      label: '反擊傷害', color: 'text-accent-red',    suffix: '%' },
-  { key: 'dmg_enemy_phase',  label: '敵回傷害', color: 'text-accent-red',    suffix: '%' },
-]
-
-function highlightNumbers(text: string): React.ReactNode[] {
-  return text.split(/(\d+(?:\.\d+)?%?|%)/).map((part, i) =>
-    i % 2 === 1
-      ? <span key={i} className="text-accent-red font-bold">{part}</span>
-      : part
-  )
-}
 
 function LevelTooltip({ mod, pinned }: { mod: Module; pinned: boolean }) {
   const levels = mod.levels ?? []
@@ -79,12 +43,12 @@ function LevelTooltip({ mod, pinned }: { mod: Module; pinned: boolean }) {
   )
 
   return (
-    <div className="w-72 bg-bg-card border border-border-accent rounded-xl p-4 shadow-2xl">
-      <div className="flex items-center justify-between mb-3">
+    <div className="w-72 max-h-[min(90vh,_600px)] flex flex-col bg-bg-card border border-border-accent rounded-xl p-4 shadow-2xl">
+      <div className="flex items-center justify-between mb-3 flex-shrink-0">
         <span className="text-xs font-bold text-accent-orange">{mod.name}</span>
         <span className="text-[10px] text-text-dim">各等級效果{pinned ? ' · 📌' : ''}</span>
       </div>
-      <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+      <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-2">
         {levels.map((lv) => (
           <div key={lv.level} className="bg-bg-dark rounded-lg p-2.5">
             <div className="flex items-start gap-2">
@@ -112,7 +76,7 @@ function LevelTooltip({ mod, pinned }: { mod: Module; pinned: boolean }) {
         ))}
       </div>
       {!pinned && (
-        <p className="text-[10px] text-text-dim mt-2 text-center">點擊模組固定此視窗</p>
+        <p className="text-[10px] text-text-dim mt-2 text-center flex-shrink-0">點擊模組固定此視窗</p>
       )}
     </div>
   )
@@ -121,7 +85,32 @@ function LevelTooltip({ mod, pinned }: { mod: Module; pinned: boolean }) {
 interface TooltipState {
   modId: string
   x: number
-  y: number
+  anchorTop: number
+}
+
+function TooltipPortal({ mod, pinned, x, anchorTop }: {
+  mod: Module; pinned: boolean; x: number; anchorTop: number
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [top, setTop] = useState(anchorTop)
+
+  useLayoutEffect(() => {
+    if (!ref.current) return
+    const h = ref.current.offsetHeight
+    setTop(Math.max(8, Math.min(anchorTop, window.innerHeight - h - 8)))
+  }, [anchorTop, mod.id])
+
+  return createPortal(
+    <div
+      ref={ref}
+      className={`fixed z-50 ${pinned ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      style={{ left: x, top }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <LevelTooltip mod={mod} pinned={pinned} />
+    </div>,
+    document.body
+  )
 }
 
 export default function ModulesPage() {
@@ -166,12 +155,11 @@ export default function ModulesPage() {
     })
   }
 
-  const computePos = (cardEl: HTMLDivElement): { x: number; y: number } => {
+  const computePos = (cardEl: HTMLDivElement): { x: number; anchorTop: number } => {
     const rect = cardEl.getBoundingClientRect()
     const tooltipW = 296
     const x = rect.right + 8 + tooltipW > window.innerWidth ? rect.left - tooltipW - 8 : rect.right + 8
-    const y = Math.max(8, Math.min(rect.top, window.innerHeight - 360))
-    return { x, y }
+    return { x, anchorTop: rect.top }
   }
 
   const handleMouseEnter = (modId: string, cardEl: HTMLDivElement) => {
@@ -218,14 +206,14 @@ export default function ModulesPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-12" onClick={handleContainerClick}>
 
-      {activeMod && activeTooltip && createPortal(
-        <div
-          className="fixed z-50 pointer-events-none"
-          style={{ left: activeTooltip.x, top: activeTooltip.y }}
-        >
-          <LevelTooltip mod={activeMod} pinned={!!pinnedTooltip} />
-        </div>,
-        document.body
+      {activeMod && activeTooltip && (
+        <TooltipPortal
+          key={activeTooltip.modId}
+          mod={activeMod}
+          pinned={!!pinnedTooltip}
+          x={activeTooltip.x}
+          anchorTop={activeTooltip.anchorTop}
+        />
       )}
 
       <div className="mb-8">
