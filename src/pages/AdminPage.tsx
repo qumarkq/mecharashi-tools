@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import type { Module, Mech, ConditionalEffect, ModuleLevel, UserProfile, Pilot, PilotSkill, SkillEffect, SkillCondition, WeaponRequirement } from '../types'
+import type { Module, Mech, ConditionalEffect, ModuleLevel, UserProfile, Pilot, PilotSkill, SkillEffect, SkillCondition } from '../types'
 import { formatWeaponReq } from '../types'
 import { ModuleRarity, MechPartPosition, ModuleSlot, ModuleSource, ModuleDataSource, ConditionalTrigger, PilotClass, MechLicense, ItemRarity, SkillType, WeaponCategory } from '../types/enums'
 import { getModules, getMechs, updateModule, updateMech, getPilots, updatePilot } from '../lib/firestoreApi'
