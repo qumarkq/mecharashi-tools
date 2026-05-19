@@ -4,7 +4,7 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [Unreleased] - 2026-05-17
+## [Unreleased] - 2026-05-19
 
 ### ⚠ 重大變更
 
@@ -12,6 +12,7 @@
 
 ### ✨ 新功能
 
+- **weapons**: 武器資料模型全面重構（PLAN-003）；新增 PLAN-004 計畫文件 (`37cbee7`)
 - **weapons/admin**: 武器需求結構化模型（PLAN-003）；新增機師編輯面板；移除科研設定 (`bea0e73`)
 - **pilot/mech**: 機師/機甲詳情頁改版；新增專屬模組/武器、模組等級 Tooltip、技能 Buff 型別系統 (`7064fc4`)
 - **layout**: 新增全域字體大小切換（小/中/大），以 localStorage 持久化；模組描述與等級彈窗數字 % 紅色標示 (`65813ae`)
