@@ -24,6 +24,7 @@
 
 ### 🐛 修復
 
+- 修正build因Weapon 的資料型別調整失敗的bug (`f863548`)
 - **admin**: 移除 AdminPage 未使用的 WeaponRequirement import (`6cf5528`)
 - **mech**: module4Id/module8Id 改為選填；修正部件卡佈局及左右臂順序 (`5399367`)
 - **deploy**: 修正 GitHub Pages SPA 直連子路徑 404 問題 (`9ac987c`)
