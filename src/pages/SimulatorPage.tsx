@@ -446,7 +446,7 @@ function WeaponStep({ weapons, state, onSelect, onNext }: { weapons: Weapon[]; s
           <SelectionCard key={w.id} selected={state.weaponId === w.id} onClick={() => onSelect(w.id)}>
             <div className="text-sm font-bold">{w.name}</div>
             <div className="text-[11px] text-text-dim">
-              {w.category}/{w.type} · 重量{w.weight} {w.isExclusive && <span className="text-accent-yellow">★專武</span>}
+              {w.kind}/{w.type} · 重量{w.weight} {w.isExclusive && <span className="text-accent-yellow">★專武</span>}
             </div>
           </SelectionCard>
         ))}
