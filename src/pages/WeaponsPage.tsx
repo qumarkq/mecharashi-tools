@@ -3,16 +3,9 @@ import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { useWeapons, usePilotNameMap } from '../hooks/useFirestore'
 import { highlightNumbers } from '../utils/moduleStats'
-import { assetUrl } from '../utils/assets'
+import { WeaponIcon } from '../components/WeaponIcon'
+import { RarityBadge } from '../components/RarityBadge'
 import type { Weapon } from '../types'
-
-const RARITY_STYLES: Record<string, string> = {
-  SS:  'text-accent-yellow bg-accent-yellow/10 border-accent-yellow/40',
-  'S+':'text-accent-purple bg-accent-purple/10 border-accent-purple/40',
-  S:   'text-accent-blue   bg-accent-blue/10   border-accent-blue/40',
-  A:   'text-accent-green  bg-accent-green/10  border-accent-green/40',
-  B:   'text-text-secondary bg-bg-dark border-border',
-}
 
 const EQUIP_SLOT_LABELS: Record<string, string> = {
   singleHand: '單手',
@@ -47,26 +40,6 @@ const ALL_TYPES      = ['射擊', '格鬥', '突擊', '戰術']
 const ALL_KINDS      = ['大盾','手盾','刀劍','拳套','打樁機','電鋸','長柄','電磁炮','浮游炮','導彈','火箭','霰彈槍','機槍','重機槍','噴火器','輕型狙擊步槍','狙擊步槍']
 const ALL_EQUIP_SLOTS = ['singleHand', 'dualHand', 'shoulder', 'back']
 
-function WeaponIcon({ icon, name, size = 'md' }: { icon?: string; name: string; size?: 'sm' | 'md' | 'lg' }) {
-  const [failed, setFailed] = useState(false)
-  const dim = size === 'lg' ? 'w-16 h-16' : size === 'md' ? 'w-10 h-10' : 'w-8 h-8'
-
-  if (!icon || failed) {
-    return (
-      <div className={`${dim} rounded-lg bg-bg-dark border border-border flex items-center justify-center flex-shrink-0`}>
-        <span className="text-text-dim text-[10px]">武</span>
-      </div>
-    )
-  }
-  return (
-    <img
-      src={assetUrl(icon)}
-      alt={name}
-      className={`${dim} rounded-lg object-contain bg-bg-dark border border-border flex-shrink-0`}
-      onError={() => setFailed(true)}
-    />
-  )
-}
 
 function Num({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
@@ -85,7 +58,6 @@ function WeaponTooltip({ weapon, pilotNameMap, pinned }: {
   pilotNameMap: Record<string, string>
   pinned: boolean
 }) {
-  const rarityCls = RARITY_STYLES[weapon.rarity] ?? 'text-text-secondary border-border'
   const pilotName = weapon.exclusiveFor ? pilotNameMap[weapon.exclusiveFor] : null
 
   const stats: Array<{ label: string; value: string; noRed?: boolean }> = [
@@ -108,13 +80,11 @@ function WeaponTooltip({ weapon, pilotNameMap, pinned }: {
     <div className="w-80 max-h-[min(90vh,_640px)] flex flex-col bg-bg-card border border-border-accent rounded-xl p-4 shadow-2xl">
       {/* Header */}
       <div className="flex items-start gap-3 mb-3 flex-shrink-0">
-        <WeaponIcon icon={weapon.icon} name={weapon.name} size="lg" />
+        <WeaponIcon icon={weapon.icon} name={weapon.name} size="lg" isExclusive={weapon.isExclusive} />
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-1">
             <div className="font-bold text-sm text-text-primary leading-tight">{weapon.name}</div>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-bold border flex-shrink-0 ${rarityCls}`}>
-              {weapon.rarity}
-            </span>
+            <RarityBadge rarity={weapon.rarity} className="px-2" />
           </div>
           <div className="text-[10px] text-text-dim mt-0.5">{weapon.type} · {weapon.kind}</div>
           {pilotName && weapon.exclusiveFor && (
@@ -457,7 +427,6 @@ export default function WeaponsPage() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {filtered.map((w) => {
-            const rarityCls  = RARITY_STYLES[w.rarity] ?? 'text-text-secondary bg-bg-dark border-border'
             const isPinned   = pinnedTooltip?.weaponId === w.id
             const pilotName  = w.exclusiveFor ? pilotNameMap[w.exclusiveFor] : null
 
@@ -475,13 +444,11 @@ export default function WeaponsPage() {
               >
                 {/* Top row: icon + name/rarity */}
                 <div className="flex items-start gap-2 mb-2">
-                  <WeaponIcon icon={w.icon} name={w.name} size="md" />
+                  <WeaponIcon icon={w.icon} name={w.name} size="md" isExclusive={w.isExclusive} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-1 mb-0.5">
                       <h3 className="font-bold text-sm text-text-primary leading-tight line-clamp-2">{w.name}</h3>
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border flex-shrink-0 ${rarityCls}`}>
-                        {w.rarity}
-                      </span>
+                      <RarityBadge rarity={w.rarity} />
                     </div>
                     {/* Type · Kind + pilot link */}
                     <div className="flex flex-wrap items-center gap-1">

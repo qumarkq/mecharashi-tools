@@ -6,6 +6,7 @@ import { formatWeaponReq } from '../types'
 type NdLevel = NeuralDrive['levels'][number]
 import { assetUrl } from '../utils/assets'
 import { usePilot, usePilotExclusiveWeapon } from '../hooks/useFirestore'
+import { WeaponIcon } from '../components/WeaponIcon'
 import { highlightNumbers } from '../utils/moduleStats'
 
 // ─── Radar Chart ─────────────────────────────────────────────────────────────
@@ -279,7 +280,6 @@ function WeaponDetailTooltip({ weapon, x, anchorTop }: { weapon: Weapon; x: numb
 
 function ExclusiveWeaponPanel({ pilotId, talentNames }: { pilotId: string; talentNames: string[] }) {
   const { data: weapon, loading } = usePilotExclusiveWeapon(pilotId)
-  const [imgErr, setImgErr] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
   const [tooltipPos, setTooltipPos] = useState<{ x: number; anchorTop: number } | null>(null)
 
@@ -323,18 +323,7 @@ function ExclusiveWeaponPanel({ pilotId, talentNames }: { pilotId: string; talen
         {/* Header: icon + name + rarity */}
         <div className="px-3 py-3 border-b border-border bg-accent-yellow/5">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 flex-shrink-0 bg-bg-card border border-border rounded-lg overflow-hidden flex items-center justify-center">
-              {weapon.icon && !imgErr ? (
-                <img
-                  src={assetUrl(weapon.icon)}
-                  alt={weapon.name}
-                  className="w-full h-full object-contain"
-                  onError={() => setImgErr(true)}
-                />
-              ) : (
-                <span className="text-text-dim text-xl">⚔</span>
-              )}
-            </div>
+            <WeaponIcon icon={weapon.icon} name={weapon.name} size="md" isExclusive={weapon.isExclusive} />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
                 <span className="font-bold text-text-primary leading-tight">{weapon.name}</span>
