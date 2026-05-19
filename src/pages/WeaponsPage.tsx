@@ -1,37 +1,17 @@
-import { useState, useLayoutEffect, useRef } from 'react'
+﻿import { useState, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useWeapons, usePilotNameMap } from '../hooks/useFirestore'
-import { highlightNumbers } from '../utils/moduleStats'
 import { WeaponIcon } from '../components/WeaponIcon'
-import { RarityBadge } from '../components/RarityBadge'
+import { WeaponRarityBadge } from '../components/WeaponRarityBadge'
+import {
+  EQUIP_SLOT_LABELS,
+  MECH_RESTRICTION_LABELS,
+  ACTIVATION_CONFIG,
+  ACTIVATION_LABELS,
+} from '../components/WeaponBadges'
+import { assetUrl } from '../utils/assets'
 import type { Weapon } from '../types'
-
-const EQUIP_SLOT_LABELS: Record<string, string> = {
-  singleHand: '單手',
-  dualHand:   '雙手',
-  shoulder:   '肩膀',
-  back:       '背後',
-}
-
-const MECH_RESTRICTION_LABELS: Record<string, string> = {
-  none:   '無限制',
-  light:  '輕型專用',
-  medium: '中型專用',
-  heavy:  '重型專用',
-}
-
-const ACTIVATION_LABELS: Record<string, string> = {
-  carry: '攜帶生效',
-  equip: '裝備中生效',
-  use:   '使用時生效',
-}
-
-const ACTIVATION_STYLES: Record<string, string> = {
-  carry: 'text-accent-green  bg-accent-green/10  border-accent-green/30',
-  equip: 'text-accent-orange bg-accent-orange/10 border-accent-orange/30',
-  use:   'text-accent-blue   bg-accent-blue/10   border-accent-blue/30',
-}
 
 const RARITY_ORDER: Record<string, number> = { SS: 0, 'S+': 1, S: 2, A: 3, B: 4 }
 
@@ -49,27 +29,50 @@ function Num({ children, className = '' }: { children: React.ReactNode; classNam
   )
 }
 
+function SkillIcon({ iconLocal, name, size = 'md' }: { iconLocal?: string; name: string; size?: 'sm' | 'md' }) {
+  const [err, setErr] = useState(false)
+  const cls = size === 'sm' ? 'w-7 h-7' : 'w-10 h-10'
+  if (err || !iconLocal) {
+    return (
+      <div className={`${cls} rounded-lg bg-bg-dark border border-border flex items-center justify-center text-text-dim text-xs flex-shrink-0`}>
+        技
+      </div>
+    )
+  }
+  return (
+    <img
+      src={assetUrl(iconLocal)}
+      alt={name}
+      className={`${cls} rounded-lg object-cover flex-shrink-0`}
+      onError={() => setErr(true)}
+    />
+  )
+}
+
 function formatRange(w: Weapon): string {
   return w.rangeType === 'ring' ? `${w.maxRange}+` : `${w.minRange}-${w.maxRange}`
 }
 
-function WeaponTooltip({ weapon, pilotNameMap, pinned }: {
+function formatRangeType(rangeType: string): string {
+  if (rangeType === 'ring') return '環形'
+  if (rangeType === 'orthogonal') return '十字直線'
+  return '菱形'
+}
+
+function WeaponTooltip({ weapon, pilotNameMap }: {
   weapon: Weapon
   pilotNameMap: Record<string, string>
-  pinned: boolean
 }) {
   const pilotName = weapon.exclusiveFor ? pilotNameMap[weapon.exclusiveFor] : null
-
   const stats: Array<{ label: string; value: string; noRed?: boolean }> = [
     { label: '攻擊力',  value: weapon.attack },
     { label: '命中',    value: weapon.accuracy.toLocaleString() },
     { label: '暴擊',    value: weapon.critValue.toLocaleString() },
     { label: '重量',    value: weapon.weight.toString() },
     { label: '射程',    value: formatRange(weapon) },
-    { label: '型態',    value: weapon.rangeType === 'ring' ? '環形' : '線性', noRed: true },
+    { label: '射程型態',    value: formatRangeType(weapon.rangeType), noRed: true },
     { label: '連擊數',  value: weapon.hitCount.toString() },
     { label: '彈藥量',  value: weapon.ammoCount === 0 ? '∞' : weapon.ammoCount.toString() },
-    { label: '種係數',  value: weapon.kindCoefficient.toString() },
     { label: '裝備部位',value: EQUIP_SLOT_LABELS[weapon.equipSlot] ?? weapon.equipSlot, noRed: true },
     ...(weapon.mechRestriction !== 'none'
       ? [{ label: '機甲限制', value: MECH_RESTRICTION_LABELS[weapon.mechRestriction] ?? weapon.mechRestriction, noRed: true }]
@@ -84,13 +87,13 @@ function WeaponTooltip({ weapon, pilotNameMap, pinned }: {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-1">
             <div className="font-bold text-sm text-text-primary leading-tight">{weapon.name}</div>
-            <RarityBadge rarity={weapon.rarity} className="px-2" />
+            <WeaponRarityBadge rarity={weapon.rarity} className="px-2" />
           </div>
-          <div className="text-[10px] text-text-dim mt-0.5">{weapon.type} · {weapon.kind}</div>
+          <div className="text-[13px] text-text-dim mt-0.5">{weapon.type} · {weapon.kind}</div>
           {pilotName && weapon.exclusiveFor && (
             <Link
               to={`/pilots/${weapon.exclusiveFor}`}
-              className="text-[10px] text-accent-pink hover:underline mt-0.5 block"
+              className="text-[13px] text-accent-pink hover:underline mt-0.5 block"
             >
               専武：{pilotName}
             </Link>
@@ -103,17 +106,17 @@ function WeaponTooltip({ weapon, pilotNameMap, pinned }: {
         <div className="bg-bg-dark rounded-lg p-2.5 grid grid-cols-2 gap-x-3 gap-y-1">
           {stats.map(({ label, value, noRed }) => (
             <div key={label} className="flex items-center gap-1.5">
-              <span className="text-[10px] text-text-dim whitespace-nowrap">{label}</span>
+              <span className="text-[13px] text-text-dim whitespace-nowrap">{label}</span>
               {noRed
-                ? <span className="text-[11px] text-text-secondary">{value}</span>
-                : <Num className="text-[11px]">{value}</Num>
+                ? <span className="text-[14px] text-text-secondary">{value}</span>
+                : <Num className="text-[14px]">{value}</Num>
               }
             </div>
           ))}
         </div>
 
         {/* Slots */}
-        <div className="bg-bg-dark rounded-lg px-2.5 py-2 flex items-center gap-4 text-[11px]">
+        <div className="bg-bg-dark rounded-lg px-2.5 py-2 flex items-center gap-4 text-[14px]">
           <span className="text-text-dim">觸元件</span>
           <Num>{weapon.triggerSlots}</Num>
           <span className="text-text-dim">應元件</span>
@@ -128,42 +131,42 @@ function WeaponTooltip({ weapon, pilotNameMap, pinned }: {
 
         {/* Skills */}
         {weapon.skills.length > 0 && (
-          <div className="space-y-1.5">
-            {weapon.skills.map((sk, i) => {
-              const actCls = ACTIVATION_STYLES[sk.activation] ?? 'text-text-dim bg-bg-dark border-border'
-              return (
-                <div key={i} className="bg-bg-dark rounded-lg p-2.5">
-                  <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                    <span className="text-xs font-bold text-text-primary">{sk.name}</span>
-                    <span className={`text-[10px] border rounded px-1.5 py-0.5 ${actCls}`}>
-                      {ACTIVATION_LABELS[sk.activation] ?? sk.activation}
-                    </span>
+          <div className="bg-bg-dark rounded-lg overflow-hidden">
+            <div className="px-2.5 py-1.5 border-b border-border">
+              <span className="text-[13px] text-text-dim tracking-widest uppercase">武器技能</span>
+            </div>
+            <div className="flex flex-wrap gap-2 p-2.5">
+              {weapon.skills.map((sk, i) => {
+                const actCls = ACTIVATION_CONFIG[sk.activation]?.className ?? 'text-text-dim bg-bg-dark border-border'
+                return (
+                  <div key={i} className="flex flex-col items-center gap-1 w-16 rounded-lg p-1.5 cursor-default">
+                    <SkillIcon iconLocal={sk.iconLocal} name={sk.name} />
+                    <div className="text-center w-full">
+                      <div className="text-[11px] font-medium leading-tight line-clamp-2 break-all">{sk.name}</div>
+                      <span className={`text-[10px] border rounded px-1 py-0.5 mt-0.5 inline-block ${actCls}`}>
+                        {ACTIVATION_LABELS[sk.activation] ?? sk.activation}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-text-dim leading-relaxed">
-                    {highlightNumbers(sk.description)}
-                  </p>
-                  {sk.enhancesTalentName && (
-                    <p className="text-[10px] text-accent-pink mt-1">天賦加強：{sk.enhancesTalentName}</p>
-                  )}
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
         )}
 
         {/* Fixed mod */}
         {weapon.fixedMod?.planName && (
           <div className="bg-bg-dark rounded-lg p-2.5">
-            <div className="text-[10px] text-accent-orange font-bold mb-1">
+            <div className="text-[13px] text-accent-orange font-bold mb-1">
               固定改裝 · {weapon.fixedMod.planName}
             </div>
-            <div className="text-[11px] text-text-dim mb-1">
+            <div className="text-[14px] text-text-dim mb-1">
               上限等級 <Num>{weapon.fixedMod.maxLevel}</Num>
             </div>
             {weapon.fixedMod.effects.length > 0 && (
               <div className="flex flex-wrap gap-x-3 gap-y-0.5">
                 {weapon.fixedMod.effects.map((e, i) => (
-                  <span key={i} className="text-[11px] text-text-secondary">
+                  <span key={i} className="text-[14px] text-text-secondary">
                     {e.stat} <Num>+{e.value}</Num>
                   </span>
                 ))}
@@ -175,16 +178,16 @@ function WeaponTooltip({ weapon, pilotNameMap, pinned }: {
         {/* Floating mod */}
         {weapon.floatingMod?.planName && (
           <div className="bg-bg-dark rounded-lg p-2.5">
-            <div className="text-[10px] text-accent-cyan font-bold mb-1">
+            <div className="text-[13px] text-accent-cyan font-bold mb-1">
               浮動改裝 · {weapon.floatingMod.planName}
             </div>
-            <div className="text-[11px] text-text-dim mb-1">
+            <div className="text-[14px] text-text-dim mb-1">
               插槽 <Num>{weapon.floatingMod.slots}</Num> 格
             </div>
             {weapon.floatingMod.possibleEffects.length > 0 && (
               <div className="space-y-0.5">
                 {weapon.floatingMod.possibleEffects.map((e, i) => (
-                  <div key={i} className="text-[11px] text-text-dim">
+                  <div key={i} className="text-[14px] text-text-dim">
                     {e.stat}
                     {e.condition ? <span className="text-text-dim/70"> ({e.condition})</span> : ''}
                     {' '}<Num>{e.min}–{e.max}</Num>
@@ -196,9 +199,6 @@ function WeaponTooltip({ weapon, pilotNameMap, pinned }: {
         )}
       </div>
 
-      {!pinned && (
-        <p className="text-[10px] text-text-dim mt-2 text-center flex-shrink-0">點擊卡片固定此視窗</p>
-      )}
     </div>
   )
 }
@@ -209,10 +209,9 @@ interface TooltipState {
   anchorTop: number
 }
 
-function TooltipPortal({ weapon, pilotNameMap, pinned, x, anchorTop }: {
+function TooltipPortal({ weapon, pilotNameMap, x, anchorTop }: {
   weapon: Weapon
   pilotNameMap: Record<string, string>
-  pinned: boolean
   x: number
   anchorTop: number
 }) {
@@ -228,11 +227,10 @@ function TooltipPortal({ weapon, pilotNameMap, pinned, x, anchorTop }: {
   return createPortal(
     <div
       ref={ref}
-      className={`fixed z-50 ${pinned ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      className="fixed z-50 pointer-events-none"
       style={{ left: x, top }}
-      onClick={(e) => e.stopPropagation()}
     >
-      <WeaponTooltip weapon={weapon} pilotNameMap={pilotNameMap} pinned={pinned} />
+      <WeaponTooltip weapon={weapon} pilotNameMap={pilotNameMap} />
     </div>,
     document.body
   )
@@ -248,8 +246,9 @@ export default function WeaponsPage() {
   const [kindFilters, setKindFilters]         = useState<Set<string>>(new Set())
   const [equipSlotFilter, setEquipSlotFilter] = useState<string | null>(null)
 
-  const [hoverTooltip, setHoverTooltip]   = useState<TooltipState | null>(null)
-  const [pinnedTooltip, setPinnedTooltip] = useState<TooltipState | null>(null)
+  const [hoverTooltip, setHoverTooltip] = useState<TooltipState | null>(null)
+
+  const navigate = useNavigate()
 
   const toggleSet = (setter: React.Dispatch<React.SetStateAction<Set<string>>>, value: string) => {
     setter((prev) => {
@@ -284,25 +283,14 @@ export default function WeaponsPage() {
   }
 
   const handleMouseEnter = (weaponId: string, cardEl: HTMLDivElement) => {
-    if (pinnedTooltip) return
     setHoverTooltip({ weaponId, ...computePos(cardEl) })
   }
 
   const handleMouseLeave = () => {
-    if (!pinnedTooltip) setHoverTooltip(null)
+    setHoverTooltip(null)
   }
 
-  const handleCardClick = (weaponId: string, cardEl: HTMLDivElement, e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (pinnedTooltip?.weaponId === weaponId) {
-      setPinnedTooltip(null)
-    } else {
-      setPinnedTooltip({ weaponId, ...computePos(cardEl) })
-      setHoverTooltip(null)
-    }
-  }
-
-  const activeTooltip = pinnedTooltip ?? hoverTooltip
+  const activeTooltip = hoverTooltip
   const activeWeapon  = activeTooltip
     ? weapons.find((w) => w.id === activeTooltip.weaponId) ?? null
     : null
@@ -315,14 +303,13 @@ export default function WeaponsPage() {
     }`
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12" onClick={() => setPinnedTooltip(null)}>
+    <div className="max-w-7xl mx-auto px-4 py-12">
 
       {activeWeapon && activeTooltip && (
         <TooltipPortal
           key={activeTooltip.weaponId}
           weapon={activeWeapon}
           pilotNameMap={pilotNameMap}
-          pinned={!!pinnedTooltip}
           x={activeTooltip.x}
           anchorTop={activeTooltip.anchorTop}
         />
@@ -427,38 +414,39 @@ export default function WeaponsPage() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {filtered.map((w) => {
-            const isPinned   = pinnedTooltip?.weaponId === w.id
-            const pilotName  = w.exclusiveFor ? pilotNameMap[w.exclusiveFor] : null
+            const pilotName = w.exclusiveFor ? pilotNameMap[w.exclusiveFor] : null
 
             return (
               <div
                 key={w.id}
-                className={`bg-bg-card border rounded-xl p-3 cursor-pointer transition-all select-none ${
-                  isPinned
-                    ? 'border-accent-orange/60 bg-accent-orange/5'
-                    : 'border-border hover:border-border-accent hover:bg-bg-card-hover'
-                }`}
+                className="bg-bg-card border border-border rounded-xl p-3 cursor-pointer transition-all select-none hover:border-border-accent hover:bg-bg-card-hover"
                 onMouseEnter={(e) => handleMouseEnter(w.id, e.currentTarget)}
                 onMouseLeave={handleMouseLeave}
-                onClick={(e) => handleCardClick(w.id, e.currentTarget, e)}
+                onClick={() => navigate(`/weapons/${w.id}`)}
               >
                 {/* Top row: icon + name/rarity */}
                 <div className="flex items-start gap-2 mb-2">
                   <WeaponIcon icon={w.icon} name={w.name} size="md" isExclusive={w.isExclusive} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-1 mb-0.5">
-                      <h3 className="font-bold text-sm text-text-primary leading-tight line-clamp-2">{w.name}</h3>
-                      <RarityBadge rarity={w.rarity} />
+                      <Link
+                        to={`/weapons/${w.id}`}
+                        className="font-bold text-sm text-text-primary leading-tight line-clamp-2 hover:text-accent-orange transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {w.name}
+                      </Link>
+                      <WeaponRarityBadge rarity={w.rarity} />
                     </div>
                     {/* Type · Kind + pilot link */}
                     <div className="flex flex-wrap items-center gap-1">
-                      <span className="text-[10px] text-text-dim bg-bg-dark border border-border px-1.5 py-0.5 rounded">
+                      <span className="text-[13px] text-text-dim bg-bg-dark border border-border px-1.5 py-0.5 rounded">
                         {w.type}·{w.kind}
                       </span>
                       {w.isExclusive && pilotName && w.exclusiveFor && (
                         <Link
                           to={`/pilots/${w.exclusiveFor}`}
-                          className="text-[10px] text-accent-pink hover:underline"
+                          className="text-[13px] text-accent-pink hover:underline"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {pilotName}
@@ -469,11 +457,11 @@ export default function WeaponsPage() {
                 </div>
 
                 {/* Key stats */}
-                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[11px]">
+                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[14px]">
                   <div>
                     <span className="text-text-dim">射 </span>
                     <Num>{formatRange(w)}</Num>
-                    <span className="text-text-dim text-[9px] ml-0.5">{w.rangeType === 'ring' ? '圈' : '線'}</span>
+                    <span className="text-text-dim text-[12px] ml-0.5">{{ manhattan: '(菱)', orthogonal: '(直)', ring: '(圈)' }[w.rangeType]}</span>
                   </div>
                   <div>
                     <span className="text-text-dim">重 </span>

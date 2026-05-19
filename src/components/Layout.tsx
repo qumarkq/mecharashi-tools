@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 
 type FontSize = 'sm' | 'md' | 'lg'
-const FONT_SIZE_MAP: Record<FontSize, string> = { sm: '14px', md: '16px', lg: '18px' }
+const FONT_SIZE_MAP: Record<FontSize, string> = { sm: '17px', md: '19px', lg: '21px' }
 const FONT_SIZE_LABELS: Record<FontSize, string> = { sm: '小', md: '中', lg: '大' }
 
 const navItems = [

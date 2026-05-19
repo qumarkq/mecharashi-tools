@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { getUserBuilds, deleteBuild } from '../lib/userApi'
@@ -157,22 +157,22 @@ function BuildCard({
         <div className="font-bold text-base truncate">{build.buildName || '未命名配裝'}</div>
         <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
           {build.pilotId && (
-            <span className="text-[11px] text-text-dim">
+            <span className="text-[14px] text-text-dim">
               機師: <span className="text-text-secondary">{build.pilotId.replace(/^pilot_\d+_/, '')}</span>
             </span>
           )}
           {build.mechId && (
-            <span className="text-[11px] text-text-dim">
+            <span className="text-[14px] text-text-dim">
               機甲: <span className="text-text-secondary">{build.mechId.replace(/^mech_/, '')}</span>
             </span>
           )}
           {build.weaponId && (
-            <span className="text-[11px] text-text-dim">
+            <span className="text-[14px] text-text-dim">
               武器: <span className="text-text-secondary">{build.weaponId}</span>
             </span>
           )}
         </div>
-        <div className="text-[11px] text-text-dim mt-1.5">更新：{date}</div>
+        <div className="text-[14px] text-text-dim mt-1.5">更新：{date}</div>
       </div>
       <button
         onClick={onDelete}

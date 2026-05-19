@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+﻿import { useState, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import html2canvas from 'html2canvas'
 import type {
@@ -377,7 +377,7 @@ function PilotStep({ data, state, onSelect, onNext }: { data: AllData; state: Si
         {filtered.map((p) => (
           <SelectionCard key={p.id} selected={state.pilotId === p.id} onClick={() => onSelect(p.id)}>
             <div className="text-sm font-bold">{p.name}</div>
-            <div className="text-[11px] text-text-dim">{p.class} · {p.license}</div>
+            <div className="text-[14px] text-text-dim">{p.class} · {p.license}</div>
           </SelectionCard>
         ))}
       </div>
@@ -411,7 +411,7 @@ function MechStep({ mechs, state, onSelect, onNext }: { mechs: Mech[]; state: Si
         {filtered.map((m) => (
           <SelectionCard key={m.id} selected={state.mechId === m.id} onClick={() => onSelect(m.id)}>
             <div className="text-sm font-bold">{m.name}</div>
-            <div className="text-[11px] text-text-dim">{m.armorType} · 出力{m.output}</div>
+            <div className="text-[14px] text-text-dim">{m.armorType} · 出力{m.output}</div>
           </SelectionCard>
         ))}
       </div>
@@ -445,7 +445,7 @@ function WeaponStep({ weapons, state, onSelect, onNext }: { weapons: Weapon[]; s
         {filtered.map((w) => (
           <SelectionCard key={w.id} selected={state.weaponId === w.id} onClick={() => onSelect(w.id)}>
             <div className="text-sm font-bold">{w.name}</div>
-            <div className="text-[11px] text-text-dim">
+            <div className="text-[14px] text-text-dim">
               {w.kind}/{w.type} · 重量{w.weight} {w.isExclusive && <span className="text-accent-yellow">★專武</span>}
             </div>
           </SelectionCard>
@@ -471,10 +471,10 @@ function BackpackStep({ backpacks, state, onSelect, onNext }: { backpacks: Backp
         {backpacks.map((b) => (
           <SelectionCard key={b.id} selected={state.backpackId === b.id} onClick={() => onSelect(b.id)}>
             <div className="text-sm font-bold">{b.name}</div>
-            <div className="text-[11px] text-text-dim">
+            <div className="text-[14px] text-text-dim">
               {b.type} · 重量{b.weight} {b.mechRestriction && <span className="text-accent-cyan">({b.mechRestriction}限定)</span>}
             </div>
-            <div className="text-[11px] text-text-secondary mt-1">{b.skill.description}</div>
+            <div className="text-[14px] text-text-secondary mt-1">{b.skill.description}</div>
           </SelectionCard>
         ))}
         {backpacks.length === 0 && (
@@ -547,7 +547,7 @@ function ResearchStep({
                           }`}
                         >
                           <div className="font-medium">{opt.name}</div>
-                          <div className="text-[10px] text-text-dim">{opt.description}</div>
+                          <div className="text-[13px] text-text-dim">{opt.description}</div>
                         </button>
                       ))}
                     </div>
@@ -601,7 +601,7 @@ function WeaponModStep({
               {eff.stat}: +{eff.value}
             </div>
           ))}
-          <div className="text-[10px] text-text-dim mt-1">最大等級 Lv.{weapon.fixedMod.maxLevel}</div>
+          <div className="text-[13px] text-text-dim mt-1">最大等級 Lv.{weapon.fixedMod.maxLevel}</div>
         </div>
       </div>
 
@@ -621,14 +621,14 @@ function WeaponModStep({
                     <button
                       key={j}
                       onClick={() => onSetMod(i, { stat: eff.stat, condition: eff.condition, value: eff.max })}
-                      className={`px-2 py-1 rounded text-[11px] border transition-colors cursor-pointer ${
+                      className={`px-2 py-1 rounded text-[14px] border transition-colors cursor-pointer ${
                         selected
                           ? 'bg-accent-yellow/15 text-accent-yellow border-accent-yellow/40'
                           : 'bg-bg-card text-text-dim border-border hover:text-text-secondary'
                       }`}
                     >
                       {eff.stat} +{eff.min}~{eff.max}
-                      {eff.condition && <span className="ml-1 text-[10px]">({eff.condition})</span>}
+                      {eff.condition && <span className="ml-1 text-[13px]">({eff.condition})</span>}
                     </button>
                   )
                 })}
@@ -691,7 +691,7 @@ function ComponentsStep({
                 }`}
               >
                 <div className="text-sm font-medium">{t.name}</div>
-                <div className="text-[11px] text-text-dim">
+                <div className="text-[14px] text-text-dim">
                   Lv.{t.level} · {t.probability} · {t.condition}
                 </div>
               </button>
@@ -717,7 +717,7 @@ function ComponentsStep({
                 }`}
               >
                 <div className="text-sm font-medium">{e.name}</div>
-                <div className="text-[11px] text-text-dim">
+                <div className="text-[14px] text-text-dim">
                   Lv.{e.level} · {e.probability} · {e.description}
                 </div>
               </button>
@@ -799,36 +799,36 @@ function ResultStep({
         <div className="grid grid-cols-2 gap-4 mb-4">
           {/* Pilot */}
           <div className="bg-bg-card rounded-lg p-3 border border-border">
-            <div className="text-[10px] text-accent-orange uppercase tracking-wider mb-1">機師</div>
+            <div className="text-[13px] text-accent-orange uppercase tracking-wider mb-1">機師</div>
             <div className="text-sm font-bold">{pilot?.name ?? '未選擇'}</div>
-            {pilot && <div className="text-[11px] text-text-dim">{pilot.class} · {pilot.license}</div>}
+            {pilot && <div className="text-[14px] text-text-dim">{pilot.class} · {pilot.license}</div>}
           </div>
 
           {/* Mech */}
           <div className="bg-bg-card rounded-lg p-3 border border-border">
-            <div className="text-[10px] text-accent-blue uppercase tracking-wider mb-1">機甲</div>
+            <div className="text-[13px] text-accent-blue uppercase tracking-wider mb-1">機甲</div>
             <div className="text-sm font-bold">{mech?.name ?? '未選擇'}</div>
-            {mech && <div className="text-[11px] text-text-dim">{mech.armorType} · 火力{mech.firepower}</div>}
+            {mech && <div className="text-[14px] text-text-dim">{mech.armorType} · 火力{mech.firepower}</div>}
           </div>
 
           {/* Weapon */}
           <div className="bg-bg-card rounded-lg p-3 border border-border">
-            <div className="text-[10px] text-accent-yellow uppercase tracking-wider mb-1">武器</div>
+            <div className="text-[13px] text-accent-yellow uppercase tracking-wider mb-1">武器</div>
             <div className="text-sm font-bold">{weapon?.name ?? '未選擇'}</div>
-            {weapon && <div className="text-[11px] text-text-dim">{weapon.type}/{weapon.kind} · 攻擊{weapon.attack}</div>}
+            {weapon && <div className="text-[14px] text-text-dim">{weapon.type}/{weapon.kind} · 攻擊{weapon.attack}</div>}
           </div>
 
           {/* Backpack */}
           <div className="bg-bg-card rounded-lg p-3 border border-border">
-            <div className="text-[10px] text-accent-green uppercase tracking-wider mb-1">背包</div>
+            <div className="text-[13px] text-accent-green uppercase tracking-wider mb-1">背包</div>
             <div className="text-sm font-bold">{backpack?.name ?? '未裝備'}</div>
-            {backpack && <div className="text-[11px] text-text-dim">{backpack.skill.name}</div>}
+            {backpack && <div className="text-[14px] text-text-dim">{backpack.skill.name}</div>}
           </div>
         </div>
 
         {/* Modules */}
         <div className="bg-bg-card rounded-lg p-3 border border-border mb-4">
-          <div className="text-[10px] text-accent-purple uppercase tracking-wider mb-2">模組配置</div>
+          <div className="text-[13px] text-accent-purple uppercase tracking-wider mb-2">模組配置</div>
           <div className="grid grid-cols-3 gap-2">
             {modules.map((mod) => (
               <div key={mod.id} className="text-xs">
@@ -842,7 +842,7 @@ function ResultStep({
         {/* Components */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="bg-bg-card rounded-lg p-3 border border-border">
-            <div className="text-[10px] text-accent-purple uppercase tracking-wider mb-2">觸元件</div>
+            <div className="text-[13px] text-accent-purple uppercase tracking-wider mb-2">觸元件</div>
             {triggerComps.length > 0 ? (
               triggerComps.map((c) => (
                 <div key={c.id} className="text-xs text-text-secondary">{c.name}</div>
@@ -852,7 +852,7 @@ function ResultStep({
             )}
           </div>
           <div className="bg-bg-card rounded-lg p-3 border border-border">
-            <div className="text-[10px] text-accent-cyan uppercase tracking-wider mb-2">應元件</div>
+            <div className="text-[13px] text-accent-cyan uppercase tracking-wider mb-2">應元件</div>
             {effectComps.length > 0 ? (
               effectComps.map((c) => (
                 <div key={c.id} className="text-xs text-text-secondary">{c.name}</div>
@@ -865,7 +865,7 @@ function ResultStep({
 
         {/* Damage placeholder */}
         <div className="bg-bg-card rounded-lg p-3 border border-border border-dashed">
-          <div className="text-[10px] text-text-dim uppercase tracking-wider mb-1">傷害計算</div>
+          <div className="text-[13px] text-text-dim uppercase tracking-wider mb-1">傷害計算</div>
           <div className="text-sm text-text-dim text-center py-2">
             傷害計算系統開發中（Phase 7）
           </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+﻿import { useState, useEffect, useMemo } from 'react'
 import type { Module, Mech, ConditionalEffect, ModuleLevel, UserProfile, Pilot, PilotSkill, SkillEffect, SkillCondition, Weapon, WeaponSkill } from '../types'
 import { formatWeaponReq } from '../types'
 import { ModuleRarity, MechPartPosition, ModuleSlot, ModuleSource, ModuleDataSource, ConditionalTrigger, PilotClass, MechLicense, ItemRarity, SkillType, WeaponType, WeaponKind, WeaponEquipSlot, RangeType, WeaponRarity, MechRestriction, SkillActivation } from '../types/enums'
@@ -84,14 +84,17 @@ const PILOT_RARITY_CLASS: Record<string, string> = {
 const TRIGGER_DISPLAY: Record<string, string> = {
   always:         '無條件（always）',
   onAttack:       '攻擊時（onAttack）',
+  onCrit:         '造成暴擊後（onCrit）',
   onCounter:      '反擊時（onCounter）',
   onApSkill:      '使用 AP 技能（onApSkill）',
-  weaponType: '指定武器類型（weaponType）',
+  weaponType:     '指定武器類型（weaponType）',
   dualWield:      '雙持武器（dualWield）',
   hpBelow:        'HP 低於門檻（hpBelow）',
   firstAttack:    '先手攻擊（firstAttack）',
   enemyPhase:     '敵方回合（enemyPhase）',
   allyHasBuff:    '隊友持有增益（allyHasBuff）',
+  hasBuff:        '持有特定狀態（hasBuff）',
+  notMoved:       '本回合未移動（notMoved）',
 }
 
 const WEAPON_RARITY_CLASS: Record<string, string> = {
@@ -147,7 +150,7 @@ function makeDefaultWeapon(id: string): Weapon {
     attack: '0×1',
     accuracy: 0,
     critValue: 0,
-    rangeType: RangeType.LINEAR,
+    rangeType: RangeType.MANHATTAN,
     minRange: 1,
     maxRange: 1,
     weight: 0,
@@ -384,21 +387,21 @@ function ModuleAdmin({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-bold text-sm text-text-primary truncate">{mod.name || <span className="text-text-dim font-normal">（未命名）</span>}</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-card border border-border text-text-dim shrink-0">
+                <span className="text-[13px] px-1.5 py-0.5 rounded bg-bg-card border border-border text-text-dim shrink-0">
                   {SLOT_LABEL[mod.slot] ?? mod.slot}
                 </span>
                 {mod.managedBy === ModuleDataSource.AUTO && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/30 shrink-0">
+                  <span className="text-[13px] px-1.5 py-0.5 rounded bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/30 shrink-0">
                     自動
                   </span>
                 )}
                 {Array.isArray(mod.source) && mod.source.length > 0 && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-card border border-border text-text-dim shrink-0">
+                  <span className="text-[13px] px-1.5 py-0.5 rounded bg-bg-card border border-border text-text-dim shrink-0">
                     {mod.source.join('・')}
                   </span>
                 )}
                 {moduleHasStats(mod) && (
-                  <span className="text-[10px] text-accent-green shrink-0">
+                  <span className="text-[13px] text-accent-green shrink-0">
                     {mod.dmg > 0 && `傷+${mod.dmg}%`}
                     {(mod.crit_rate ?? 0) > 0 && ` 暴+${mod.crit_rate}`}
                     {mod.critDmg > 0 && ` 爆傷+${mod.critDmg}%`}
@@ -412,11 +415,11 @@ function ModuleAdmin({
             </div>
             <div className="text-right shrink-0 ml-2">
               {mod.boundMechId ? (
-                <span className="text-[11px] text-accent-orange">
+                <span className="text-[14px] text-accent-orange">
                   {mechs.find((m) => m.id === mod.boundMechId)?.name ?? mod.boundMechId}
                 </span>
               ) : (
-                <span className="text-[11px] text-text-dim">通用</span>
+                <span className="text-[14px] text-text-dim">通用</span>
               )}
             </div>
           </div>
@@ -513,7 +516,7 @@ function ModuleEditPanel({
               >
                 {t.label}
                 {hasBadge && (
-                  <span className={`ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-bold ${editTab === t.id ? 'bg-black/20 text-black' : 'bg-accent-cyan/20 text-accent-cyan'}`}>
+                  <span className={`ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-[12px] font-bold ${editTab === t.id ? 'bg-black/20 text-black' : 'bg-accent-cyan/20 text-accent-cyan'}`}>
                     {t.id === 'levels' ? (form.levels ?? []).length : (form.conditionalEffects ?? []).length}
                   </span>
                 )}
@@ -613,7 +616,7 @@ function ModuleEditPanel({
                   })}
                 </div>
                 {(!form.boundPart || (Array.isArray(form.boundPart) && form.boundPart.length === 0)) && (
-                  <p className="text-[11px] text-text-dim mt-1">不限部位</p>
+                  <p className="text-[14px] text-text-dim mt-1">不限部位</p>
                 )}
               </Field>
 
@@ -663,14 +666,14 @@ function ModuleEditPanel({
                             className="accent-accent-orange w-3.5 h-3.5 shrink-0"
                           />
                           <span className="text-sm text-text-secondary flex-1">{m.name}</span>
-                          <span className="text-[10px] text-text-dim shrink-0">{m.id}</span>
+                          <span className="text-[13px] text-text-dim shrink-0">{m.id}</span>
                         </label>
                       )
                     })
                   )}
                 </div>
                 {(form.dismantleMechIds ?? []).length > 0 && (
-                  <p className="text-[11px] text-accent-cyan mt-1">
+                  <p className="text-[14px] text-accent-cyan mt-1">
                     已選：{(form.dismantleMechIds ?? []).map((id) => mechs.find((m) => m.id === id)?.name ?? id).join('、')}
                   </p>
                 )}
@@ -929,10 +932,10 @@ function ConditionalEffectItem({
   return (
     <div className="border border-border/60 rounded-lg p-3 space-y-2.5 bg-bg-dark/50">
       <div className="flex items-center justify-between">
-        <span className="text-[11px] text-text-dim font-medium">條件效果 #{index + 1}</span>
+        <span className="text-[14px] text-text-dim font-medium">條件效果 #{index + 1}</span>
         <button
           onClick={onRemove}
-          className="text-[10px] px-1.5 py-0.5 text-accent-red border border-accent-red/30 rounded hover:bg-accent-red/10"
+          className="text-[13px] px-1.5 py-0.5 text-accent-red border border-accent-red/30 rounded hover:bg-accent-red/10"
         >
           ✕ 移除
         </button>
@@ -1029,7 +1032,7 @@ function ConditionalEffectItem({
           {STAT_OPTIONS.map(({ key, label }) => (
             <label
               key={key}
-              className="flex items-center gap-1.5 text-[11px] text-text-secondary cursor-pointer hover:text-text-primary"
+              className="flex items-center gap-1.5 text-[14px] text-text-secondary cursor-pointer hover:text-text-primary"
             >
               <input
                 type="checkbox"
@@ -1070,8 +1073,8 @@ function ModuleLevelItem({
         className="flex items-center gap-2 px-3 py-2 cursor-pointer select-none"
         onClick={() => setCollapsed(!collapsed)}
       >
-        <span className="text-[10px] text-text-dim w-3">{collapsed ? '▶' : '▼'}</span>
-        <span className="text-[11px] text-text-dim font-medium flex-1 truncate">
+        <span className="text-[13px] text-text-dim w-3">{collapsed ? '▶' : '▼'}</span>
+        <span className="text-[14px] text-text-dim font-medium flex-1 truncate">
           Lv.{levelData.level}
           {levelData.description && (
             <span className="ml-2 text-text-secondary font-normal">
@@ -1081,7 +1084,7 @@ function ModuleLevelItem({
         </span>
         <button
           onClick={(e) => { e.stopPropagation(); onRemove() }}
-          className="text-[10px] px-1.5 py-0.5 text-accent-red border border-accent-red/30 rounded hover:bg-accent-red/10 shrink-0"
+          className="text-[13px] px-1.5 py-0.5 text-accent-red border border-accent-red/30 rounded hover:bg-accent-red/10 shrink-0"
         >
           ✕ 移除
         </button>
@@ -1145,7 +1148,7 @@ function ModuleLevelItem({
           </div>
 
           <div className="pt-2 border-t border-border/40">
-            <p className="text-[10px] text-text-dim font-medium tracking-wider uppercase mb-2">武器專屬增傷 (%)</p>
+            <p className="text-[13px] text-text-dim font-medium tracking-wider uppercase mb-2">武器專屬增傷 (%)</p>
             <div className="grid grid-cols-2 gap-2">
               <Field label="突擊"><input type="number" value={levelData.dmg_assault ?? 0} onChange={(e) => upd('dmg_assault', Number(e.target.value))} className="input-field" /></Field>
               <Field label="格鬥"><input type="number" value={levelData.dmg_melee ?? 0} onChange={(e) => upd('dmg_melee', Number(e.target.value))} className="input-field" /></Field>
@@ -1258,22 +1261,22 @@ function MechAdmin({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-sm">{mech.name}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded border border-border text-text-dim shrink-0">
+                    <span className="text-[13px] px-1.5 py-0.5 rounded border border-border text-text-dim shrink-0">
                       {mech.armorType}
                     </span>
                     {hasMissingModule && (
-                      <span className="text-[10px] text-accent-red shrink-0">⚠ 模組未對應</span>
+                      <span className="text-[13px] text-accent-red shrink-0">⚠ 模組未對應</span>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
-                    <span className="text-[11px] text-accent-cyan">
+                    <span className="text-[14px] text-accent-cyan">
                       四模: {mod4 ? mod4.name : <span className="text-text-dim">（未設定）</span>}
                     </span>
-                    <span className="text-[11px] text-accent-orange">
+                    <span className="text-[14px] text-accent-orange">
                       八模: {mod8 ? mod8.name : <span className="text-text-dim">（未設定）</span>}
                     </span>
                     {fixedMods.length > 0 && (
-                      <span className="text-[11px] text-accent-green">
+                      <span className="text-[14px] text-accent-green">
                         固定: {fixedMods.map((m) => m!.name).join(', ')}
                       </span>
                     )}
@@ -1513,6 +1516,17 @@ function SkillConditionEditor({
           />
         </Field>
       )}
+      {condition.trigger === 'hasBuff' && (
+        <Field label="狀態名稱 hasBuff">
+          <input
+            type="text"
+            value={condition.hasBuff ?? ''}
+            onChange={(e) => onChange({ ...condition, hasBuff: e.target.value || undefined })}
+            className="input-field"
+            placeholder="如：強化射擊、瞄準"
+          />
+        </Field>
+      )}
       <Field label="目標職業 targetClass（選填）">
         <input
           type="text"
@@ -1542,10 +1556,10 @@ function SkillEffectItem({
   return (
     <div className="border border-border/50 rounded-lg p-2.5 space-y-2 bg-bg-card/30">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] text-text-dim">效果 #{index + 1}</span>
+        <span className="text-[13px] text-text-dim">效果 #{index + 1}</span>
         <button
           onClick={onRemove}
-          className="text-[10px] px-1.5 py-0.5 text-accent-red border border-accent-red/30 rounded hover:bg-accent-red/10"
+          className="text-[13px] px-1.5 py-0.5 text-accent-red border border-accent-red/30 rounded hover:bg-accent-red/10"
         >
           ✕ 移除
         </button>
@@ -1582,7 +1596,19 @@ function SkillEffectItem({
           </select>
         </Field>
       </div>
-      <label className="flex items-center gap-2 text-[11px] text-text-dim cursor-pointer">
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="計算方式 valueType">
+          <select
+            value={effect.valueType ?? 'add'}
+            onChange={(e) => onChange({ ...effect, valueType: e.target.value as 'add' | 'override' })}
+            className="input-field"
+          >
+            <option value="add">加算 (add)　—　預設</option>
+            <option value="override">覆蓋原始值 (override)</option>
+          </select>
+        </Field>
+      </div>
+      <label className="flex items-center gap-2 text-[14px] text-text-dim cursor-pointer">
         <input
           type="checkbox"
           checked={hasCondition}
@@ -1645,21 +1671,21 @@ function PilotSkillItem({
             onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
           />
         )}
-        <span className="text-[10px] text-text-dim w-3 shrink-0">{expanded ? '▼' : '▶'}</span>
+        <span className="text-[13px] text-text-dim w-3 shrink-0">{expanded ? '▼' : '▶'}</span>
         <span className="text-sm font-medium flex-1 truncate">{skill.name}</span>
-        <span className={`text-[10px] px-1.5 py-0.5 rounded border shrink-0 ${typeColor}`}>
+        <span className={`text-[13px] px-1.5 py-0.5 rounded border shrink-0 ${typeColor}`}>
           {skill.type}
         </span>
         {skill.ap && (
-          <span className="text-[10px] text-accent-green shrink-0">AP {skill.ap}</span>
+          <span className="text-[13px] text-accent-green shrink-0">AP {skill.ap}</span>
         )}
         {skill.cd && (
-          <span className="text-[10px] text-accent-orange shrink-0">CD {skill.cd}</span>
+          <span className="text-[13px] text-accent-orange shrink-0">CD {skill.cd}</span>
         )}
         {skill.weapon && (
-          <span className="text-[10px] text-accent-purple shrink-0">{formatWeaponReq(skill.weapon)}</span>
+          <span className="text-[13px] text-accent-purple shrink-0">{formatWeaponReq(skill.weapon)}</span>
         )}
-        <span className={`text-[10px] shrink-0 ml-1 ${effects.length > 0 ? 'text-accent-cyan' : 'text-text-dim'}`}>
+        <span className={`text-[13px] shrink-0 ml-1 ${effects.length > 0 ? 'text-accent-cyan' : 'text-text-dim'}`}>
           效果 {effects.length}
         </span>
       </div>
@@ -1698,18 +1724,18 @@ function PilotSkillItem({
             </Field>
           </div>
           <div className="p-2 bg-bg-card/40 rounded border border-border/40">
-            <p className="text-[10px] text-text-dim font-medium uppercase mb-1">效果說明（唯讀，由腳本管理）</p>
+            <p className="text-[13px] text-text-dim font-medium uppercase mb-1">效果說明（唯讀，由腳本管理）</p>
             <p className="text-xs text-text-secondary leading-relaxed">{skill.description || '—'}</p>
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] text-text-dim font-medium uppercase tracking-wider">可計算效果 effects</span>
+              <span className="text-[13px] text-text-dim font-medium uppercase tracking-wider">可計算效果 effects</span>
               <button
                 onClick={() =>
                   updateEffects([...effects, { stat: 'dmg', value: 0, scope: 'self', condition: null }])
                 }
-                className="text-[10px] text-accent-cyan hover:text-accent-cyan/80 transition-colors"
+                className="text-[13px] text-accent-cyan hover:text-accent-cyan/80 transition-colors"
               >
                 + 新增效果
               </button>
@@ -1873,17 +1899,17 @@ function PilotAdmin({
                 {pilot.fullName && pilot.fullName !== pilot.name && (
                   <span className="text-xs text-text-dim truncate">{pilot.fullName}</span>
                 )}
-                <span className={`text-[10px] px-1.5 py-0.5 rounded border font-bold shrink-0 ${PILOT_RARITY_CLASS[pilot.rarity] ?? 'text-text-dim border-border bg-bg-card'}`}>
+                <span className={`text-[13px] px-1.5 py-0.5 rounded border font-bold shrink-0 ${PILOT_RARITY_CLASS[pilot.rarity] ?? 'text-text-dim border-border bg-bg-card'}`}>
                   {pilot.rarity}
                 </span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-card border border-border text-text-dim shrink-0">
+                <span className="text-[13px] px-1.5 py-0.5 rounded bg-bg-card border border-border text-text-dim shrink-0">
                   {pilot.class}
                 </span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-card border border-border text-text-dim shrink-0">
+                <span className="text-[13px] px-1.5 py-0.5 rounded bg-bg-card border border-border text-text-dim shrink-0">
                   {pilot.license}
                 </span>
               </div>
-              <div className="text-[11px] text-text-dim mt-0.5">
+              <div className="text-[14px] text-text-dim mt-0.5">
                 格{pilot.stats.melee} · 突{pilot.stats.assault} · 射{pilot.stats.shooting} · 術{pilot.stats.tactics} · 防{pilot.stats.defense} · 工{pilot.stats.engineering}
               </div>
             </div>
@@ -1980,7 +2006,7 @@ function PilotEditPanel({
               <span className="text-accent-orange">✎</span> 編輯機師
               <span className="text-text-dim text-sm font-normal ml-1">{form.id}</span>
             </h3>
-            <p className="text-[11px] text-text-dim mt-0.5">
+            <p className="text-[14px] text-text-dim mt-0.5">
               技能 {form.skills?.length ?? 0}（效果可在「技能效果」分頁填入）· 天賦 {form.talents?.length ?? 0} · 神經驅動 {form.neuralDrive?.length ?? 0}（由爬蟲腳本管理）
             </p>
           </div>
@@ -2005,7 +2031,7 @@ function PilotEditPanel({
               >
                 {t.label}
                 {hasBadge && (
-                  <span className={`ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-bold ${editTab === t.id ? 'bg-black/20 text-black' : 'bg-accent-cyan/20 text-accent-cyan'}`}>
+                  <span className={`ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-[12px] font-bold ${editTab === t.id ? 'bg-black/20 text-black' : 'bg-accent-cyan/20 text-accent-cyan'}`}>
                     {filledSkills}
                   </span>
                 )}
@@ -2126,7 +2152,7 @@ function PilotEditPanel({
               </div>
               {form.apBase && (
                 <div className="p-3 bg-bg-dark rounded-lg border border-border/60">
-                  <p className="text-[10px] text-text-dim font-medium tracking-wider uppercase mb-2">基礎值 apBase（參考，由爬蟲腳本管理）</p>
+                  <p className="text-[13px] text-text-dim font-medium tracking-wider uppercase mb-2">基礎值 apBase（參考，由爬蟲腳本管理）</p>
                   <div className="grid grid-cols-3 gap-2 text-xs text-text-dim">
                     <div>初始：{form.apBase.init}</div>
                     <div>上限：{form.apBase.max}</div>
@@ -2153,7 +2179,7 @@ function PilotEditPanel({
               </div>
               {Object.keys(form.profile?.additionalInfo ?? {}).length > 0 && (
                 <div className="p-3 bg-bg-dark rounded-lg border border-border/60">
-                  <p className="text-[10px] text-text-dim font-medium tracking-wider uppercase mb-2">其他資料 additionalInfo（由爬蟲腳本管理）</p>
+                  <p className="text-[13px] text-text-dim font-medium tracking-wider uppercase mb-2">其他資料 additionalInfo（由爬蟲腳本管理）</p>
                   <div className="space-y-1">
                     {Object.entries(form.profile?.additionalInfo ?? {}).map(([k, v]) => (
                       <div key={k} className="flex gap-2 text-xs text-text-dim">
@@ -2165,7 +2191,7 @@ function PilotEditPanel({
                 </div>
               )}
               <div className="p-3 bg-bg-dark/60 border border-border/40 rounded-lg">
-                <p className="text-[11px] text-text-dim">
+                <p className="text-[14px] text-text-dim">
                   天賦、神經驅動等複雜欄位由爬蟲腳本管理，請透過 <code className="text-accent-cyan">npm run migrate</code> 更新至 Firestore。<br />
                   技能的名稱與描述同樣由腳本管理，但可在「技能效果」分頁填入 effects 供計算器使用。
                 </p>
@@ -2235,19 +2261,19 @@ function WeaponSkillItem({
   return (
     <div className="border border-border/60 rounded-lg bg-bg-dark/50">
       <div className="flex items-center gap-2 px-3 py-2 cursor-pointer select-none" onClick={onToggle}>
-        <span className="text-[10px] text-text-dim w-3 shrink-0">{expanded ? '▼' : '▶'}</span>
+        <span className="text-[13px] text-text-dim w-3 shrink-0">{expanded ? '▼' : '▶'}</span>
         <span className="text-sm font-medium flex-1 truncate">
           {skill.name || <span className="text-text-dim font-normal">（未命名）#{index + 1}</span>}
         </span>
-        <span className={`text-[10px] px-1.5 py-0.5 rounded border shrink-0 ${activationColor}`}>
+        <span className={`text-[13px] px-1.5 py-0.5 rounded border shrink-0 ${activationColor}`}>
           {skill.activation}
         </span>
-        <span className={`text-[10px] shrink-0 ${effects.length > 0 ? 'text-accent-cyan' : 'text-text-dim'}`}>
+        <span className={`text-[13px] shrink-0 ${effects.length > 0 ? 'text-accent-cyan' : 'text-text-dim'}`}>
           效果 {effects.length}
         </span>
         <button
           onClick={(e) => { e.stopPropagation(); onRemove() }}
-          className="text-[10px] px-1.5 py-0.5 text-accent-red border border-accent-red/30 rounded hover:bg-accent-red/10 shrink-0"
+          className="text-[13px] px-1.5 py-0.5 text-accent-red border border-accent-red/30 rounded hover:bg-accent-red/10 shrink-0"
         >✕</button>
       </div>
 
@@ -2292,12 +2318,22 @@ function WeaponSkillItem({
               className="input-field min-h-[72px] resize-y"
             />
           </Field>
+          {skill.enhancesTalentName && (
+            <Field label="強化後天賦描述 enhancedTalentDescription（遊戲原文，用於差異對比）">
+              <textarea
+                value={skill.enhancedTalentDescription ?? ''}
+                onChange={(e) => onChange({ ...skill, enhancedTalentDescription: e.target.value || undefined })}
+                className="input-field min-h-[88px] resize-y"
+                placeholder="填入天賦被此專武強化後的完整描述文字（複製遊戲原文）"
+              />
+            </Field>
+          )}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] text-text-dim font-medium uppercase tracking-wider">可計算效果 effects</span>
+              <span className="text-[13px] text-text-dim font-medium uppercase tracking-wider">可計算效果 effects</span>
               <button
                 onClick={() => onChange({ ...skill, effects: [...effects, { stat: 'dmg', value: 0, scope: 'self', condition: null }] })}
-                className="text-[10px] text-accent-cyan hover:text-accent-cyan/80 transition-colors"
+                className="text-[13px] text-accent-cyan hover:text-accent-cyan/80 transition-colors"
               >+ 新增效果</button>
             </div>
             {effects.length === 0 ? (
@@ -2447,16 +2483,16 @@ function WeaponAdmin({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-bold text-sm text-text-primary truncate">{w.name || <span className="text-text-dim font-normal">（未命名）</span>}</span>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded border font-bold shrink-0 ${WEAPON_RARITY_CLASS[w.rarity] ?? 'text-text-dim border-border bg-bg-card'}`}>{w.rarity}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-card border border-border text-text-dim shrink-0">{w.type}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-card border border-border text-text-dim shrink-0">{w.kind}</span>
+                  <span className={`text-[13px] px-1.5 py-0.5 rounded border font-bold shrink-0 ${WEAPON_RARITY_CLASS[w.rarity] ?? 'text-text-dim border-border bg-bg-card'}`}>{w.rarity}</span>
+                  <span className="text-[13px] px-1.5 py-0.5 rounded bg-bg-card border border-border text-text-dim shrink-0">{w.type}</span>
+                  <span className="text-[13px] px-1.5 py-0.5 rounded bg-bg-card border border-border text-text-dim shrink-0">{w.kind}</span>
                   {w.isExclusive && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent-purple/10 text-accent-purple border border-accent-purple/30 shrink-0">
+                    <span className="text-[13px] px-1.5 py-0.5 rounded bg-accent-purple/10 text-accent-purple border border-accent-purple/30 shrink-0">
                       專屬{pilot ? `・${pilot.name}` : '（未綁定）'}
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-text-dim mt-0.5">
+                <p className="text-[14px] text-text-dim mt-0.5">
                   {w.equipSlot} · 重量 {w.weight} · 攻擊 {w.attack} · 射程 {w.rangeType === RangeType.RING ? `${w.maxRange}+` : `${w.minRange}-${w.maxRange}`}
                 </p>
               </div>
@@ -2547,7 +2583,7 @@ function WeaponEditPanel({
               <span className="text-accent-purple">⚔</span> 編輯武器
               <span className="text-text-dim text-sm font-normal ml-1">{form.id}</span>
             </h3>
-            <p className="text-[11px] text-text-dim mt-0.5">
+            <p className="text-[14px] text-text-dim mt-0.5">
               {form.type} · {form.kind} · {form.rarity} · 技能 {(form.skills ?? []).length}
             </p>
           </div>
@@ -2649,8 +2685,8 @@ function WeaponEditPanel({
                 </Field>
               </div>
               <div className="p-3 bg-bg-dark rounded-lg border border-border/60">
-                <p className="text-[10px] text-text-dim font-medium uppercase mb-1">連擊數參考</p>
-                <p className="text-[11px] text-text-secondary">霰彈槍=12 · 機槍/重機槍/電鋸=10 · 噴火器=8 · 浮游炮=6 · 其他=1</p>
+                <p className="text-[13px] text-text-dim font-medium uppercase mb-1">連擊數參考</p>
+                <p className="text-[14px] text-text-secondary">霰彈槍=12 · 機槍/重機槍/電鋸=10 · 噴火器=8 · 浮游炮=6 · 其他=1</p>
               </div>
             </div>
           )}
@@ -2664,8 +2700,9 @@ function WeaponEditPanel({
                   update('rangeType', rt)
                   if (rt === RangeType.RING) update('minRange', 0)
                 }} className="input-field">
-                  <option value={RangeType.LINEAR}>linear — 線性射程（有最小射程限制）</option>
-                  <option value={RangeType.RING}>ring — 環形N圈（含自身格，無最小限制）</option>
+                  <option value={RangeType.MANHATTAN}>manhattan — 菱形射程（Manhattan 距離，可打斜格）</option>
+                  <option value={RangeType.ORTHOGONAL}>orthogonal — 十字直線（上下左右，不可打斜格）</option>
+                  <option value={RangeType.RING}>ring — 環形N圈（含自身格，Chebyshev 距離）</option>
                 </select>
               </Field>
               <div className="grid grid-cols-2 gap-3">
@@ -2681,16 +2718,18 @@ function WeaponEditPanel({
                 </Field>
               </div>
               <div className="p-3 bg-bg-dark rounded-lg border border-border/60 space-y-1.5">
-                <p className="text-[10px] text-text-dim font-medium uppercase">射程顯示預覽</p>
+                <p className="text-[13px] text-text-dim font-medium uppercase">射程顯示預覽</p>
                 <p className="font-mono text-sm text-accent-cyan">
                   {form.rangeType === RangeType.RING
                     ? `${form.maxRange}+（${(2 * form.maxRange + 1) ** 2} 格覆蓋）`
                     : `${form.minRange}-${form.maxRange}`}
                 </p>
-                <p className="text-[11px] text-text-dim">
+                <p className="text-[14px] text-text-dim">
                   {form.rangeType === RangeType.RING
                     ? `ring：以持有者為中心，Chebyshev 距離 ≤ ${form.maxRange} 的 ${2 * form.maxRange + 1}×${2 * form.maxRange + 1} 方格`
-                    : `linear：攻擊目標須在 [${form.minRange}, ${form.maxRange}] 格距內`}
+                    : form.rangeType === RangeType.ORTHOGONAL
+                    ? `orthogonal：十字直線，Manhattan 距離 [${form.minRange}, ${form.maxRange}]，不可打斜格`
+                    : `manhattan：菱形範圍，Manhattan 距離 [${form.minRange}, ${form.maxRange}]，可打斜格`}
                 </p>
               </div>
             </div>
@@ -2712,7 +2751,7 @@ function WeaponEditPanel({
                     <input type="number" value={form.componentLimit} onChange={(e) => update('componentLimit', Number(e.target.value))} className="input-field" />
                   </Field>
                 </div>
-                <p className="text-[11px] text-text-dim">SS / S+ = 4；S = 3；其他 = 0</p>
+                <p className="text-[14px] text-text-dim">SS / S+ = 4；S = 3；其他 = 0</p>
               </div>
               <div className="p-3 bg-bg-dark rounded-lg border border-border/60 space-y-3">
                 <p className="text-xs text-text-dim font-medium uppercase tracking-wider">專屬武器設定</p>
@@ -2759,10 +2798,10 @@ function WeaponEditPanel({
                   </div>
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] text-text-dim uppercase">效果列表 effects</span>
+                      <span className="text-[13px] text-text-dim uppercase">效果列表 effects</span>
                       <button
                         onClick={() => updateFixedMod('effects', [...form.fixedMod.effects, { stat: 'attack', value: 0 }])}
-                        className="text-[10px] text-accent-cyan hover:text-accent-cyan/80 transition-colors"
+                        className="text-[13px] text-accent-cyan hover:text-accent-cyan/80 transition-colors"
                       >+ 新增效果</button>
                     </div>
                     {form.fixedMod.effects.length === 0 ? (
@@ -2813,10 +2852,10 @@ function WeaponEditPanel({
                   </div>
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] text-text-dim uppercase">可能效果 possibleEffects</span>
+                      <span className="text-[13px] text-text-dim uppercase">可能效果 possibleEffects</span>
                       <button
                         onClick={() => updateFloatingMod('possibleEffects', [...form.floatingMod.possibleEffects, { stat: 'attack', condition: null, min: 0, max: 0 }])}
-                        className="text-[10px] text-accent-cyan hover:text-accent-cyan/80 transition-colors"
+                        className="text-[13px] text-accent-cyan hover:text-accent-cyan/80 transition-colors"
                       >+ 新增</button>
                     </div>
                     {form.floatingMod.possibleEffects.length === 0 ? (
@@ -3020,7 +3059,7 @@ function UserAdmin({ currentUid }: { currentUid: string }) {
                   {u.displayName || '（未設定）'}
                 </span>
                 {u.uid === currentUid && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/30 shrink-0">
+                  <span className="text-[13px] px-1.5 py-0.5 rounded bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/30 shrink-0">
                     你
                   </span>
                 )}
@@ -3029,7 +3068,7 @@ function UserAdmin({ currentUid }: { currentUid: string }) {
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <span
-                className={`text-[11px] px-2 py-0.5 rounded border font-medium ${
+                className={`text-[14px] px-2 py-0.5 rounded border font-medium ${
                   u.role === 'ADMIN'
                     ? 'text-accent-orange bg-accent-orange/10 border-accent-orange/30'
                     : 'text-text-dim bg-bg-card border-border'

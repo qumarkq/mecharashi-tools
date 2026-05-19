@@ -133,9 +133,9 @@ export const WeaponEquipSlot = {
 export type WeaponEquipSlot = typeof WeaponEquipSlot[keyof typeof WeaponEquipSlot];
 
 export const RangeType = {
-  LINEAR: 'linear', // 線性射程：有最小射程限制，攻擊在 [minRange, maxRange] 區間
-  RING:   'ring',   // 環形 N 圈：以持有者為中心，chebyshev距離 ≤ maxRange 的方形區域
-                    // N圈 = (2N+1)×(2N+1) 方格，minRange 固定為 0（含自身格）
+  MANHATTAN:  'manhattan',  // 菱形射程：Manhattan 距離，可打斜格。攻擊格：|dx|+|dy| ∈ [minRange, maxRange]
+  ORTHOGONAL: 'orthogonal', // 十字直線：只能上下左右，不可打斜格（電磁炮）。攻擊格：(dx=0 XOR dy=0) AND |dx|+|dy| ∈ [minRange, maxRange]
+  RING:       'ring',       // 環形 N 圈：Chebyshev 距離，方形覆蓋。攻擊格：max(|dx|,|dy|) ≤ maxRange，minRange 固定為 0
 } as const;
 export type RangeType = typeof RangeType[keyof typeof RangeType];
 

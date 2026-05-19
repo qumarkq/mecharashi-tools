@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { assetUrl } from '../utils/assets'
 
 interface WeaponIconProps {
@@ -23,7 +23,7 @@ export function WeaponIcon({ icon, name, size = 'md', isExclusive = false }: Wea
           }}
         >
           {!icon || failed ? (
-            <span className="text-amber-200/60 text-[10px]">武</span>
+            <span className="text-amber-200/60 text-[13px]">武</span>
           ) : (
             <img
               src={assetUrl(icon)}
@@ -40,7 +40,7 @@ export function WeaponIcon({ icon, name, size = 'md', isExclusive = false }: Wea
   if (!icon || failed) {
     return (
       <div className={`${dim} rounded-lg bg-bg-dark border border-border flex items-center justify-center flex-shrink-0`}>
-        <span className="text-text-dim text-[10px]">武</span>
+        <span className="text-text-dim text-[13px]">武</span>
       </div>
     )
   }

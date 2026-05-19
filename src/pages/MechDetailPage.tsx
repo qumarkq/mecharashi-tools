@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect, useRef } from 'react'
+﻿import { useState, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, Link } from 'react-router-dom'
 import type { MechPart, Module } from '../types'
@@ -51,17 +51,17 @@ function LevelTooltip({ mod, pinned }: { mod: Module; pinned: boolean }) {
     <div className="w-72 max-h-[min(90vh,_600px)] flex flex-col bg-bg-card border border-border-accent rounded-xl p-4 shadow-2xl">
       <div className="flex items-center justify-between mb-3 flex-shrink-0">
         <span className="text-xs font-bold text-accent-orange">{mod.name}</span>
-        <span className="text-[10px] text-text-dim">各等級效果{pinned ? ' · 📌' : ''}</span>
+        <span className="text-[13px] text-text-dim">各等級效果{pinned ? ' · 📌' : ''}</span>
       </div>
       <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-2">
         {levels.map((lv) => (
           <div key={lv.level} className="bg-bg-dark rounded-lg p-2.5">
             <div className="flex items-start gap-2">
-              <span className="text-[10px] px-1.5 py-0.5 rounded border text-accent-orange bg-accent-orange/10 border-accent-orange/30 font-bold flex-shrink-0">
+              <span className="text-[13px] px-1.5 py-0.5 rounded border text-accent-orange bg-accent-orange/10 border-accent-orange/30 font-bold flex-shrink-0">
                 Lv.{lv.level}
               </span>
               {lv.description && (
-                <span className="text-[11px] text-text-secondary leading-tight">{highlightNumbers(lv.description)}</span>
+                <span className="text-[14px] text-text-secondary leading-tight">{highlightNumbers(lv.description)}</span>
               )}
             </div>
             {activeStats.length > 0 && (
@@ -70,7 +70,7 @@ function LevelTooltip({ mod, pinned }: { mod: Module; pinned: boolean }) {
                   const val = (lv[key] as number | undefined) ?? 0
                   if (!val) return null
                   return (
-                    <span key={key} className={`text-[11px] ${color}`}>
+                    <span key={key} className={`text-[14px] ${color}`}>
                       {label}{prefix ?? '+'}{val}{suffix}
                     </span>
                   )
@@ -81,7 +81,7 @@ function LevelTooltip({ mod, pinned }: { mod: Module; pinned: boolean }) {
         ))}
       </div>
       {!pinned && (
-        <p className="text-[10px] text-text-dim mt-2 text-center flex-shrink-0">點擊模組固定此視窗</p>
+        <p className="text-[13px] text-text-dim mt-2 text-center flex-shrink-0">點擊模組固定此視窗</p>
       )}
     </div>
   )
@@ -125,10 +125,10 @@ function ModuleCard({ mod, showBoundPart, isPinned, onEnter, onLeave, onClick }:
           <div className="flex items-center gap-1.5 flex-wrap">
             <p className="font-bold text-sm text-text-primary">{mod.name}</p>
             {rarityStyle && (
-              <span className={`text-[10px] px-1.5 py-0.5 rounded border ${rarityStyle}`}>{mod.rarity}</span>
+              <span className={`text-[13px] px-1.5 py-0.5 rounded border ${rarityStyle}`}>{mod.rarity}</span>
             )}
             {hasLevels && (
-              <span className="text-[10px] text-text-dim ml-auto flex-shrink-0">
+              <span className="text-[13px] text-text-dim ml-auto flex-shrink-0">
                 {isPinned ? '📌' : '◉ 等級效果'}
               </span>
             )}
@@ -137,7 +137,7 @@ function ModuleCard({ mod, showBoundPart, isPinned, onEnter, onLeave, onClick }:
       </div>
 
       {parts && (
-        <div className="text-[11px] text-text-dim mb-2">
+        <div className="text-[14px] text-text-dim mb-2">
           綁定部位：<span className="text-accent-purple font-medium">{parts}</span>
         </div>
       )}
@@ -150,7 +150,7 @@ function ModuleCard({ mod, showBoundPart, isPinned, onEnter, onLeave, onClick }:
         || (mod.firepower_rate ?? 0) > 0 || (mod.armor_rate ?? 0) > 0 || (mod.output_bonus ?? 0) > 0
         || (mod.dodge_rate ?? 0) > 0 || (mod.durable_rate ?? 0) > 0
         || (mod.dmg_resist_rate ?? 0) > 0 || (mod.crit_resist_rate ?? 0) > 0) && (
-        <div className="flex gap-2 mt-2 text-[11px] flex-wrap">
+        <div className="flex gap-2 mt-2 text-[14px] flex-wrap">
           {mod.dmg > 0                        && <ModStat label="傷害" value={`+${mod.dmg}%`} color="text-accent-orange" />}
           {(mod.crit_rate ?? 0) > 0           && <ModStat label="暴擊" value={`+${mod.crit_rate}%`} color="text-accent-yellow" />}
           {mod.critDmg > 0                    && <ModStat label="爆傷" value={`+${mod.critDmg}%`} color="text-accent-red" />}
@@ -170,7 +170,7 @@ function ModuleCard({ mod, showBoundPart, isPinned, onEnter, onLeave, onClick }:
 
 function ModStat({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <span className="text-[11px] bg-bg-card border border-border rounded px-2 py-0.5">
+    <span className="text-[14px] bg-bg-card border border-border rounded px-2 py-0.5">
       <span className="text-text-dim">{label} </span>
       <span className={`${color} font-bold`}>{value}</span>
     </span>
@@ -189,7 +189,7 @@ function ModuleGroupLabel({ label, accent }: { label: string; accent: string }) 
   return (
     <div className="flex items-center gap-2 mb-2">
       <div className={`w-0.5 h-3.5 rounded-full ${accent}`} />
-      <span className="text-[11px] text-text-dim tracking-wider">{label}</span>
+      <span className="text-[14px] text-text-dim tracking-wider">{label}</span>
     </div>
   )
 }
@@ -208,13 +208,13 @@ function PartCard({ part, name }: { part: MechPart; name: string }) {
       <div className="flex-1 min-w-0 flex flex-col">
         <div className="mb-1.5">
           <p className="font-bold text-sm text-text-primary leading-tight">{name}</p>
-          <p className="text-[10px] text-text-dim leading-tight">{part.interface}</p>
+          <p className="text-[13px] text-text-dim leading-tight">{part.interface}</p>
         </div>
         <div className="flex-1 divide-y divide-border">
           {PART_STAT_KEYS.filter(({ key }) => part[key] != null).map(({ key, label }) => (
             <div key={key} className="flex justify-between items-center py-1">
-              <span className="text-[11px] text-text-dim">{label}</span>
-              <span className="text-[11px] text-text-primary font-medium font-[JetBrains_Mono,monospace]">
+              <span className="text-[14px] text-text-dim">{label}</span>
+              <span className="text-[14px] text-text-primary font-medium font-[JetBrains_Mono,monospace]">
                 {(part[key] as number).toLocaleString()}
               </span>
             </div>

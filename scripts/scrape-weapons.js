@@ -15,10 +15,11 @@
  *   node scripts/scrape-weapons.js --debug             ← 輸出完整原始欄位
  *
  * 射程解析規則：
- *   "2-4"  → rangeType:'linear', minRange:2, maxRange:4
- *   "2+"   → rangeType:'ring',   minRange:0, maxRange:2
- *   "1"    → rangeType:'linear', minRange:1, maxRange:1（近戰）
- *   無法解析 → rangeType:'linear', minRange:0, maxRange:0，並標記 __REVIEW__
+ *   "2-4"  → rangeType:'manhattan', minRange:2, maxRange:4
+ *   "2+"   → rangeType:'ring',      minRange:0, maxRange:2
+ *   "1"    → rangeType:'manhattan', minRange:1, maxRange:1（近戰）
+ *   無法解析 → rangeType:'manhattan', minRange:0, maxRange:0，並標記 __REVIEW__
+ *   注意：電磁炮使用 'orthogonal'，由 KIND_DEFAULTS 直接指定，不走 parseRange
  */
 
 import * as OpenCC from 'opencc-js';
@@ -131,26 +132,26 @@ const WEAPON_KIND_MAP = {
 // 新增種類時在此加一列即可，buildWeaponJson 直接查 kd = KIND_DEFAULTS[kindTW]
 const KIND_DEFAULTS = {
   // ── 格鬥類 ──────────────────────────────────────────────────────────────
-  '大盾':         { equipSlot: 'dualHand',   ammoCount: 0, hitCount:  1, rangeType: 'linear', minRange: 1, maxRange: 1 },
-  '手盾':         { equipSlot: 'singleHand', ammoCount: 0, hitCount:  1, rangeType: 'linear', minRange: 1, maxRange: 1 },
-  '刀劍':         { equipSlot: 'singleHand', ammoCount: 0, hitCount:  1, rangeType: 'ring',   minRange: 0, maxRange: 1 },
-  '拳套':         { equipSlot: 'singleHand', ammoCount: 0, hitCount:  1, rangeType: 'linear', minRange: 1, maxRange: 1 },
-  '打樁機':       { equipSlot: 'singleHand', ammoCount: 0, hitCount:  1, rangeType: 'linear', minRange: 1, maxRange: 1 },
-  '電鋸':         { equipSlot: 'dualHand',   ammoCount: 0, hitCount: 10, rangeType: 'ring',   minRange: 0, maxRange: 1 },
-  '長柄':         { equipSlot: 'dualHand',   ammoCount: 0, hitCount:  1, rangeType: 'ring',   minRange: 0, maxRange: 1 },
+  '大盾':         { equipSlot: 'dualHand',   ammoCount: 0, hitCount:  1, rangeType: 'manhattan',  minRange: 1, maxRange: 1 },
+  '手盾':         { equipSlot: 'singleHand', ammoCount: 0, hitCount:  1, rangeType: 'manhattan',  minRange: 1, maxRange: 1 },
+  '刀劍':         { equipSlot: 'singleHand', ammoCount: 0, hitCount:  1, rangeType: 'ring',        minRange: 0, maxRange: 1 },
+  '拳套':         { equipSlot: 'singleHand', ammoCount: 0, hitCount:  1, rangeType: 'manhattan',  minRange: 1, maxRange: 1 },
+  '打樁機':       { equipSlot: 'singleHand', ammoCount: 0, hitCount:  1, rangeType: 'manhattan',  minRange: 1, maxRange: 1 },
+  '電鋸':         { equipSlot: 'dualHand',   ammoCount: 0, hitCount: 10, rangeType: 'ring',        minRange: 0, maxRange: 1 },
+  '長柄':         { equipSlot: 'dualHand',   ammoCount: 0, hitCount:  1, rangeType: 'ring',        minRange: 0, maxRange: 1 },
   // ── 戰術類 ──────────────────────────────────────────────────────────────
-  '電磁炮':       { equipSlot: 'back',     mechRestriction: 'medium', ammoCount: 3, hitCount:  1, rangeType: 'linear', minRange: 0, maxRange: 5 },
-  '浮游炮':       { equipSlot: 'back',     mechRestriction: 'medium', ammoCount: 3, hitCount:  6, rangeType: 'linear', minRange: 1, maxRange: 4 },
-  '導彈':         { equipSlot: 'shoulder', mechRestriction: 'medium', ammoCount: 2, hitCount:  1, rangeType: 'linear', minRange: 3, maxRange: 6 },
-  '火箭':         { equipSlot: 'shoulder', mechRestriction: 'medium', ammoCount: 1, hitCount:  1, rangeType: 'linear', minRange: 3, maxRange: 6 },
+  '電磁炮':       { equipSlot: 'back',     mechRestriction: 'medium', ammoCount: 3, hitCount:  1, rangeType: 'orthogonal', minRange: 0, maxRange: 5 },
+  '浮游炮':       { equipSlot: 'back',     mechRestriction: 'medium', ammoCount: 3, hitCount:  6, rangeType: 'manhattan',  minRange: 1, maxRange: 4 },
+  '導彈':         { equipSlot: 'shoulder', mechRestriction: 'medium', ammoCount: 2, hitCount:  1, rangeType: 'manhattan',  minRange: 3, maxRange: 6 },
+  '火箭':         { equipSlot: 'shoulder', mechRestriction: 'medium', ammoCount: 1, hitCount:  1, rangeType: 'manhattan',  minRange: 3, maxRange: 6 },
   // ── 突擊類 ──────────────────────────────────────────────────────────────
-  '霰彈槍':       { equipSlot: 'singleHand', ammoCount: 0, hitCount: 12, rangeType: 'linear', minRange: 1, maxRange: 2 },
-  '機槍':         { equipSlot: 'singleHand', ammoCount: 0, hitCount: 10, rangeType: 'linear', minRange: 1, maxRange: 3 },
-  '重機槍':       { equipSlot: 'dualHand',   ammoCount: 0, hitCount: 10, rangeType: 'linear', minRange: 1, maxRange: 3 },
-  '噴火器':       { equipSlot: 'singleHand', ammoCount: 0, hitCount:  8, rangeType: 'ring',   minRange: 0, maxRange: 2 },
+  '霰彈槍':       { equipSlot: 'singleHand', ammoCount: 0, hitCount: 12, rangeType: 'manhattan',  minRange: 1, maxRange: 2 },
+  '機槍':         { equipSlot: 'singleHand', ammoCount: 0, hitCount: 10, rangeType: 'manhattan',  minRange: 1, maxRange: 3 },
+  '重機槍':       { equipSlot: 'dualHand',   ammoCount: 0, hitCount: 10, rangeType: 'manhattan',  minRange: 1, maxRange: 3 },
+  '噴火器':       { equipSlot: 'singleHand', ammoCount: 0, hitCount:  8, rangeType: 'ring',        minRange: 0, maxRange: 2 },
   // ── 射擊類 ──────────────────────────────────────────────────────────────
-  '輕型狙擊步槍': { equipSlot: 'singleHand', ammoCount: 0, hitCount:  1, rangeType: 'linear', minRange: 2, maxRange: 4 },
-  '狙擊步槍':     { equipSlot: 'dualHand',   ammoCount: 0, hitCount:  1, rangeType: 'linear', minRange: 2, maxRange: 4 },
+  '輕型狙擊步槍': { equipSlot: 'singleHand', ammoCount: 0, hitCount:  1, rangeType: 'manhattan',  minRange: 2, maxRange: 4 },
+  '狙擊步槍':     { equipSlot: 'dualHand',   ammoCount: 0, hitCount:  1, rangeType: 'manhattan',  minRange: 2, maxRange: 4 },
 };
 
 // ── 稀有度映射（API quality → WeaponRarity enum 值）─────────────────────────
@@ -331,26 +332,26 @@ function parseRange(raw) {
     return { rangeType: 'ring', minRange: 0, maxRange: parseInt(ringMatch[1]), needsReview: false };
   }
 
-  // 線性射程：數字-數字（如 "2-4" 或 "2～4"）
+  // 菱形射程：數字-數字（如 "2-4" 或 "2～4"）
   const linearMatch = str.match(/^(\d+)[-～~](\d+)$/);
   if (linearMatch) {
     return {
-      rangeType: 'linear',
+      rangeType: 'manhattan',
       minRange:  parseInt(linearMatch[1]),
       maxRange:  parseInt(linearMatch[2]),
       needsReview: false,
     };
   }
 
-  // 單一數字（固定射程，視為 linear）
+  // 單一數字（固定射程，視為 manhattan）
   const singleMatch = str.match(/^(\d+)$/);
   if (singleMatch) {
     const n = parseInt(singleMatch[1]);
-    return { rangeType: 'linear', minRange: n, maxRange: n, needsReview: false };
+    return { rangeType: 'manhattan', minRange: n, maxRange: n, needsReview: false };
   }
 
   // 無法解析，標記為待審
-  return { rangeType: 'linear', minRange: 0, maxRange: 0, needsReview: true };
+  return { rangeType: 'manhattan', minRange: 0, maxRange: 0, needsReview: true };
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -488,7 +489,7 @@ function buildWeaponJson(listItem, detail, index, prev) {
     attack,
     accuracy,
     critValue,
-    rangeType:       needsReview ? '__REVIEW__linear' : rangeType,
+    rangeType:       needsReview ? '__REVIEW__manhattan' : rangeType,
     minRange:        needsReview ? 0 : minRange,
     maxRange:        needsReview ? 0 : maxRange,
     weight,
@@ -629,7 +630,7 @@ async function main() {
 
     const weapon = buildWeaponJson(item, detail, i, prev);
 
-    if (weapon.rangeType.startsWith('__REVIEW__')) {
+    if (typeof weapon.rangeType === 'string' && weapon.rangeType.startsWith('__REVIEW__')) {
       reviewCount++;
       console.log(`  [${i+1}/${list.length}] ⚠ ${weapon.name} — 射程「${weapon._rawRange}」需人工確認`);
     } else if (DEBUG) {
@@ -658,7 +659,7 @@ async function main() {
   console.log('═══════════════════════════════════════════════════');
   console.log(`📊 解析結果`);
   console.log(`   共解析: ${results.length} 筆`);
-  if (reviewCount > 0) console.log(`   ⚠ 射程需人工確認: ${reviewCount} 筆（rangeType 以 __REVIEW__linear 標記）`);
+  if (reviewCount > 0) console.log(`   ⚠ 射程需人工確認: ${reviewCount} 筆（rangeType 以 __REVIEW__manhattan 標記）`);
   if (DOWNLOAD_IMG)    console.log(`   圖示: ${newIconCount} 新 / ${skipIconCount} 已有`);
 
   // ── DRY RUN：預覽資料後結束 ──

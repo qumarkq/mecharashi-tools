@@ -37,6 +37,8 @@ export interface SkillCondition {
   hpThreshold?: number
   minApCost?:   number
   targetClass?: string
+  /** trigger='hasBuff' 時：需持有的 buff / 狀態名稱（如 '強化射擊'、'瞄準'） */
+  hasBuff?:     string
 }
 
 /** 單一可計算效果條目 */
@@ -46,10 +48,12 @@ export interface SkillEffect {
    *  'dmg_assault' | 'dmg_melee' | 'dmg_shooting' | 'dmg_tactical'
    *  'dmg_blade' | 'dmg_machinegun' | ... (武器種類，同 Module)
    *  'range' | 'armor_rate' | 'firepower_rate' | ... (其他屬性) */
-  stat:      string
-  value:     number
-  scope:     string
-  condition: SkillCondition | null
+  stat:        string
+  value:       number
+  /** 數值計算方式：'add'（預設，加算）/ 'override'（覆蓋原始值，如係數 0.15→0.2） */
+  valueType?:  'add' | 'override'
+  scope:       string
+  condition:   SkillCondition | null
 }
 
 /** buffs Collection 文件 */
@@ -356,13 +360,19 @@ export interface MechPartsLegacy {
 
 export interface WeaponSkill {
   name: string
+  /** 技能圖示遠端 URL（API 原始路徑） */
+  icon?: string
+  /** 技能圖示本地路徑（如 /images/weapons/skills/Icon_skill_xxxxx.png）；前端縮圖顯示用 */
+  iconLocal?: string
   type: string
   /** 生效方式："carry" 攜帶即生效 / "equip" 裝備中生效 / "use" 僅使用時生效 */
   activation: 'carry' | 'equip' | 'use'
   description: string
-  effects:             SkillEffect[]
-  buffIds:             string[]
-  enhancesTalentName?: string
+  effects:                     SkillEffect[]
+  buffIds:                     string[]
+  enhancesTalentName?:         string
+  /** 天賦被此專武強化後的完整描述文字（遊戲原文）；用於與天賦原文做 DiffHighlight 差異對比 */
+  enhancedTalentDescription?:  string
 }
 
 export interface WeaponFixedModEffect {
@@ -388,7 +398,7 @@ export interface Weapon {
   attack: string
   accuracy: number
   critValue: number
-  rangeType:  string  // RangeType：'linear' | 'ring'
+  rangeType:  string  // RangeType：'manhattan' | 'orthogonal' | 'ring'
   minRange:   number
   maxRange:   number
   weight: number

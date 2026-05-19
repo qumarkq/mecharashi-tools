@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import Layout from './components/Layout'
@@ -16,6 +17,8 @@ import GuidesPage from './pages/GuidesPage'
 import ProfilePage from './pages/ProfilePage'
 import AdminPage from './pages/AdminPage'
 
+const WeaponDetailPage = lazy(() => import('./pages/WeaponDetailPage'))
+
 function App() {
   return (
     <AuthProvider>
@@ -28,6 +31,7 @@ function App() {
             <Route path="mechs" element={<MechsPage />} />
             <Route path="mechs/:id" element={<MechDetailPage />} />
             <Route path="weapons" element={<WeaponsPage />} />
+            <Route path="weapons/:id" element={<Suspense fallback={null}><WeaponDetailPage /></Suspense>} />
             <Route path="backpacks" element={<BackpacksPage />} />
             <Route path="modules" element={<ModulesPage />} />
             <Route path="simulator" element={<SimulatorPage />} />

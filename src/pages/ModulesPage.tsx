@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect, useRef } from 'react'
+﻿import { useState, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { assetUrl } from '../utils/assets'
 import { useModules, useMechNameMap } from '../hooks/useFirestore'
@@ -46,17 +46,17 @@ function LevelTooltip({ mod, pinned }: { mod: Module; pinned: boolean }) {
     <div className="w-72 max-h-[min(90vh,_600px)] flex flex-col bg-bg-card border border-border-accent rounded-xl p-4 shadow-2xl">
       <div className="flex items-center justify-between mb-3 flex-shrink-0">
         <span className="text-xs font-bold text-accent-orange">{mod.name}</span>
-        <span className="text-[10px] text-text-dim">各等級效果{pinned ? ' · 📌' : ''}</span>
+        <span className="text-[13px] text-text-dim">各等級效果{pinned ? ' · 📌' : ''}</span>
       </div>
       <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-2">
         {levels.map((lv) => (
           <div key={lv.level} className="bg-bg-dark rounded-lg p-2.5">
             <div className="flex items-start gap-2">
-              <span className="text-[10px] px-1.5 py-0.5 rounded border text-accent-orange bg-accent-orange/10 border-accent-orange/30 font-bold flex-shrink-0">
+              <span className="text-[13px] px-1.5 py-0.5 rounded border text-accent-orange bg-accent-orange/10 border-accent-orange/30 font-bold flex-shrink-0">
                 Lv.{lv.level}
               </span>
               {lv.description && (
-                <span className="text-[11px] text-text-secondary leading-tight">{highlightNumbers(lv.description)}</span>
+                <span className="text-[14px] text-text-secondary leading-tight">{highlightNumbers(lv.description)}</span>
               )}
             </div>
             {activeStats.length > 0 && (
@@ -65,7 +65,7 @@ function LevelTooltip({ mod, pinned }: { mod: Module; pinned: boolean }) {
                   const val = (lv[key] as number | undefined) ?? 0
                   if (!val) return null
                   return (
-                    <span key={key} className={`text-[11px] ${color}`}>
+                    <span key={key} className={`text-[14px] ${color}`}>
                       {label}{prefix ?? '+'}{val}{suffix}
                     </span>
                   )
@@ -76,7 +76,7 @@ function LevelTooltip({ mod, pinned }: { mod: Module; pinned: boolean }) {
         ))}
       </div>
       {!pinned && (
-        <p className="text-[10px] text-text-dim mt-2 text-center flex-shrink-0">點擊模組固定此視窗</p>
+        <p className="text-[13px] text-text-dim mt-2 text-center flex-shrink-0">點擊模組固定此視窗</p>
       )}
     </div>
   )
@@ -338,20 +338,20 @@ export default function ModulesPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <h3 className="font-bold text-sm">{mod.name}</h3>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded border ${rarityStyle}`}>
+                      <span className={`text-[13px] px-1.5 py-0.5 rounded border ${rarityStyle}`}>
                         {mod.rarity}
                       </span>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded border ${slotStyle}`}>
+                      <span className={`text-[13px] px-1.5 py-0.5 rounded border ${slotStyle}`}>
                         {SLOT_LABELS[mod.slot] || mod.slot}
                       </span>
                       {hasLevels && (
-                        <span className="text-[10px] text-text-dim ml-auto">
+                        <span className="text-[13px] text-text-dim ml-auto">
                           {isPinned ? '📌' : '◉ 等級效果'}
                         </span>
                       )}
                     </div>
                     {mod.boundMechId && (
-                      <div className="text-[11px] text-text-dim mb-1">
+                      <div className="text-[14px] text-text-dim mb-1">
                         對應機甲：<span className="text-accent-cyan">{mod.boundMechId}</span>
                         {mod.boundPart && (Array.isArray(mod.boundPart) ? mod.boundPart.length > 0 : true) && (
                           <span className="ml-2 text-accent-purple">
@@ -363,7 +363,7 @@ export default function ModulesPage() {
                       </div>
                     )}
                     {(Array.isArray(mod.source) && mod.source.length > 0) && (
-                      <div className="text-[11px] text-text-dim mb-1">
+                      <div className="text-[14px] text-text-dim mb-1">
                         來源：<span className="text-text-secondary">{mod.source.join('、')}</span>
                         {Array.isArray(mod.dismantleMechIds) && mod.dismantleMechIds.length > 0 && (
                           <span className="ml-1 text-accent-cyan">（{mod.dismantleMechIds.map((id) => mechNameMap[id] ?? id).join('・')}）</span>
@@ -374,7 +374,7 @@ export default function ModulesPage() {
                       {highlightNumbers(mod.description ?? '')}
                     </p>
                     {(mod.dmg > 0 || (mod.crit_rate ?? 0) > 0 || mod.critDmg > 0 || (mod.acc_rate ?? 0) > 0 || (mod.firepower_rate ?? 0) > 0 || (mod.armor_rate ?? 0) > 0 || (mod.output_bonus ?? 0) > 0 || (mod.dodge_rate ?? 0) > 0 || (mod.durable_rate ?? 0) > 0 || (mod.dmg_resist_rate ?? 0) > 0 || (mod.crit_resist_rate ?? 0) > 0) && (
-                      <div className="flex gap-3 mt-2 text-[11px] flex-wrap">
+                      <div className="flex gap-3 mt-2 text-[14px] flex-wrap">
                         {mod.dmg > 0 && <span className="text-accent-orange">傷害+{mod.dmg}%</span>}
                         {(mod.crit_rate ?? 0) > 0 && <span className="text-accent-yellow">暴擊+{mod.crit_rate}%</span>}
                         {mod.critDmg > 0 && <span className="text-accent-red">爆傷+{mod.critDmg}%</span>}

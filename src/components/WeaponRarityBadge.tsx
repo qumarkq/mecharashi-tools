@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+﻿import type { CSSProperties } from 'react'
 
 type RarityConfig = { className: string; style?: CSSProperties }
 
@@ -29,11 +29,11 @@ const RARITY_CONFIG: Record<string, RarityConfig> = {
 
 const FALLBACK: RarityConfig = { className: 'text-text-dim bg-bg-dark border border-border' }
 
-export function RarityBadge({ rarity, className = '' }: { rarity: string; className?: string }) {
+export function WeaponRarityBadge({ rarity, className = '' }: { rarity: string; className?: string }) {
   const config = RARITY_CONFIG[rarity] ?? FALLBACK
   return (
     <span
-      className={`px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${config.className} ${className}`}
+      className={`px-1.5 py-0.5 rounded text-[13px] font-bold flex-shrink-0 ${config.className} ${className}`}
       style={config.style}
     >
       {rarity}

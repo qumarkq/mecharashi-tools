@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { assetUrl } from '../utils/assets'
 import { usePilots } from '../hooks/useFirestore'
@@ -139,13 +139,13 @@ export default function PilotsPage() {
                   {/* Class badge */}
                   {s && (
                     <span
-                      className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold border ${s.bg} ${s.text} ${s.border}`}
+                      className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[13px] font-bold border ${s.bg} ${s.text} ${s.border}`}
                     >
                       {pilot.class}
                     </span>
                   )}
                   {/* License badge */}
-                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold bg-black/50 text-text-secondary border border-border">
+                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded text-[13px] font-bold bg-black/50 text-text-secondary border border-border">
                     {pilot.license}
                   </span>
                 </div>
@@ -153,8 +153,8 @@ export default function PilotsPage() {
                 {/* Info */}
                 <div className="p-3">
                   <p className="font-bold text-sm text-text-primary truncate">{pilot.name}</p>
-                  <p className="text-[11px] text-text-dim truncate mt-0.5">{pilot.faction}</p>
-                  <p className="text-[10px] text-text-dim mt-1">{pilot.masterLevel}</p>
+                  <p className="text-[14px] text-text-dim truncate mt-0.5">{pilot.faction}</p>
+                  <p className="text-[13px] text-text-dim mt-1">{pilot.masterLevel}</p>
                 </div>
               </Link>
             )

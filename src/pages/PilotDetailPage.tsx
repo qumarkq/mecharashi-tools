@@ -1,4 +1,4 @@
-import { useState, useRef, useLayoutEffect } from 'react'
+﻿import { useState, useRef, useLayoutEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, Link } from 'react-router-dom'
 import type { PilotStats, NeuralDrive, Weapon } from '../types'
@@ -7,6 +7,7 @@ type NdLevel = NeuralDrive['levels'][number]
 import { assetUrl } from '../utils/assets'
 import { usePilot, usePilotExclusiveWeapon } from '../hooks/useFirestore'
 import { WeaponIcon } from '../components/WeaponIcon'
+import { DiffHighlight } from '../components/DiffHighlight'
 import { highlightNumbers } from '../utils/moduleStats'
 
 // ─── Radar Chart ─────────────────────────────────────────────────────────────
@@ -162,45 +163,12 @@ const SKILL_TYPE_CLS: Record<string, string> = {
 function SkillTypeBadge({ type }: { type: string }) {
   const cls = SKILL_TYPE_CLS[type] ?? 'text-text-dim bg-bg-dark border-border'
   return (
-    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${cls}`}>{type}</span>
+    <span className={`px-2 py-0.5 rounded text-[13px] font-bold border ${cls}`}>{type}</span>
   )
 }
 
 // ─── Diff Highlight ──────────────────────────────────────────────────────────
 
-function lcsMatched(a: string[], b: string[]): boolean[] {
-  const m = a.length, n = b.length
-  const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0))
-  for (let i = 1; i <= m; i++)
-    for (let j = 1; j <= n; j++)
-      dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1])
-  const matched = new Array(n).fill(false)
-  let i = m, j = n
-  while (i > 0 && j > 0) {
-    if (a[i - 1] === b[j - 1]) { matched[j - 1] = true; i--; j-- }
-    else if (dp[i - 1][j] >= dp[i][j - 1]) i--
-    else j--
-  }
-  return matched
-}
-
-function DiffHighlight({ base, enhanced }: { base: string; enhanced: string }) {
-  const tokenize = (s: string) =>
-    s.match(/\d+(?:\.\d+)?%?|[a-zA-Z]+|[一-鿿]+|[^\w\d一-鿿\s]|\s+/g) ?? []
-  const baseTokens = tokenize(base)
-  const enhTokens = tokenize(enhanced)
-  const matched = lcsMatched(baseTokens, enhTokens)
-  return (
-    <>
-      {enhTokens.map((token, i) => {
-        if (/^\s+$/.test(token)) return <span key={i}>{token}</span>
-        if (!matched[i]) return <strong key={i} className="text-accent-yellow font-bold">{token}</strong>
-        if (/^\d+(?:\.\d+)?%?$/.test(token)) return <span key={i} className="text-accent-red font-bold">{token}</span>
-        return <span key={i}>{token}</span>
-      })}
-    </>
-  )
-}
 
 // ─── Exclusive Weapon Panel ──────────────────────────────────────────────────
 
@@ -233,7 +201,7 @@ function WeaponDetailTooltip({ weapon, x, anchorTop }: { weapon: Weapon; x: numb
         <div className="px-4 py-3 border-b border-border bg-accent-yellow/5">
           <div className="flex items-center gap-2 mb-0.5">
             <span className="font-bold text-sm text-text-primary">{weapon.name}</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded border font-bold ${rarityCls}`}>
+            <span className={`text-[13px] px-1.5 py-0.5 rounded border font-bold ${rarityCls}`}>
               {weapon.rarity}
             </span>
           </div>
@@ -258,12 +226,12 @@ function WeaponDetailTooltip({ weapon, x, anchorTop }: { weapon: Weapon; x: numb
         </div>
         {weapon.skills.length > 0 && (
           <div className="px-4 py-3 space-y-2.5">
-            <div className="text-[10px] text-text-dim tracking-widest uppercase">武器技能</div>
+            <div className="text-[13px] text-text-dim tracking-widest uppercase">武器技能</div>
             {weapon.skills.map((sk, i) => (
               <div key={i}>
                 <div className="flex items-center gap-1.5 mb-0.5">
                   <span className="font-bold text-text-primary">{sk.name}</span>
-                  <span className="text-[10px] text-text-dim bg-bg-dark border border-border px-1.5 py-0.5 rounded">
+                  <span className="text-[13px] text-text-dim bg-bg-dark border border-border px-1.5 py-0.5 rounded">
                     {ACTIVATION_LABEL[sk.activation] ?? sk.activation}
                   </span>
                 </div>
@@ -278,8 +246,7 @@ function WeaponDetailTooltip({ weapon, x, anchorTop }: { weapon: Weapon; x: numb
   )
 }
 
-function ExclusiveWeaponPanel({ pilotId, talentNames }: { pilotId: string; talentNames: string[] }) {
-  const { data: weapon, loading } = usePilotExclusiveWeapon(pilotId)
+function ExclusiveWeaponPanel({ weapon, loading, talentNames }: { weapon: Weapon | null; loading: boolean; talentNames: string[] }) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [tooltipPos, setTooltipPos] = useState<{ x: number; anchorTop: number } | null>(null)
 
@@ -327,7 +294,7 @@ function ExclusiveWeaponPanel({ pilotId, talentNames }: { pilotId: string; talen
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
                 <span className="font-bold text-text-primary leading-tight">{weapon.name}</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded border font-bold flex-shrink-0 ${rarityCls}`}>
+                <span className={`text-[13px] px-1.5 py-0.5 rounded border font-bold flex-shrink-0 ${rarityCls}`}>
                   {weapon.rarity}
                 </span>
               </div>
@@ -339,17 +306,17 @@ function ExclusiveWeaponPanel({ pilotId, talentNames }: { pilotId: string; talen
         {/* Skills that enhance this pilot's talents */}
         {enhancingSkills.length > 0 && (
           <div className="px-3 py-3 space-y-2.5">
-            <div className="text-[10px] text-accent-yellow tracking-widest uppercase">強化天賦</div>
+            <div className="text-[13px] text-accent-yellow tracking-widest uppercase">強化天賦</div>
             {enhancingSkills.map((sk, i) => (
               <div key={i}>
                 <div className="flex items-center gap-1.5 mb-0.5">
                   <span className="font-bold text-xs text-text-primary">{sk.name}</span>
-                  <span className="text-[10px] text-text-dim bg-bg-card border border-border px-1.5 py-0.5 rounded">
+                  <span className="text-[13px] text-text-dim bg-bg-card border border-border px-1.5 py-0.5 rounded">
                     {ACTIVATION_LABEL[sk.activation] ?? sk.activation}
                   </span>
                 </div>
                 {sk.enhancesTalentName && (
-                  <p className="text-[10px] text-accent-yellow/70 mb-0.5">▶ {sk.enhancesTalentName}</p>
+                  <p className="text-[13px] text-accent-yellow/70 mb-0.5">▶ {sk.enhancesTalentName}</p>
                 )}
                 <p className="text-xs text-text-secondary leading-relaxed">{highlightNumbers(sk.description)}</p>
               </div>
@@ -358,7 +325,7 @@ function ExclusiveWeaponPanel({ pilotId, talentNames }: { pilotId: string; talen
         )}
 
         <div className={`px-3 py-2 ${enhancingSkills.length > 0 ? 'border-t border-border' : ''}`}>
-          <p className="text-[10px] text-text-dim text-center">◈ 懸停查看詳細數值</p>
+          <p className="text-[13px] text-text-dim text-center">◈ 懸停查看詳細數值</p>
         </div>
       </div>
     </>
@@ -389,12 +356,12 @@ function NdLevelTooltipPortal({ level, x, anchorTop }: { level: NdLevel; x: numb
     <div ref={ref} className="fixed z-50 pointer-events-none" style={{ left: x, top }}>
       <div className="w-72 bg-bg-card border border-border-accent rounded-xl p-4 shadow-2xl">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] px-1.5 py-0.5 rounded border text-accent-purple bg-accent-purple/10 border-accent-purple/30 font-bold flex-shrink-0">
+          <span className="text-[13px] px-1.5 py-0.5 rounded border text-accent-purple bg-accent-purple/10 border-accent-purple/30 font-bold flex-shrink-0">
             Lv.{level.level}
           </span>
           <span className="text-sm font-bold truncate">{level.skillName}</span>
         </div>
-        <p className="text-[10px] text-text-dim mb-2">芯片總計 ≥{level.minSum}</p>
+        <p className="text-[13px] text-text-dim mb-2">芯片總計 ≥{level.minSum}</p>
         <p className="text-xs text-text-secondary leading-relaxed">{highlightNumbers(level.effect)}</p>
       </div>
     </div>,
@@ -428,7 +395,7 @@ function NeuralDriveZoneCard({ nd, zoneName, className, expanded, onLevelHover, 
           </span>
           <div className="flex gap-1 flex-wrap ml-auto">
             {nd.slots.map((slot, si) => (
-              <span key={si} className="text-[10px] text-text-dim bg-bg-card border border-border px-1.5 py-0.5 rounded">
+              <span key={si} className="text-[13px] text-text-dim bg-bg-card border border-border px-1.5 py-0.5 rounded">
                 {slot}
               </span>
             ))}
@@ -445,7 +412,7 @@ function NeuralDriveZoneCard({ nd, zoneName, className, expanded, onLevelHover, 
               <SkillIcon iconLocal={lv.iconLocal} name={lv.skillName} />
               <div className="text-center w-full">
                 <div className="text-xs font-medium leading-tight line-clamp-2 break-all">{lv.skillName}</div>
-                <div className="text-[10px] text-text-dim leading-none mt-0.5">Lv.{lv.level}</div>
+                <div className="text-[13px] text-text-dim leading-none mt-0.5">Lv.{lv.level}</div>
               </div>
             </div>
           ))}
@@ -462,7 +429,7 @@ function NeuralDriveZoneCard({ nd, zoneName, className, expanded, onLevelHover, 
         </span>
         <div className="flex gap-1 flex-wrap ml-auto">
           {nd.slots.map((slot, si) => (
-            <span key={si} className="text-[10px] text-text-dim bg-bg-card border border-border px-2 py-0.5 rounded">
+            <span key={si} className="text-[13px] text-text-dim bg-bg-card border border-border px-2 py-0.5 rounded">
               {slot}
             </span>
           ))}
@@ -475,7 +442,7 @@ function NeuralDriveZoneCard({ nd, zoneName, className, expanded, onLevelHover, 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className="font-bold text-sm">{lv.skillName}</span>
-                <span className="text-[10px] text-text-dim">
+                <span className="text-[13px] text-text-dim">
                   Lv.{lv.level}（芯片總計 ≥{lv.minSum}）
                 </span>
               </div>
@@ -503,9 +470,19 @@ const CLASS_STYLES: Record<string, string> = {
 export default function PilotDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { data: pilot, loading } = usePilot(id)
+  const { data: exclusiveWeapon, loading: exclusiveWeaponLoading } = usePilotExclusiveWeapon(id)
   const [activeSkillTab, setActiveSkillTab] = useState<'技能' | '天賦' | '神經驅動'>('天賦')
   const [ndExpanded, setNdExpanded] = useState(false)
   const [ndHoverState, setNdHoverState] = useState<{ level: NdLevel; x: number; anchorTop: number } | null>(null)
+
+  const talentEnhancementMap = useMemo(() => {
+    const map = new Map<string, string>()
+    exclusiveWeapon?.skills.forEach(sk => {
+      if (sk.enhancesTalentName && sk.enhancedTalentDescription)
+        map.set(sk.enhancesTalentName, sk.enhancedTalentDescription)
+    })
+    return map
+  }, [exclusiveWeapon])
 
   if (loading) {
     return (
@@ -557,7 +534,7 @@ export default function PilotDetailPage() {
       </Link>
 
       {/* Hero Row: 3-col grid */}
-      <div className="grid grid-cols-[160px_1fr_auto] gap-6 mb-4 items-start">
+      <div className="grid grid-cols-[160px_1fr_auto] gap-12 mb-4 items-start">
         {/* 左欄: 肖像，固定 160px */}
         <div className="w-40 h-52 bg-bg-card border border-border rounded-xl overflow-hidden flex-shrink-0">
           <img
@@ -608,7 +585,7 @@ export default function PilotDetailPage() {
                   <APBadge label="上限AP" value={pilot.ap.max} bonus={ndAp.max} />
                   <APBadge label="AP回復" value={pilot.ap.recovery} bonus={ndAp.recovery} />
                 </div>
-                <p className="text-[10px] text-text-dim mt-1.5">
+                <p className="text-[13px] text-text-dim mt-1.5">
                   滿潛力數值{hasNdBonus ? '，括號為加神經驅動滿配後' : ''}
                 </p>
               </div>
@@ -659,9 +636,22 @@ export default function PilotDetailPage() {
                     <p className="text-sm text-text-secondary leading-relaxed">{highlightNumbers(t.description)}</p>
                     {t.descriptionMax && t.descriptionMax !== t.description && (
                       <div className="mt-2.5 rounded-lg bg-accent-cyan/5 border border-accent-cyan/25 px-3 py-2.5">
-                        <span className="text-[10px] font-bold text-accent-cyan tracking-widest uppercase">▶ 最大強化</span>
+                        <span className="text-[13px] font-bold text-accent-cyan tracking-widest uppercase">▶ 最大強化</span>
                         <p className="text-sm text-text-secondary leading-relaxed mt-1.5">
                           <DiffHighlight base={t.description} enhanced={t.descriptionMax} />
+                        </p>
+                      </div>
+                    )}
+                    {talentEnhancementMap.has(t.name) && (
+                      <div className="mt-2 rounded-lg bg-accent-yellow/5 border border-accent-yellow/25 px-3 py-2.5">
+                        <span className="text-[13px] font-bold text-accent-yellow tracking-widest uppercase">
+                          ▶ 專武強化 · {exclusiveWeapon?.name}
+                        </span>
+                        <p className="text-sm text-text-secondary leading-relaxed mt-1.5">
+                          <DiffHighlight
+                            base={t.descriptionMax && t.descriptionMax !== t.description ? t.descriptionMax : t.description}
+                            enhanced={talentEnhancementMap.get(t.name)!}
+                          />
                         </p>
                       </div>
                     )}
@@ -670,7 +660,7 @@ export default function PilotDetailPage() {
               ))}
             </div>
             <div className="w-72 flex-shrink-0">
-              <ExclusiveWeaponPanel pilotId={pilot.id} talentNames={pilot.talents.map(t => t.name)} />
+              <ExclusiveWeaponPanel weapon={exclusiveWeapon} loading={exclusiveWeaponLoading} talentNames={pilot.talents.map(t => t.name)} />
             </div>
             </div>
           )}
@@ -685,17 +675,17 @@ export default function PilotDetailPage() {
                       <span className="font-bold text-base">{sk.name}</span>
                       <SkillTypeBadge type={sk.type} />
                       {sk.ap && (
-                        <span className="text-[10px] text-accent-yellow bg-accent-yellow/10 border border-accent-yellow/30 px-2 py-0.5 rounded">
+                        <span className="text-[13px] text-accent-yellow bg-accent-yellow/10 border border-accent-yellow/30 px-2 py-0.5 rounded">
                           AP {sk.ap}
                         </span>
                       )}
                       {sk.cd && (
-                        <span className="text-[10px] text-accent-cyan bg-accent-cyan/10 border border-accent-cyan/30 px-2 py-0.5 rounded">
+                        <span className="text-[13px] text-accent-cyan bg-accent-cyan/10 border border-accent-cyan/30 px-2 py-0.5 rounded">
                           CD {sk.cd}
                         </span>
                       )}
                       {sk.weapon && (
-                        <span className="text-[10px] text-text-dim bg-bg-card border border-border px-2 py-0.5 rounded">
+                        <span className="text-[13px] text-text-dim bg-bg-card border border-border px-2 py-0.5 rounded">
                           {formatWeaponReq(sk.weapon)}
                         </span>
                       )}
@@ -730,7 +720,7 @@ export default function PilotDetailPage() {
               </div>
               {classSkills.length > 0 && (
                 <div>
-                  <div className="text-[10px] text-accent-green tracking-widest uppercase mb-2 font-[Orbitron,sans-serif]">職業技能</div>
+                  <div className="text-[13px] text-accent-green tracking-widest uppercase mb-2 font-[Orbitron,sans-serif]">職業技能</div>
                   <div className="space-y-2">
                     {classSkills.map((sk, i) => (
                       <div key={i} className="flex gap-3 p-3 bg-bg-dark rounded-xl border border-accent-green/20">
@@ -806,7 +796,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 function APBadge({ label, value, bonus = 0 }: { label: string; value: number; bonus?: number }) {
   return (
     <div className="flex flex-col items-center bg-bg-dark border border-border rounded-lg px-3 py-1.5">
-      <span className="text-[10px] text-text-dim">{label}</span>
+      <span className="text-[13px] text-text-dim">{label}</span>
       <span className="text-base font-bold text-accent-yellow font-[Orbitron,sans-serif]">
         {value}
         {bonus > 0 && (

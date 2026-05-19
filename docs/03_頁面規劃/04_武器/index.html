@@ -84,10 +84,63 @@
   <div class="section-label purple">設計備註</div>
   <div class="section-title">開發注意事項</div>
   <div class="note-block">
-    <strong>💡 待確認</strong>
-    · 武器詳情是否需要獨立頁面 /weapons/:id，或在列表頁展開即可？<br>
-    · 技能生效方式（carry/equip/use）的視覺標籤設計<br>
-    · 浮動改裝範圍值的顯示方式（"min ~ max" 格式）
+    <strong>已確認方向（PLAN-006）</strong><br>
+    · 武器詳情確定為獨立頁面 <code>/weapons/:id</code>（尤其專武資訊量大，列表展開不足）<br>
+    · 技能生效方式（carry/equip/use）各以顏色標籤區分：攜帶=紫、裝備中=青、使用時=橘<br>
+    · 浮動改裝範圍值顯示格式：<code>min ~ max</code>（如 "120 ~ 180"）
+  </div>
+</section>
+
+<!-- 武器詳情頁 -->
+<section class="section" id="detail">
+  <div class="section-label purple">DETAIL PAGE</div>
+  <div class="section-title">武器詳情 /weapons/:id</div>
+
+  <table class="spec-table">
+    <tr><th>路由</th><td><code>/weapons/:id</code></td></tr>
+    <tr><th>開發階段</th><td>Phase 2（PLAN-006）</td></tr>
+    <tr><th>登入需求</th><td>不需要</td></tr>
+    <tr><th>資料來源</th><td>Firestore: weapons/{id}</td></tr>
+    <tr><th>相關計畫</th><td><a href="../../../05_階段性開發計畫/執行中/PLAN-006_武器詳情頁/計畫書.html" style="color:var(--accent-cyan);">PLAN-006 武器詳情頁</a></td></tr>
+  </table>
+
+  <div class="sub-h" style="margin-top:24px;">頁面區塊</div>
+  <div class="card-grid">
+    <div class="card purple">
+      <div class="card-icon">🔫</div>
+      <h3>武器 Hero 區塊</h3>
+      <p>武器名稱、稀有度標籤（SS / S+ / S / A / B）、大類 / 種類標籤、機甲限制標籤（無限制 / 輕型 / 中型 / 重型）、裝備部位標籤（單手 / 雙手 / 肩膀 / 背後）。</p>
+    </div>
+    <div class="card orange">
+      <div class="card-icon">📊</div>
+      <h3>基礎屬性面板</h3>
+      <p>攻擊力（含子彈數，如 766×1）、命中值、暴擊值、重量、射程（manhattan / orthogonal 顯示 "2-4"；ring 顯示 "2+"）、彈藥量、連擊數。</p>
+    </div>
+    <div class="card cyan">
+      <div class="card-icon">✨</div>
+      <h3>技能列表</h3>
+      <p>每個技能卡片顯示：生效方式標籤（攜帶=紫 / 裝備中=青 / 使用時=橘）、技能名稱、文字描述、結構化效果數值。<br>若技能有 <code>enhancesTalentName</code>，顯示「強化天賦」區塊（黃色 DiffHighlight）。</p>
+    </div>
+    <div class="card blue">
+      <div class="card-icon">🔧</div>
+      <h3>改裝資訊</h3>
+      <p>固定改裝：方案名稱、可改等級上限、固定效果列表（stat + value）。<br>浮動改裝：方案名稱、可填欄位數、所有可能效果（含觸發條件與 min ~ max 範圍）。</p>
+    </div>
+    <div class="card green">
+      <div class="card-icon">⚡</div>
+      <h3>元件插槽資訊</h3>
+      <p>觸元件插槽數 / 應元件插槽數、元件上限（componentLimit）顯示。以小格子圖示呈現，空格可視為可用槽位。</p>
+    </div>
+    <div class="card yellow">
+      <div class="card-icon">⭐</div>
+      <h3>專武資訊（isExclusive=true）</h3>
+      <p>顯示對應機師名稱及連結（<code>exclusiveFor</code>）；技能區塊會額外呈現天賦強化 DiffHighlight，讓使用者直觀看到「有此專武時天賦的強化版本」。</p>
+    </div>
+  </div>
+
+  <div class="wireframe" style="margin-top:20px;">
+    <div class="wf-icon">🔫</div>
+    <p>武器詳情版面草圖待規劃<br>預計：上方 Hero（名稱+標籤）→ 屬性面板 → 技能列表（含專武天賦強化）→ 改裝 + 元件欄（左右並排）</p>
   </div>
 </section>
 

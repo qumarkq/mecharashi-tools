@@ -208,9 +208,9 @@
       <tr><td>mechRestriction</td><td>MechRestriction (Enum)</td><td>機甲限制：none（無限制）/ light / medium / heavy<br><small style="color:var(--text-dim)">新增欄位；無限制武器填 none</small></td></tr>
       <tr><td>equipSlot</td><td>WeaponEquipSlot (Enum)</td><td>裝備部位：singleHand（單手）/ dualHand（雙手）/ shoulder（肩膀）/ back（背後）<br><small style="color:var(--text-dim)">新增欄位；計算機判斷武器佔用哪些機甲裝備格位用</small></td></tr>
       <tr class="group-header"><td colspan="3">▎射程（原 range: string 拆分為三欄位）</td></tr>
-      <tr><td>rangeType</td><td>RangeType (Enum)</td><td>'linear'（線性射程）/ 'ring'（環形 N 圈）<br><small style="color:var(--text-dim)">新增欄位；詳見射程型態說明</small></td></tr>
-      <tr><td>minRange</td><td>number</td><td>最小射程。linear 型填遊戲下限值；ring 型固定填 0（含自身格，無最小限制）</td></tr>
-      <tr><td>maxRange</td><td>number</td><td>最大射程（linear: 上限值；ring: 圈數 N，覆蓋範圍為 (2N+1)×(2N+1) 方格）</td></tr>
+      <tr><td>rangeType</td><td>RangeType (Enum)</td><td>'manhattan'（菱形射程）/ 'orthogonal'（十字直線）/ 'ring'（環形 N 圈）<br><small style="color:var(--text-dim)">詳見射程型態說明</small></td></tr>
+      <tr><td>minRange</td><td>number</td><td>最小射程。manhattan / orthogonal 型填遊戲下限值；ring 型固定填 0（含自身格，無最小限制）</td></tr>
+      <tr><td>maxRange</td><td>number</td><td>最大射程（manhattan / orthogonal: 上限值；ring: 圈數 N，覆蓋範圍為 (2N+1)×(2N+1) 方格）</td></tr>
       <tr class="group-header"><td colspan="3">▎專屬武器</td></tr>
       <tr><td>isExclusive</td><td>boolean</td><td>是否為專屬武器（SS 稀有度）</td></tr>
       <tr><td>exclusiveFor</td><td>string?</td><td>主要對應機師 ID（專武天賦加強對象）</td></tr>
@@ -237,7 +237,8 @@
       <tr><td>&nbsp;├ description</td><td>string</td><td>技能效果描述</td></tr>
       <tr><td>&nbsp;├ effects[]</td><td>SkillEffect[]</td><td>結構化效果數值（計算器用）</td></tr>
       <tr><td>&nbsp;├ buffIds[]</td><td>string[]</td><td>觸發的 Buff ID 列表</td></tr>
-      <tr><td>&nbsp;└ enhancesTalentName</td><td>string?</td><td>加強的特定機師天賦名稱（專武用）</td></tr>
+      <tr><td>&nbsp;├ enhancesTalentName</td><td>string?</td><td>加強的特定機師天賦名稱（專武用）；計算器用於辨識此技能與哪個天賦關聯</td></tr>
+      <tr><td>&nbsp;└ enhancedTalentDescription</td><td>string?</td><td>天賦被此專武強化後的完整描述文字（遊戲原文）；用於 PilotDetailPage「專武強化」區塊做 DiffHighlight 差異對比<br><small style="color:var(--text-dim)">填值：直接複製遊戲內天賦的強化後版本文字。以最大強化版本（descriptionMax）為比較基準。</small></td></tr>
     </table>
   </div>
 </section>
@@ -246,20 +247,34 @@
 <section class="section">
   <div class="section-label purple">Range</div>
   <div class="section-title">射程型態說明</div>
-  <div class="section-desc">武器射程有兩種型態，對應不同的遊戲機制。</div>
+  <div class="section-desc">武器射程有三種型態，對應不同的遊戲機制。</div>
 
   <div class="range-card">
     <div class="range-item">
-      <div class="range-type">linear — 線性射程</div>
+      <div class="range-type">manhattan — 菱形射程</div>
       <div class="range-desc">
-        有最小射程限制的線性攻擊。<br>
-        攻擊目標須在 [minRange, maxRange] 格距內。
+        採 <strong>Manhattan 距離</strong>（|dx|+|dy|），可打斜格，但斜格計距更遠。<br>
+        攻擊格：<code>minRange ≤ |dx|+|dy| ≤ maxRange</code><br>
+        大多數武器使用此型態（機槍、狙擊、霰彈、格鬥等）。
       </div>
       <div class="range-example">
-        例："2-4" → rangeType:'linear', minRange:2, maxRange:4<br>
-        例："1-3" → rangeType:'linear', minRange:1, maxRange:3
+        例："2-4" → rangeType:'manhattan', minRange:2, maxRange:4<br>
+        例："1-3" → rangeType:'manhattan', minRange:1, maxRange:3
       </div>
     </div>
+    <div class="range-item">
+      <div class="range-type">orthogonal — 十字直線</div>
+      <div class="range-desc">
+        只能攻擊<strong>上下左右</strong>四個方向的直線格，不可打斜格。<br>
+        攻擊格：<code>(dx=0 XOR dy=0) AND minRange ≤ |dx|+|dy| ≤ maxRange</code><br>
+        目前僅電磁炮使用。特定角色技能可解鎖斜格攻擊（射程 -1）。
+      </div>
+      <div class="range-example">
+        例：電磁炮 → rangeType:'orthogonal', minRange:0, maxRange:5
+      </div>
+    </div>
+  </div>
+  <div class="range-card" style="margin-top:0;">
     <div class="range-item">
       <div class="range-type">ring — 環形 N 圈</div>
       <div class="range-desc">
@@ -283,25 +298,61 @@
 ■ ■ ■ ■ ■</pre>
     <div style="font-size:11px;color:var(--text-dim);margin-top:8px;">
       0 = 持有者位置；■ = 攻擊範圍格；2圈 = 5×5 = 25 格（含自身）<br>
-      <strong>計算機開發備注</strong>：判斷格子 (dx, dy) 是否在攻擊範圍內 → <code>Math.max(Math.abs(dx), Math.abs(dy)) &lt;= maxRange</code>
+      <strong>計算機開發備注</strong>：<br>
+      · ring 判斷：<code>Math.max(Math.abs(dx), Math.abs(dy)) &lt;= maxRange</code><br>
+      · manhattan 判斷：<code>minRange &lt;= Math.abs(dx) + Math.abs(dy) &amp;&amp; Math.abs(dx) + Math.abs(dy) &lt;= maxRange</code><br>
+      · orthogonal 判斷：<code>(dx === 0 || dy === 0) &amp;&amp; dx !== dy &amp;&amp; minRange &lt;= Math.abs(dx) + Math.abs(dy) &amp;&amp; Math.abs(dx) + Math.abs(dy) &lt;= maxRange</code>
     </div>
   </div>
 
   <div class="data-table-wrap">
     <table class="data-table">
       <tr><th>武器種類</th><th>rangeType</th><th>典型射程</th><th>填值示例</th></tr>
-      <tr><td>狙擊步槍</td><td>linear</td><td>2-4</td><td>minRange:2, maxRange:4</td></tr>
-      <tr><td>機槍</td><td>linear</td><td>1-3</td><td>minRange:1, maxRange:3</td></tr>
-      <tr><td>霰彈</td><td>linear</td><td>1-2</td><td>minRange:1, maxRange:2</td></tr>
-      <tr><td>刀劍 / 拳套</td><td>linear</td><td>1-1</td><td>minRange:1, maxRange:1</td></tr>
-      <tr><td>戰術武器（範圍型）</td><td>ring</td><td>2+</td><td>minRange:0, maxRange:2</td></tr>
+      <tr><td>狙擊步槍</td><td>manhattan</td><td>2-4</td><td>minRange:2, maxRange:4</td></tr>
+      <tr><td>機槍 / 重機槍</td><td>manhattan</td><td>1-3</td><td>minRange:1, maxRange:3</td></tr>
+      <tr><td>霰彈槍</td><td>manhattan</td><td>1-2</td><td>minRange:1, maxRange:2</td></tr>
+      <tr><td>刀劍（ring）</td><td>ring</td><td>1+</td><td>minRange:0, maxRange:1</td></tr>
+      <tr><td>大盾 / 拳套 / 打樁機</td><td>manhattan</td><td>1-1</td><td>minRange:1, maxRange:1</td></tr>
+      <tr><td>電磁炮</td><td>orthogonal</td><td>0-5</td><td>minRange:0, maxRange:5</td></tr>
+      <tr><td>導彈 / 火箭 / 浮游炮</td><td>manhattan</td><td>3-6 / 1-4</td><td>minRange:3, maxRange:6</td></tr>
+      <tr><td>噴火器</td><td>ring</td><td>2+</td><td>minRange:0, maxRange:2</td></tr>
     </table>
   </div>
 
   <div class="note-block">
     <strong>顯示格式（前端）</strong><br>
-    · linear 型：<code>${minRange}-${maxRange}</code>（如 2-4）<br>
+    · manhattan / orthogonal 型：<code>${minRange}-${maxRange}</code>（如 2-4）<br>
     · ring 型：<code>${maxRange}+</code>（如 2+）
+  </div>
+</section>
+
+<!-- SkillCondition / SkillEffect 擴充 -->
+<section class="section">
+  <div class="section-label purple">SkillCondition / SkillEffect</div>
+  <div class="section-title">條件與效果型別擴充（PLAN-005）</div>
+  <div class="section-desc">為支援專武天賦強化的結構化計算，PLAN-005 擴充了共用型別。</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th colspan="3">SkillCondition — 新增欄位</th></tr>
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>hasBuff</td><td>string?</td><td><code>trigger = 'hasBuff'</code> 時填入：需持有的 buff / 狀態名稱（如 <code>'強化射擊'</code>、<code>'瞄準'</code>）</td></tr>
+      <tr><th colspan="3" style="padding-top:14px;">SkillEffect — 新增欄位</th></tr>
+      <tr><td>valueType</td><td>'add' | 'override'</td><td>計算方式：<code>'add'</code>（預設，加算）/ <code>'override'</code>（覆蓋原始值）<br><small style="color:var(--text-dim)">用於「技能倍率 0.15 → 0.2」這類覆蓋現有值而非加算的效果</small></td></tr>
+    </table>
+  </div>
+
+  <div class="data-table-wrap" style="margin-top:16px;">
+    <table class="data-table">
+      <tr><th>trigger 值</th><th>中文語義</th><th>對應情境</th><th>額外欄位</th></tr>
+      <tr><td>always</td><td>無條件</td><td>持有 / 裝備即生效</td><td>—</td></tr>
+      <tr><td>onAttack</td><td>攻擊時</td><td>主動攻擊觸發</td><td>—</td></tr>
+      <tr><td>onCrit</td><td>造成暴擊後</td><td>專武技能「熱力連珠」</td><td>—</td></tr>
+      <tr><td>hasBuff</td><td>持有特定狀態</td><td>需持有 buff / 狀態（如「強化射擊」）</td><td>hasBuff: string</td></tr>
+      <tr><td>notMoved</td><td>本回合未移動</td><td>專武技能「白鶴之眺」暴擊率條件</td><td>—</td></tr>
+      <tr><td>hpBelow</td><td>HP 低於門檻</td><td>HP 條件效果</td><td>hpThreshold: number</td></tr>
+      <tr><td>weaponType</td><td>指定武器類型</td><td>限定武器大分類</td><td>weaponType: string</td></tr>
+    </table>
   </div>
 </section>
 

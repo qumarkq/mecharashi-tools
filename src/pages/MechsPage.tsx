@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMechs } from '../hooks/useFirestore'
 import { assetUrl } from '../utils/assets'
@@ -15,7 +15,7 @@ function StatBar({ label, value, max }: { label: string; value: number; max: num
   const pct = Math.min((value / max) * 100, 100)
   return (
     <div>
-      <div className="flex justify-between text-[11px] mb-0.5">
+      <div className="flex justify-between text-[14px] mb-0.5">
         <span className="text-text-dim">{label}</span>
         <span className="text-text-secondary font-[JetBrains_Mono,monospace] font-semibold">
           {value.toLocaleString()}
@@ -34,7 +34,7 @@ function StatBar({ label, value, max }: { label: string; value: number; max: num
 function MobilityGrid({ value }: { value: number }) {
   return (
     <div>
-      <div className="flex justify-between text-[11px] mb-1">
+      <div className="flex justify-between text-[14px] mb-1">
         <span className="text-text-dim">移動</span>
         <span className="text-accent-cyan font-[JetBrains_Mono,monospace] font-semibold">{value}</span>
       </div>
@@ -141,7 +141,7 @@ export default function MechsPage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-bg-card via-transparent to-transparent" />
                   {s && (
                     <span
-                      className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold border ${s.bg} ${s.text} ${s.border}`}
+                      className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[13px] font-bold border ${s.bg} ${s.text} ${s.border}`}
                     >
                       {mech.armorType}
                     </span>
@@ -187,8 +187,8 @@ export default function MechsPage() {
                     { label: '腿部', value: typeof mech.parts.legs === 'number' ? mech.parts.legs : mech.parts.legs?.durable ?? 0 },
                   ].map((p) => (
                     <div key={p.label} className="bg-bg-dark border border-border rounded-lg p-1.5">
-                      <p className="text-[9px] text-text-dim">{p.label}</p>
-                      <p className="text-[11px] font-bold text-text-secondary">
+                      <p className="text-[12px] text-text-dim">{p.label}</p>
+                      <p className="text-[14px] font-bold text-text-secondary">
                         {p.value.toLocaleString()}
                       </p>
                     </div>

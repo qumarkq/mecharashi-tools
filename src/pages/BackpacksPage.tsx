@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useBackpacks } from '../hooks/useFirestore'
 
 const RESTRICTION_LABELS: Record<string, string> = {
@@ -145,11 +145,11 @@ export default function BackpacksPage() {
                 <div className="flex flex-wrap items-start gap-2 mb-3">
                   <h3 className="font-bold text-base text-text-primary flex-1">{bp.name}</h3>
                   <div className="flex gap-2 flex-wrap">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${typeCls}`}>
+                    <span className={`px-2 py-0.5 rounded text-[13px] font-bold border ${typeCls}`}>
                       {bp.type}
                     </span>
                     {bp.mechRestriction && resCls && (
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${resCls}`}>
+                      <span className={`px-2 py-0.5 rounded text-[13px] font-bold border ${resCls}`}>
                         {RESTRICTION_LABELS[bp.mechRestriction]}
                       </span>
                     )}
@@ -172,7 +172,7 @@ export default function BackpacksPage() {
                 <div className="bg-bg-dark border border-border rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="text-xs font-bold text-text-primary">{bp.skill.name}</span>
-                    <span className="text-[10px] text-text-dim border border-border bg-bg-card rounded px-1.5 py-0.5">
+                    <span className="text-[13px] text-text-dim border border-border bg-bg-card rounded px-1.5 py-0.5">
                       {bp.skill.type}
                     </span>
                   </div>
@@ -181,16 +181,16 @@ export default function BackpacksPage() {
                   {(bp.skill.dmg || bp.skill.crit || bp.skill.critDmg || bp.skill.acc) ? (
                     <div className="flex flex-wrap gap-2 mt-2">
                       {bp.skill.dmg ? (
-                        <span className="text-[11px] text-accent-orange">增傷 +{bp.skill.dmg}%</span>
+                        <span className="text-[14px] text-accent-orange">增傷 +{bp.skill.dmg}%</span>
                       ) : null}
                       {bp.skill.crit ? (
-                        <span className="text-[11px] text-accent-yellow">爆率 +{bp.skill.crit}</span>
+                        <span className="text-[14px] text-accent-yellow">爆率 +{bp.skill.crit}</span>
                       ) : null}
                       {bp.skill.critDmg ? (
-                        <span className="text-[11px] text-accent-yellow">爆傷 +{bp.skill.critDmg}%</span>
+                        <span className="text-[14px] text-accent-yellow">爆傷 +{bp.skill.critDmg}%</span>
                       ) : null}
                       {bp.skill.acc ? (
-                        <span className="text-[11px] text-accent-blue">命中 +{bp.skill.acc}</span>
+                        <span className="text-[14px] text-accent-blue">命中 +{bp.skill.acc}</span>
                       ) : null}
                     </div>
                   ) : null}
@@ -199,7 +199,7 @@ export default function BackpacksPage() {
                       {bp.skill.specialEffects.map((ef, i) => (
                         <span
                           key={i}
-                          className="text-[10px] text-accent-cyan bg-accent-cyan/5 border border-accent-cyan/20 rounded px-2 py-0.5"
+                          className="text-[13px] text-accent-cyan bg-accent-cyan/5 border border-accent-cyan/20 rounded px-2 py-0.5"
                         >
                           {ef}
                         </span>
