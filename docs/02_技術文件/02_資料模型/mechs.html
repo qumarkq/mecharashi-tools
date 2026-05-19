@@ -74,6 +74,10 @@
       <tr><td>module4Id</td><td>string?</td><td>特性模組 ID（4模組槽位）→ modules Collection；無特性模組的機甲可省略</td></tr>
       <tr><td>module8Id</td><td>string?</td><td>8級模組 ID（8模組槽位）→ modules Collection；無8級模組的機甲可省略</td></tr>
       <tr><td>moduleFixedIds</td><td>string[]</td><td>固定副模組 ID 列表（可多個）→ modules Collection</td></tr>
+      <tr class="group-header"><td colspan="3">▎武器裝備欄位（計算機用）</td></tr>
+      <tr><td>leftShoulderSlot</td><td>string | null | undefined</td><td>左肩武器槽。<code>undefined</code>（欄位不存在）= 無左肩槽；<code>null</code> = 空槽可自由裝備；<code>string</code> = 固定武器 ID（部件綁死）</td></tr>
+      <tr><td>rightShoulderSlot</td><td>string | null | undefined</td><td>右肩武器槽。同上邏輯。少部分機甲僅單肩，兩欄位可獨立存在。</td></tr>
+      <tr><td>backSlot</td><td>string | null | undefined</td><td>背後武器槽。<code>undefined</code> = 無背後槽；<code>null</code> = 空槽；<code>string</code> = 固定武器 ID</td></tr>
       <tr class="group-header"><td colspan="3">▎圖片路徑</td></tr>
       <tr><td>portrait</td><td>string</td><td>完整立繪 /images/mechs/{name}/portrait.png</td></tr>
       <tr><td>half</td><td>string</td><td>半身圖 /images/mechs/{name}/half.png</td></tr>

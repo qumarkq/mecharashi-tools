@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
-import type { Module, Mech, ConditionalEffect, ModuleLevel, UserProfile, Pilot, PilotSkill, SkillEffect, SkillCondition } from '../types'
+import type { Module, Mech, ConditionalEffect, ModuleLevel, UserProfile, Pilot, PilotSkill, SkillEffect, SkillCondition, Weapon, WeaponSkill } from '../types'
 import { formatWeaponReq } from '../types'
-import { ModuleRarity, MechPartPosition, ModuleSlot, ModuleSource, ModuleDataSource, ConditionalTrigger, PilotClass, MechLicense, ItemRarity, SkillType, WeaponCategory } from '../types/enums'
-import { getModules, getMechs, updateModule, updateMech, getPilots, updatePilot } from '../lib/firestoreApi'
+import { ModuleRarity, MechPartPosition, ModuleSlot, ModuleSource, ModuleDataSource, ConditionalTrigger, PilotClass, MechLicense, ItemRarity, SkillType, WeaponType, WeaponKind, WeaponEquipSlot, RangeType, WeaponRarity, MechRestriction, SkillActivation } from '../types/enums'
+import { getModules, getMechs, updateModule, updateMech, getPilots, updatePilot, getWeapons, updateWeapon } from '../lib/firestoreApi'
 import { getAllUsers, updateUserRole } from '../lib/userApi'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -86,12 +86,84 @@ const TRIGGER_DISPLAY: Record<string, string> = {
   onAttack:       '攻擊時（onAttack）',
   onCounter:      '反擊時（onCounter）',
   onApSkill:      '使用 AP 技能（onApSkill）',
-  weaponCategory: '指定武器類型（weaponCategory）',
+  weaponType: '指定武器類型（weaponType）',
   dualWield:      '雙持武器（dualWield）',
   hpBelow:        'HP 低於門檻（hpBelow）',
   firstAttack:    '先手攻擊（firstAttack）',
   enemyPhase:     '敵方回合（enemyPhase）',
   allyHasBuff:    '隊友持有增益（allyHasBuff）',
+}
+
+const WEAPON_RARITY_CLASS: Record<string, string> = {
+  SS:   'text-accent-purple bg-accent-purple/10 border-accent-purple/30',
+  'S+': 'text-accent-orange bg-accent-orange/10 border-accent-orange/30',
+  S:    'text-accent-cyan bg-accent-cyan/10 border-accent-cyan/30',
+  A:    'text-text-secondary bg-bg-card border-border',
+  B:    'text-text-dim bg-bg-dark border-border',
+}
+
+const WEAPON_KIND_BY_TYPE: Record<string, { value: string; label: string }[]> = {
+  [WeaponType.Melee]: [
+    { value: WeaponKind.Shield,         label: `大盾（${WeaponKind.Shield}）` },
+    { value: WeaponKind.Buckler,        label: `手盾（${WeaponKind.Buckler}）` },
+    { value: WeaponKind.Blade,          label: `刀劍（${WeaponKind.Blade}）` },
+    { value: WeaponKind.Knuckle,        label: `拳套（${WeaponKind.Knuckle}）` },
+    { value: WeaponKind.PileBunker,     label: `打樁機（${WeaponKind.PileBunker}）` },
+    { value: WeaponKind.Saw,            label: `電鋸（${WeaponKind.Saw}）` },
+    { value: WeaponKind.Rod,            label: `長柄（${WeaponKind.Rod}）` },
+  ],
+  [WeaponType.Heavy]: [
+    { value: WeaponKind.RailGun,  label: `電磁炮（${WeaponKind.RailGun}）` },
+    { value: WeaponKind.Funnel,   label: `浮游炮（${WeaponKind.Funnel}）` },
+    { value: WeaponKind.Missile,  label: `導彈（${WeaponKind.Missile}）` },
+    { value: WeaponKind.Rocket,   label: `火箭（${WeaponKind.Rocket}）` },
+  ],
+  [WeaponType.Assault]: [
+    { value: WeaponKind.ShotGun,         label: `霰彈槍（${WeaponKind.ShotGun}）` },
+    { value: WeaponKind.MachineGun,      label: `機槍（${WeaponKind.MachineGun}）` },
+    { value: WeaponKind.HeavyMachineGun, label: `重機槍（${WeaponKind.HeavyMachineGun}）` },
+    { value: WeaponKind.Flamethrower,    label: `噴火器（${WeaponKind.Flamethrower}）` },
+  ],
+  [WeaponType.Sniper]: [
+    { value: WeaponKind.LightSniper, label: `輕型狙擊步槍（${WeaponKind.LightSniper}）` },
+    { value: WeaponKind.HeavySniper, label: `狙擊步槍（${WeaponKind.HeavySniper}）` },
+  ],
+}
+
+const ALL_WEAPON_KINDS: { value: string; label: string }[] = [
+  ...(WEAPON_KIND_BY_TYPE[WeaponType.Melee] ?? []),
+  ...(WEAPON_KIND_BY_TYPE[WeaponType.Heavy] ?? []),
+  ...(WEAPON_KIND_BY_TYPE[WeaponType.Assault] ?? []),
+  ...(WEAPON_KIND_BY_TYPE[WeaponType.Sniper] ?? []),
+]
+
+function makeDefaultWeapon(id: string): Weapon {
+  return {
+    id,
+    name: '',
+    type: WeaponType.Sniper,
+    kind: WeaponKind.HeavySniper,
+    kindCoefficient: 0,
+    attack: '0×1',
+    accuracy: 0,
+    critValue: 0,
+    rangeType: RangeType.LINEAR,
+    minRange: 1,
+    maxRange: 1,
+    weight: 0,
+    ammoCount: 0,
+    hitCount: 1,
+    rarity: WeaponRarity.S,
+    mechRestriction: MechRestriction.NONE,
+    equipSlot: WeaponEquipSlot.SINGLE_HAND,
+    isExclusive: false,
+    triggerSlots: 0,
+    effectSlots: 0,
+    componentLimit: 0,
+    fixedMod: { planName: '', maxLevel: 70, effects: [] },
+    floatingMod: { planName: '', slots: 0, possibleEffects: [] },
+    skills: [],
+  }
 }
 
 function moduleHasStats(m: Module): boolean {
@@ -1406,15 +1478,15 @@ function SkillConditionEditor({
           ))}
         </select>
       </Field>
-      {condition.trigger === 'weaponCategory' && (
-        <Field label="武器類別 weaponCategory">
+      {condition.trigger === 'weaponType' && (
+        <Field label="武器類型 weaponType">
           <select
-            value={condition.weaponCategory ?? ''}
-            onChange={(e) => onChange({ ...condition, weaponCategory: e.target.value || undefined })}
+            value={condition.weaponType ?? ''}
+            onChange={(e) => onChange({ ...condition, weaponType: e.target.value || undefined })}
             className="input-field"
           >
             <option value="">不限</option>
-            {Object.values(WeaponCategory).map((c) => (
+            {Object.values(WeaponType).map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
@@ -2136,6 +2208,730 @@ function PilotEditPanel({
   )
 }
 
+// ─── 武器技能項目（WeaponSkill 編輯）──────────────────────────────────────────
+function WeaponSkillItem({
+  skill,
+  index,
+  expanded,
+  onToggle,
+  onChange,
+  onRemove,
+}: {
+  skill: WeaponSkill
+  index: number
+  expanded: boolean
+  onToggle: () => void
+  onChange: (updated: WeaponSkill) => void
+  onRemove: () => void
+}) {
+  const effects = skill.effects ?? []
+  const buffIds = skill.buffIds ?? []
+
+  const activationColor =
+    skill.activation === SkillActivation.CARRY ? 'text-accent-green border-accent-green/30 bg-accent-green/10' :
+    skill.activation === SkillActivation.EQUIP  ? 'text-accent-cyan border-accent-cyan/30 bg-accent-cyan/10' :
+                                                   'text-accent-orange border-accent-orange/30 bg-accent-orange/10'
+
+  return (
+    <div className="border border-border/60 rounded-lg bg-bg-dark/50">
+      <div className="flex items-center gap-2 px-3 py-2 cursor-pointer select-none" onClick={onToggle}>
+        <span className="text-[10px] text-text-dim w-3 shrink-0">{expanded ? '▼' : '▶'}</span>
+        <span className="text-sm font-medium flex-1 truncate">
+          {skill.name || <span className="text-text-dim font-normal">（未命名）#{index + 1}</span>}
+        </span>
+        <span className={`text-[10px] px-1.5 py-0.5 rounded border shrink-0 ${activationColor}`}>
+          {skill.activation}
+        </span>
+        <span className={`text-[10px] shrink-0 ${effects.length > 0 ? 'text-accent-cyan' : 'text-text-dim'}`}>
+          效果 {effects.length}
+        </span>
+        <button
+          onClick={(e) => { e.stopPropagation(); onRemove() }}
+          className="text-[10px] px-1.5 py-0.5 text-accent-red border border-accent-red/30 rounded hover:bg-accent-red/10 shrink-0"
+        >✕</button>
+      </div>
+
+      {expanded && (
+        <div className="px-3 pb-3 border-t border-border/40 pt-2.5 space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <Field label="技能名稱 name">
+              <input value={skill.name} onChange={(e) => onChange({ ...skill, name: e.target.value })} className="input-field" />
+            </Field>
+            <Field label="技能類型 type">
+              <select value={skill.type} onChange={(e) => onChange({ ...skill, type: e.target.value })} className="input-field">
+                <option value={SkillType.PASSIVE}>{SkillType.PASSIVE}</option>
+                <option value={SkillType.ACTIVE}>{SkillType.ACTIVE}</option>
+              </select>
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Field label="生效方式 activation">
+              <select
+                value={skill.activation}
+                onChange={(e) => onChange({ ...skill, activation: e.target.value as WeaponSkill['activation'] })}
+                className="input-field"
+              >
+                <option value={SkillActivation.CARRY}>carry — 攜帶即生效</option>
+                <option value={SkillActivation.EQUIP}>equip — 裝備中生效</option>
+                <option value={SkillActivation.USE}>use — 僅使用時生效</option>
+              </select>
+            </Field>
+            <Field label="加強天賦 enhancesTalentName（選填）">
+              <input
+                value={skill.enhancesTalentName ?? ''}
+                onChange={(e) => onChange({ ...skill, enhancesTalentName: e.target.value || undefined })}
+                className="input-field"
+                placeholder="專武加強天賦名稱"
+              />
+            </Field>
+          </div>
+          <Field label="技能描述 description">
+            <textarea
+              value={skill.description}
+              onChange={(e) => onChange({ ...skill, description: e.target.value })}
+              className="input-field min-h-[72px] resize-y"
+            />
+          </Field>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] text-text-dim font-medium uppercase tracking-wider">可計算效果 effects</span>
+              <button
+                onClick={() => onChange({ ...skill, effects: [...effects, { stat: 'dmg', value: 0, scope: 'self', condition: null }] })}
+                className="text-[10px] text-accent-cyan hover:text-accent-cyan/80 transition-colors"
+              >+ 新增效果</button>
+            </div>
+            {effects.length === 0 ? (
+              <p className="text-xs text-text-dim py-2 text-center">尚未填入（計算器不計此技能）</p>
+            ) : (
+              <div className="space-y-2">
+                {effects.map((eff, effIdx) => (
+                  <SkillEffectItem
+                    key={effIdx}
+                    effect={eff}
+                    index={effIdx}
+                    onChange={(updated) => {
+                      const next = [...effects]; next[effIdx] = updated
+                      onChange({ ...skill, effects: next })
+                    }}
+                    onRemove={() => onChange({ ...skill, effects: effects.filter((_, i) => i !== effIdx) })}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+          <Field label="觸發 Buff ID buffIds（逗號分隔）">
+            <textarea
+              value={buffIds.join(', ')}
+              onChange={(e) => {
+                const ids = e.target.value.split(/[,\n]/).map((s) => s.trim()).filter(Boolean)
+                onChange({ ...skill, buffIds: ids })
+              }}
+              className="input-field min-h-[48px] resize-y font-mono text-xs"
+              placeholder="buff_001, buff_002"
+            />
+          </Field>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── 武器管理分頁 ──────────────────────────────────────────────────────────────
+function WeaponAdmin({
+  weapons,
+  pilots,
+  onWeaponSave,
+}: {
+  weapons: Weapon[]
+  pilots: Pilot[]
+  onWeaponSave: (updated: Weapon) => Promise<void>
+}) {
+  const [search, setSearch] = useState('')
+  const [filterRarity, setFilterRarity] = useState<'all' | string>('all')
+  const [filterType, setFilterType] = useState<'all' | string>('all')
+  const [filterExclusive, setFilterExclusive] = useState<'all' | 'yes' | 'no'>('all')
+  const [editing, setEditing] = useState<Weapon | null>(null)
+  const [creating, setCreating] = useState(false)
+  const [newId, setNewId] = useState('')
+  const [newIdError, setNewIdError] = useState('')
+
+  const filtered = useMemo(() => {
+    return weapons.filter((w) => {
+      const matchSearch = !search || w.name.includes(search) || w.id.includes(search)
+      const matchRarity = filterRarity === 'all' || w.rarity === filterRarity
+      const matchType = filterType === 'all' || w.type === filterType
+      const matchExclusive =
+        filterExclusive === 'all' ||
+        (filterExclusive === 'yes' && w.isExclusive) ||
+        (filterExclusive === 'no' && !w.isExclusive)
+      return matchSearch && matchRarity && matchType && matchExclusive
+    })
+  }, [weapons, search, filterRarity, filterType, filterExclusive])
+
+  async function handleSave(updated: Weapon) {
+    await onWeaponSave(updated)
+    setEditing(null)
+  }
+
+  function handleCreateConfirm() {
+    const trimmed = newId.trim()
+    if (!trimmed) { setNewIdError('請輸入 ID'); return }
+    if (weapons.some((w) => w.id === trimmed)) { setNewIdError(`ID「${trimmed}」已存在`); return }
+    setCreating(false); setNewId(''); setNewIdError('')
+    setEditing(makeDefaultWeapon(trimmed))
+  }
+
+  return (
+    <div>
+      <div className="flex flex-wrap gap-2 mb-3">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="搜尋武器名稱 / ID..."
+          className="flex-1 min-w-[180px] px-3 py-2 rounded-lg bg-bg-dark border border-border text-text-primary text-sm focus:outline-none focus:border-accent-orange"
+        />
+        <select value={filterRarity} onChange={(e) => setFilterRarity(e.target.value)} className="px-3 py-2 rounded-lg bg-bg-dark border border-border text-text-primary text-sm">
+          <option value="all">全部稀有度</option>
+          {Object.values(WeaponRarity).map((r) => <option key={r} value={r}>{r}</option>)}
+        </select>
+        <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="px-3 py-2 rounded-lg bg-bg-dark border border-border text-text-primary text-sm">
+          <option value="all">全部類型</option>
+          {Object.values(WeaponType).map((t) => <option key={t} value={t}>{t}</option>)}
+        </select>
+        <select value={filterExclusive} onChange={(e) => setFilterExclusive(e.target.value as typeof filterExclusive)} className="px-3 py-2 rounded-lg bg-bg-dark border border-border text-text-primary text-sm">
+          <option value="all">全部武器</option>
+          <option value="yes">專屬武器</option>
+          <option value="no">通用武器</option>
+        </select>
+      </div>
+
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-text-dim text-xs">共 {filtered.length} / {weapons.length} 把武器</p>
+        <button
+          onClick={() => { setCreating(true); setNewId(''); setNewIdError('') }}
+          className="text-xs px-3 py-1.5 bg-accent-orange text-black font-bold rounded-lg hover:opacity-90 transition-opacity"
+        >+ 新增武器</button>
+      </div>
+
+      {creating && (
+        <div className="mb-4 p-4 bg-bg-dark border border-accent-orange/40 rounded-xl">
+          <p className="text-xs text-text-dim mb-2 font-medium">輸入新武器 ID（格式如 <span className="text-accent-cyan">weapon_10001</span>，儲存後不可更改）</p>
+          <div className="flex gap-2">
+            <input
+              autoFocus type="text" value={newId}
+              onChange={(e) => { setNewId(e.target.value); setNewIdError('') }}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleCreateConfirm() }}
+              placeholder="weapon_"
+              className="flex-1 px-3 py-2 rounded-lg bg-bg-card border border-border text-text-primary text-sm focus:outline-none focus:border-accent-orange"
+            />
+            <button onClick={handleCreateConfirm} className="px-4 py-2 bg-accent-orange text-black text-sm font-bold rounded-lg hover:opacity-90">建立</button>
+            <button onClick={() => setCreating(false)} className="px-3 py-2 border border-border text-text-secondary text-sm rounded-lg hover:bg-bg-card">取消</button>
+          </div>
+          {newIdError && <p className="text-xs text-accent-red mt-1.5">⚠ {newIdError}</p>}
+        </div>
+      )}
+
+      <div className="space-y-1.5 max-h-[600px] overflow-y-auto pr-1">
+        {filtered.map((w) => {
+          const pilot = pilots.find((p) => p.id === w.exclusiveFor)
+          return (
+            <div
+              key={w.id}
+              className="bg-bg-dark border border-border rounded-lg px-3 py-2.5 flex items-center gap-3 hover:border-border-accent transition-colors cursor-pointer"
+              onClick={() => setEditing(w)}
+            >
+              {w.icon && (
+                <img src={w.icon} alt="" className="w-8 h-8 rounded shrink-0" onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} />
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-bold text-sm text-text-primary truncate">{w.name || <span className="text-text-dim font-normal">（未命名）</span>}</span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded border font-bold shrink-0 ${WEAPON_RARITY_CLASS[w.rarity] ?? 'text-text-dim border-border bg-bg-card'}`}>{w.rarity}</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-card border border-border text-text-dim shrink-0">{w.type}</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-bg-card border border-border text-text-dim shrink-0">{w.kind}</span>
+                  {w.isExclusive && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent-purple/10 text-accent-purple border border-accent-purple/30 shrink-0">
+                      專屬{pilot ? `・${pilot.name}` : '（未綁定）'}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-text-dim mt-0.5">
+                  {w.equipSlot} · 重量 {w.weight} · 攻擊 {w.attack} · 射程 {w.rangeType === RangeType.RING ? `${w.maxRange}+` : `${w.minRange}-${w.maxRange}`}
+                </p>
+              </div>
+            </div>
+          )
+        })}
+        {filtered.length === 0 && (
+          <p className="text-text-dim text-sm text-center py-8">找不到符合條件的武器</p>
+        )}
+      </div>
+
+      {editing && (
+        <WeaponEditPanel weapon={editing} pilots={pilots} onSave={handleSave} onCancel={() => setEditing(null)} />
+      )}
+    </div>
+  )
+}
+
+// ─── 武器編輯面板 ──────────────────────────────────────────────────────────────
+type WeaponEditTab = 'basic' | 'stats' | 'range' | 'slots' | 'mods' | 'skills'
+
+const WEAPON_EDIT_TABS: { id: WeaponEditTab; label: string }[] = [
+  { id: 'basic',  label: '基本資訊' },
+  { id: 'stats',  label: '戰鬥屬性' },
+  { id: 'range',  label: '射程' },
+  { id: 'slots',  label: '元件・專武' },
+  { id: 'mods',   label: '改裝方案' },
+  { id: 'skills', label: '武器技能' },
+]
+
+function WeaponEditPanel({
+  weapon,
+  pilots,
+  onSave,
+  onCancel,
+}: {
+  weapon: Weapon
+  pilots: Pilot[]
+  onSave: (w: Weapon) => Promise<void>
+  onCancel: () => void
+}) {
+  const [form, setForm] = useState<Weapon>({ ...weapon })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [editTab, setEditTab] = useState<WeaponEditTab>('basic')
+  const [expandedSkillIdx, setExpandedSkillIdx] = useState<number | null>(null)
+
+  useEffect(() => {
+    setForm({ ...weapon })
+    setEditTab('basic')
+    setExpandedSkillIdx(null)
+  }, [weapon])
+
+  function update<K extends keyof Weapon>(key: K, value: Weapon[K]) {
+    setForm((f) => ({ ...f, [key]: value }))
+  }
+
+  function updateFixedMod<K extends keyof Weapon['fixedMod']>(key: K, value: Weapon['fixedMod'][K]) {
+    setForm((f) => ({ ...f, fixedMod: { ...f.fixedMod, [key]: value } }))
+  }
+
+  function updateFloatingMod<K extends keyof Weapon['floatingMod']>(key: K, value: Weapon['floatingMod'][K]) {
+    setForm((f) => ({ ...f, floatingMod: { ...f.floatingMod, [key]: value } }))
+  }
+
+  async function handleSubmit() {
+    setSaving(true); setError(null)
+    try {
+      await onSave(form)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '儲存失敗，請重試')
+      setSaving(false)
+    }
+  }
+
+  const currentKindOptions = WEAPON_KIND_BY_TYPE[form.type] ?? ALL_WEAPON_KINDS
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div className="bg-bg-card border border-border rounded-xl p-6 w-full max-w-2xl max-h-[90vh] flex flex-col">
+        {/* 標題 */}
+        <div className="flex items-start gap-3 mb-3 shrink-0">
+          {form.icon && (
+            <img src={form.icon} alt="" className="w-10 h-10 rounded shrink-0" onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} />
+          )}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-bold flex items-center gap-2">
+              <span className="text-accent-purple">⚔</span> 編輯武器
+              <span className="text-text-dim text-sm font-normal ml-1">{form.id}</span>
+            </h3>
+            <p className="text-[11px] text-text-dim mt-0.5">
+              {form.type} · {form.kind} · {form.rarity} · 技能 {(form.skills ?? []).length}
+            </p>
+          </div>
+        </div>
+
+        {/* Tab 列 */}
+        <div className="flex gap-1 mb-4 shrink-0 flex-wrap">
+          {WEAPON_EDIT_TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setEditTab(t.id)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                editTab === t.id
+                  ? 'bg-accent-orange text-black'
+                  : 'bg-bg-dark border border-border text-text-secondary hover:text-text-primary'
+              }`}
+            >{t.label}</button>
+          ))}
+        </div>
+
+        {/* Tab 內容 */}
+        <div className="overflow-y-auto flex-1 pr-1">
+
+          {/* ── 基本資訊 ── */}
+          {editTab === 'basic' && (
+            <div className="space-y-3">
+              <Field label="武器名稱 name">
+                <input value={form.name} onChange={(e) => update('name', e.target.value)} className="input-field" />
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="武器類型 type">
+                  <select value={form.type} onChange={(e) => update('type', e.target.value)} className="input-field">
+                    {Object.values(WeaponType).map((v) => <option key={v} value={v}>{v}</option>)}
+                  </select>
+                </Field>
+                <Field label="武器種類 kind">
+                  <select value={form.kind} onChange={(e) => update('kind', e.target.value)} className="input-field">
+                    {currentKindOptions.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
+                  </select>
+                </Field>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <Field label="種類係數 kindCoefficient">
+                  <input type="number" step="0.01" value={form.kindCoefficient} onChange={(e) => update('kindCoefficient', Number(e.target.value))} className="input-field" />
+                </Field>
+                <Field label="稀有度 rarity">
+                  <select value={form.rarity} onChange={(e) => update('rarity', e.target.value)} className="input-field">
+                    {Object.values(WeaponRarity).map((r) => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </Field>
+                <Field label="裝備部位 equipSlot">
+                  <select value={form.equipSlot} onChange={(e) => update('equipSlot', e.target.value)} className="input-field">
+                    <option value={WeaponEquipSlot.SINGLE_HAND}>singleHand — 單手</option>
+                    <option value={WeaponEquipSlot.DUAL_HAND}>dualHand — 雙手</option>
+                    <option value={WeaponEquipSlot.SHOULDER}>shoulder — 肩膀</option>
+                    <option value={WeaponEquipSlot.BACK}>back — 背後</option>
+                  </select>
+                </Field>
+              </div>
+              <Field label="機甲限制 mechRestriction">
+                <select value={form.mechRestriction} onChange={(e) => update('mechRestriction', e.target.value)} className="input-field">
+                  <option value={MechRestriction.NONE}>none — 無限制</option>
+                  <option value={MechRestriction.LIGHT_ONLY}>light — 僅輕型機甲</option>
+                  <option value={MechRestriction.MEDIUM_ONLY}>medium — 僅中型機甲</option>
+                  <option value={MechRestriction.HEAVY_ONLY}>heavy — 僅重型機甲</option>
+                </select>
+              </Field>
+              <Field label="圖示路徑 icon（選填）">
+                <input value={form.icon ?? ''} onChange={(e) => update('icon', e.target.value || undefined)} className="input-field" placeholder="/images/weapons/..." />
+              </Field>
+            </div>
+          )}
+
+          {/* ── 戰鬥屬性 ── */}
+          {editTab === 'stats' && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="攻擊力 attack（含子彈數）">
+                  <input value={form.attack} onChange={(e) => update('attack', e.target.value)} className="input-field" placeholder="如 766×1" />
+                </Field>
+                <Field label="命中值 accuracy">
+                  <input type="number" value={form.accuracy} onChange={(e) => update('accuracy', Number(e.target.value))} className="input-field" />
+                </Field>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="暴擊值 critValue">
+                  <input type="number" value={form.critValue} onChange={(e) => update('critValue', Number(e.target.value))} className="input-field" />
+                </Field>
+                <Field label="重量 weight">
+                  <input type="number" value={form.weight} onChange={(e) => update('weight', Number(e.target.value))} className="input-field" />
+                </Field>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="彈藥量 ammoCount（0 = 無限彈藥）">
+                  <input type="number" value={form.ammoCount} onChange={(e) => update('ammoCount', Number(e.target.value))} className="input-field" />
+                </Field>
+                <Field label="連擊數 hitCount">
+                  <input type="number" value={form.hitCount} onChange={(e) => update('hitCount', Number(e.target.value))} className="input-field" />
+                </Field>
+              </div>
+              <div className="p-3 bg-bg-dark rounded-lg border border-border/60">
+                <p className="text-[10px] text-text-dim font-medium uppercase mb-1">連擊數參考</p>
+                <p className="text-[11px] text-text-secondary">霰彈槍=12 · 機槍/重機槍/電鋸=10 · 噴火器=8 · 浮游炮=6 · 其他=1</p>
+              </div>
+            </div>
+          )}
+
+          {/* ── 射程 ── */}
+          {editTab === 'range' && (
+            <div className="space-y-4">
+              <Field label="射程型態 rangeType">
+                <select value={form.rangeType} onChange={(e) => {
+                  const rt = e.target.value
+                  update('rangeType', rt)
+                  if (rt === RangeType.RING) update('minRange', 0)
+                }} className="input-field">
+                  <option value={RangeType.LINEAR}>linear — 線性射程（有最小射程限制）</option>
+                  <option value={RangeType.RING}>ring — 環形N圈（含自身格，無最小限制）</option>
+                </select>
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label={form.rangeType === RangeType.RING ? 'minRange（ring 型固定為 0）' : '最小射程 minRange'}>
+                  <input
+                    type="number" value={form.minRange}
+                    onChange={(e) => update('minRange', Number(e.target.value))}
+                    className="input-field" disabled={form.rangeType === RangeType.RING}
+                  />
+                </Field>
+                <Field label={form.rangeType === RangeType.RING ? '圈數 maxRange（N圈）' : '最大射程 maxRange'}>
+                  <input type="number" value={form.maxRange} onChange={(e) => update('maxRange', Number(e.target.value))} className="input-field" />
+                </Field>
+              </div>
+              <div className="p-3 bg-bg-dark rounded-lg border border-border/60 space-y-1.5">
+                <p className="text-[10px] text-text-dim font-medium uppercase">射程顯示預覽</p>
+                <p className="font-mono text-sm text-accent-cyan">
+                  {form.rangeType === RangeType.RING
+                    ? `${form.maxRange}+（${(2 * form.maxRange + 1) ** 2} 格覆蓋）`
+                    : `${form.minRange}-${form.maxRange}`}
+                </p>
+                <p className="text-[11px] text-text-dim">
+                  {form.rangeType === RangeType.RING
+                    ? `ring：以持有者為中心，Chebyshev 距離 ≤ ${form.maxRange} 的 ${2 * form.maxRange + 1}×${2 * form.maxRange + 1} 方格`
+                    : `linear：攻擊目標須在 [${form.minRange}, ${form.maxRange}] 格距內`}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── 元件・專武 ── */}
+          {editTab === 'slots' && (
+            <div className="space-y-4">
+              <div className="p-3 bg-bg-dark rounded-lg border border-border/60 space-y-3">
+                <p className="text-xs text-text-dim font-medium uppercase tracking-wider">元件插槽</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <Field label="觸元件槽 triggerSlots">
+                    <input type="number" value={form.triggerSlots} onChange={(e) => update('triggerSlots', Number(e.target.value))} className="input-field" />
+                  </Field>
+                  <Field label="應元件槽 effectSlots">
+                    <input type="number" value={form.effectSlots} onChange={(e) => update('effectSlots', Number(e.target.value))} className="input-field" />
+                  </Field>
+                  <Field label="元件上限 componentLimit">
+                    <input type="number" value={form.componentLimit} onChange={(e) => update('componentLimit', Number(e.target.value))} className="input-field" />
+                  </Field>
+                </div>
+                <p className="text-[11px] text-text-dim">SS / S+ = 4；S = 3；其他 = 0</p>
+              </div>
+              <div className="p-3 bg-bg-dark rounded-lg border border-border/60 space-y-3">
+                <p className="text-xs text-text-dim font-medium uppercase tracking-wider">專屬武器設定</p>
+                <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
+                  <input
+                    type="checkbox" checked={form.isExclusive}
+                    onChange={(e) => update('isExclusive', e.target.checked)}
+                    className="accent-accent-orange w-4 h-4"
+                  />
+                  <span>isExclusive — 此武器為專屬武器（SS 稀有度）</span>
+                </label>
+                {form.isExclusive && (
+                  <Field label="綁定機師 exclusiveFor（機師 ID）">
+                    <select
+                      value={form.exclusiveFor ?? ''}
+                      onChange={(e) => update('exclusiveFor', e.target.value || undefined)}
+                      className="input-field"
+                    >
+                      <option value="">（未指定）</option>
+                      {pilots.map((p) => (
+                        <option key={p.id} value={p.id}>{p.name}（{p.id}）</option>
+                      ))}
+                    </select>
+                  </Field>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── 改裝方案 ── */}
+          {editTab === 'mods' && (
+            <div className="space-y-5">
+              {/* 固定改裝 */}
+              <div>
+                <p className="text-xs text-text-dim font-medium uppercase tracking-wider mb-2">固定改裝 fixedMod（效果固定，依等級解鎖）</p>
+                <div className="space-y-3 p-3 bg-bg-dark rounded-lg border border-border/60">
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="方案名稱 planName">
+                      <input value={form.fixedMod.planName} onChange={(e) => updateFixedMod('planName', e.target.value)} className="input-field" placeholder="如 機槍VIII" />
+                    </Field>
+                    <Field label="最高等級 maxLevel">
+                      <input type="number" value={form.fixedMod.maxLevel} onChange={(e) => updateFixedMod('maxLevel', Number(e.target.value))} className="input-field" />
+                    </Field>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] text-text-dim uppercase">效果列表 effects</span>
+                      <button
+                        onClick={() => updateFixedMod('effects', [...form.fixedMod.effects, { stat: 'attack', value: 0 }])}
+                        className="text-[10px] text-accent-cyan hover:text-accent-cyan/80 transition-colors"
+                      >+ 新增效果</button>
+                    </div>
+                    {form.fixedMod.effects.length === 0 ? (
+                      <p className="text-xs text-text-dim py-2 text-center">無固定效果</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {form.fixedMod.effects.map((eff, idx) => (
+                          <div key={idx} className="flex gap-2 items-end">
+                            <Field label="效果類型 stat">
+                              <select
+                                value={eff.stat}
+                                onChange={(e) => { const next = [...form.fixedMod.effects]; next[idx] = { ...next[idx], stat: e.target.value }; updateFixedMod('effects', next) }}
+                                className="input-field"
+                              >
+                                <option value="attack">attack — 攻擊力</option>
+                                <option value="crit">crit — 暴擊值</option>
+                                <option value="accuracy">accuracy — 命中值</option>
+                              </select>
+                            </Field>
+                            <Field label="數值 value">
+                              <input type="number" value={eff.value}
+                                onChange={(e) => { const next = [...form.fixedMod.effects]; next[idx] = { ...next[idx], value: Number(e.target.value) }; updateFixedMod('effects', next) }}
+                                className="input-field" />
+                            </Field>
+                            <button
+                              onClick={() => updateFixedMod('effects', form.fixedMod.effects.filter((_, i) => i !== idx))}
+                              className="px-2 py-1.5 mb-0.5 text-accent-red border border-accent-red/30 rounded hover:bg-accent-red/10 text-xs shrink-0"
+                            >✕</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* 浮動改裝 */}
+              <div>
+                <p className="text-xs text-text-dim font-medium uppercase tracking-wider mb-2">浮動改裝 floatingMod（效果隨機，有範圍）</p>
+                <div className="space-y-3 p-3 bg-bg-dark rounded-lg border border-border/60">
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="方案名稱 planName">
+                      <input value={form.floatingMod.planName} onChange={(e) => updateFloatingMod('planName', e.target.value)} className="input-field" placeholder="如 機槍IV" />
+                    </Field>
+                    <Field label="效果欄位數 slots">
+                      <input type="number" value={form.floatingMod.slots} onChange={(e) => updateFloatingMod('slots', Number(e.target.value))} className="input-field" />
+                    </Field>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] text-text-dim uppercase">可能效果 possibleEffects</span>
+                      <button
+                        onClick={() => updateFloatingMod('possibleEffects', [...form.floatingMod.possibleEffects, { stat: 'attack', condition: null, min: 0, max: 0 }])}
+                        className="text-[10px] text-accent-cyan hover:text-accent-cyan/80 transition-colors"
+                      >+ 新增</button>
+                    </div>
+                    {form.floatingMod.possibleEffects.length === 0 ? (
+                      <p className="text-xs text-text-dim py-2 text-center">無浮動效果</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {form.floatingMod.possibleEffects.map((eff, idx) => (
+                          <div key={idx} className="border border-border/40 rounded-lg p-2.5 space-y-2">
+                            <div className="flex items-end gap-2">
+                              <Field label="效果類型 stat">
+                                <select
+                                  value={eff.stat}
+                                  onChange={(e) => { const next = [...form.floatingMod.possibleEffects]; next[idx] = { ...next[idx], stat: e.target.value }; updateFloatingMod('possibleEffects', next) }}
+                                  className="input-field text-xs"
+                                >
+                                  <option value="attack">attack — 攻擊力</option>
+                                  <option value="crit">crit — 暴擊值</option>
+                                  <option value="accuracy">accuracy — 命中值</option>
+                                  <option value="firepower">firepower — 火力</option>
+                                </select>
+                              </Field>
+                              <button
+                                onClick={() => updateFloatingMod('possibleEffects', form.floatingMod.possibleEffects.filter((_, i) => i !== idx))}
+                                className="px-2 py-1.5 mb-0.5 text-accent-red border border-accent-red/30 rounded hover:bg-accent-red/10 text-xs shrink-0"
+                              >✕</button>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Field label="最小值 min">
+                                <input type="number" value={eff.min}
+                                  onChange={(e) => { const next = [...form.floatingMod.possibleEffects]; next[idx] = { ...next[idx], min: Number(e.target.value) }; updateFloatingMod('possibleEffects', next) }}
+                                  className="input-field" />
+                              </Field>
+                              <Field label="最大值 max">
+                                <input type="number" value={eff.max}
+                                  onChange={(e) => { const next = [...form.floatingMod.possibleEffects]; next[idx] = { ...next[idx], max: Number(e.target.value) }; updateFloatingMod('possibleEffects', next) }}
+                                  className="input-field" />
+                              </Field>
+                            </div>
+                            <Field label="觸發條件 condition（留空 = null 無條件）">
+                              <input
+                                value={eff.condition ?? ''}
+                                onChange={(e) => { const next = [...form.floatingMod.possibleEffects]; next[idx] = { ...next[idx], condition: e.target.value || null }; updateFloatingMod('possibleEffects', next) }}
+                                className="input-field text-xs" placeholder="留空 = null（無條件）"
+                              />
+                            </Field>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── 武器技能 ── */}
+          {editTab === 'skills' && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs text-text-dim font-medium uppercase tracking-wider">武器技能 skills</span>
+                <button
+                  onClick={() => {
+                    const next = [...(form.skills ?? []), {
+                      name: '', type: SkillType.PASSIVE,
+                      activation: SkillActivation.CARRY as WeaponSkill['activation'],
+                      description: '', effects: [], buffIds: [],
+                    }]
+                    update('skills', next)
+                    setExpandedSkillIdx(next.length - 1)
+                  }}
+                  className="text-xs text-accent-cyan hover:text-accent-cyan/80 transition-colors"
+                >+ 新增技能</button>
+              </div>
+              {(form.skills ?? []).length === 0 ? (
+                <p className="text-xs text-text-dim py-4 text-center">無武器技能</p>
+              ) : (
+                <div className="space-y-2">
+                  {(form.skills ?? []).map((skill, idx) => (
+                    <WeaponSkillItem
+                      key={idx}
+                      skill={skill}
+                      index={idx}
+                      expanded={expandedSkillIdx === idx}
+                      onToggle={() => setExpandedSkillIdx(expandedSkillIdx === idx ? null : idx)}
+                      onChange={(updated) => {
+                        const next = [...(form.skills ?? [])]; next[idx] = updated
+                        update('skills', next)
+                      }}
+                      onRemove={() => {
+                        update('skills', (form.skills ?? []).filter((_, i) => i !== idx))
+                        if (expandedSkillIdx === idx) setExpandedSkillIdx(null)
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {error && <p className="text-xs text-accent-red mt-3 shrink-0">⚠ {error}</p>}
+
+        <div className="flex gap-3 mt-4 shrink-0">
+          <button onClick={handleSubmit} disabled={saving} className="flex-1 px-4 py-2 bg-accent-orange text-black font-bold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50">
+            {saving ? '儲存中...' : '儲存變更'}
+          </button>
+          <button onClick={onCancel} disabled={saving} className="px-4 py-2 border border-border text-text-secondary rounded-lg hover:bg-bg-dark transition-colors disabled:opacity-50">
+            取消
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── 共用元件 ──────────────────────────────────────────────────────────
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -2264,19 +3060,21 @@ function UserAdmin({ currentUid }: { currentUid: string }) {
 // ─── 主頁面 ──────────────────────────────────────────────────────────────
 export default function AdminPage() {
   const { user, userProfile, loading: authLoading } = useAuth()
-  const [tab, setTab] = useState<'modules' | 'mechs' | 'pilots' | 'users'>('modules')
+  const [tab, setTab] = useState<'modules' | 'mechs' | 'pilots' | 'weapons' | 'users'>('modules')
   const [modules, setModules] = useState<Module[]>([])
   const [mechs, setMechs] = useState<Mech[]>([])
   const [pilots, setPilots] = useState<Pilot[]>([])
+  const [weapons, setWeapons] = useState<Weapon[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
-    Promise.all([getModules(), getMechs(), getPilots()])
-      .then(([mods, m, ps]) => {
+    Promise.all([getModules(), getMechs(), getPilots(), getWeapons()])
+      .then(([mods, m, ps, ws]) => {
         setModules(mods)
         setMechs(m)
         setPilots(ps)
+        setWeapons(ws)
       })
       .catch((e: unknown) => setLoadError(e instanceof Error ? e.message : '載入失敗'))
       .finally(() => setLoading(false))
@@ -2298,6 +3096,14 @@ export default function AdminPage() {
   async function handlePilotSave(updated: Pilot) {
     await updatePilot(updated)
     setPilots((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
+  }
+
+  async function handleWeaponSave(updated: Weapon) {
+    await updateWeapon(updated)
+    setWeapons((prev) => {
+      const exists = prev.some((w) => w.id === updated.id)
+      return exists ? prev.map((w) => (w.id === updated.id ? updated : w)) : [...prev, updated]
+    })
   }
 
   if (authLoading) {
@@ -2359,6 +3165,9 @@ export default function AdminPage() {
         <TabButton active={tab === 'pilots'} onClick={() => setTab('pilots')}>
           機師管理
         </TabButton>
+        <TabButton active={tab === 'weapons'} onClick={() => setTab('weapons')}>
+          武器管理
+        </TabButton>
         <TabButton active={tab === 'users'} onClick={() => setTab('users')}>
           用戶管理
         </TabButton>
@@ -2386,6 +3195,13 @@ export default function AdminPage() {
             onPilotSave={handlePilotSave}
           />
         )}
+        {tab === 'weapons' && (
+          <WeaponAdmin
+            weapons={weapons}
+            pilots={pilots}
+            onWeaponSave={handleWeaponSave}
+          />
+        )}
         {tab === 'users' && <UserAdmin currentUid={user.uid} />}
       </div>
 
@@ -2397,6 +3213,11 @@ export default function AdminPage() {
             { label: 'S 稀有度', value: pilots.filter((p) => p.rarity === 'S').length, color: 'text-accent-orange' },
             { label: 'A 稀有度', value: pilots.filter((p) => p.rarity === 'A').length, color: 'text-accent-green' },
             { label: 'EX 稀有度', value: pilots.filter((p) => p.rarity === 'EX').length, color: 'text-accent-purple' },
+          ] : tab === 'weapons' ? [
+            { label: '武器總數', value: weapons.length, color: 'text-accent-cyan' },
+            { label: '專屬武器', value: weapons.filter((w) => w.isExclusive).length, color: 'text-accent-purple' },
+            { label: 'SS 稀有度', value: weapons.filter((w) => w.rarity === 'SS').length, color: 'text-accent-orange' },
+            { label: '有技能', value: weapons.filter((w) => (w.skills ?? []).length > 0).length, color: 'text-accent-green' },
           ] : [
             { label: '模組總數', value: modules.length, color: 'text-accent-cyan' },
             { label: '已綁定', value: modules.filter((m) => m.boundMechId).length, color: 'text-accent-orange' },

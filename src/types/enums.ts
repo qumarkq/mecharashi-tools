@@ -89,13 +89,64 @@ export type ConditionalTrigger = typeof ConditionalTrigger[keyof typeof Conditio
 
 // ─── 武器 ────────────────────────────────────────────────────────────────────
 
-export const WeaponCategory = {
-  SHOOTING: '射擊',
-  MELEE:    '格鬥',
-  ASSAULT:  '突擊',
-  TACTICAL: '戰術',
+// 類型
+export const WeaponType = {
+  Sniper: '射擊',
+  Melee:    '格鬥',
+  Assault:  '突擊',
+  Heavy: '戰術',
 } as const;
-export type WeaponCategory = typeof WeaponCategory[keyof typeof WeaponCategory];
+export type WeaponType = typeof WeaponType[keyof typeof WeaponType];
+
+// 種類
+export const WeaponKind = {
+  // 格鬥類
+  Shield:     '大盾',
+  Buckler:      '手盾',
+  Blade:            '刀劍',
+  Knuckle:          '拳套',
+  PileBunker:             '打樁機',
+  Saw:         '電鋸',
+  Rod:          '長柄',
+  // 戰術類
+  RailGun:          '電磁炮',
+  Funnel:           '浮游炮',
+  Missile:          '導彈',
+  Rocket:           '火箭',
+  // 突擊類
+  ShotGun:          '霰彈槍',
+  MachineGun:       '機槍',
+  HeavyMachineGun: '重機槍',
+  Flamethrower:     '噴火器',
+  // 射擊類
+  LightSniper:     '輕型狙擊步槍',
+  HeavySniper:           '狙擊步槍',
+} as const;
+export type WeaponKind = typeof WeaponKind[keyof typeof WeaponKind];
+
+export const WeaponEquipSlot = {
+  SINGLE_HAND: 'singleHand', // 單手：左臂或右臂其中一個
+  DUAL_HAND:   'dualHand',   // 雙手：同時佔據左右臂
+  SHOULDER:    'shoulder',   // 肩膀：左臂或右臂其中一個肩膀
+  BACK:        'back',       // 背後
+} as const;
+export type WeaponEquipSlot = typeof WeaponEquipSlot[keyof typeof WeaponEquipSlot];
+
+export const RangeType = {
+  LINEAR: 'linear', // 線性射程：有最小射程限制，攻擊在 [minRange, maxRange] 區間
+  RING:   'ring',   // 環形 N 圈：以持有者為中心，chebyshev距離 ≤ maxRange 的方形區域
+                    // N圈 = (2N+1)×(2N+1) 方格，minRange 固定為 0（含自身格）
+} as const;
+export type RangeType = typeof RangeType[keyof typeof RangeType];
+
+export const WeaponRarity = {
+  SS:     'SS',
+  S_PLUS: 'S+',
+  S:      'S',
+  A:      'A',
+  B:      'B',
+} as const;
+export type WeaponRarity = typeof WeaponRarity[keyof typeof WeaponRarity];
 
 export const SkillActivation = {
   CARRY: 'carry',
@@ -127,7 +178,7 @@ export const PilotSkillTrigger = {
   ON_ATTACK:       'onAttack',
   ON_COUNTER:      'onCounter',
   ON_AP_SKILL:     'onApSkill',
-  WEAPON_CATEGORY: 'weaponCategory',
+  WEAPON_TYPE: 'weaponType',
   DUAL_WIELD:      'dualWield',
   HP_BELOW:        'hpBelow',
   FIRST_ATTACK:    'firstAttack',

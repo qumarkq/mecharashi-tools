@@ -40,6 +40,21 @@ export function usePilots(): HookResult<Pilot[]> {
   return { data, loading, error }
 }
 
+export function usePilotNameMap(): HookResult<Record<string, string>> {
+  const [data, setData] = useState<Record<string, string>>({})
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    getPilots()
+      .then((pilots) => setData(Object.fromEntries(pilots.map((p) => [p.id, p.name]))))
+      .catch((e: unknown) => setError(e instanceof Error ? e : new Error(String(e))))
+      .finally(() => setLoading(false))
+  }, [])
+
+  return { data, loading, error }
+}
+
 export function usePilot(id: string | undefined): HookResult<Pilot | null> {
   const [data, setData] = useState<Pilot | null>(null)
   const [loading, setLoading] = useState(true)
@@ -200,21 +215,21 @@ export function useWeapon(id: string | undefined): HookResult<Weapon | null> {
   return { data, loading, error }
 }
 
-export function usePilotExclusiveWeapon(pilotName: string | undefined): HookResult<Weapon | null> {
+export function usePilotExclusiveWeapon(pilotId: string | undefined): HookResult<Weapon | null> {
   const [data, setData] = useState<Weapon | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
-    if (!pilotName) { setLoading(false); return }
+    if (!pilotId) { setLoading(false); return }
     setLoading(true)
     getWeapons()
       .then((weapons) => {
-        setData(weapons.find((w) => w.isExclusive && w.exclusiveFor === pilotName) ?? null)
+        setData(weapons.find((w) => w.isExclusive && w.exclusiveFor === pilotId) ?? null)
       })
       .catch((e: unknown) => setError(e instanceof Error ? e : new Error(String(e))))
       .finally(() => setLoading(false))
-  }, [pilotName])
+  }, [pilotId])
 
   return { data, loading, error }
 }

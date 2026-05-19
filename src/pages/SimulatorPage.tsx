@@ -815,7 +815,7 @@ function ResultStep({
           <div className="bg-bg-card rounded-lg p-3 border border-border">
             <div className="text-[10px] text-accent-yellow uppercase tracking-wider mb-1">武器</div>
             <div className="text-sm font-bold">{weapon?.name ?? '未選擇'}</div>
-            {weapon && <div className="text-[11px] text-text-dim">{weapon.category}/{weapon.type} · 攻擊{weapon.attack}</div>}
+            {weapon && <div className="text-[11px] text-text-dim">{weapon.type}/{weapon.kind} · 攻擊{weapon.attack}</div>}
           </div>
 
           {/* Backpack */}

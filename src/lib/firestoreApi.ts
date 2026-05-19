@@ -89,3 +89,8 @@ export const updatePilot = async (pilot: Pilot): Promise<void> => {
   const { id, ...data } = pilot
   await setDoc(doc(db, 'pilots', id), data)
 }
+
+export const updateWeapon = async (weapon: Weapon): Promise<void> => {
+  const { id, ...data } = weapon
+  await setDoc(doc(db, 'weapons', id), data)
+}

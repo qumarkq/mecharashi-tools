@@ -157,7 +157,7 @@
   <h1 style="background:linear-gradient(135deg,#fff 0%,var(--accent-orange) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
     進度表<span style="-webkit-text-fill-color:var(--text-secondary);">武器資料模型優化</span>
   </h1>
-  <p class="hero-sub">各工作項目狀態追蹤 · 建立於 2026-05-17 · 規劃中</p>
+  <p class="hero-sub">各工作項目狀態追蹤 · 建立於 2026-05-17 · 更新於 2026-05-19</p>
 </header>
 
 <main class="container">
@@ -169,7 +169,7 @@
 
   <div class="summary-row">
     <div class="summary-card">
-      <div class="summary-num" style="color:var(--accent-green)">0</div>
+      <div class="summary-num" style="color:var(--accent-green)">13</div>
       <div class="summary-lbl">已完成</div>
     </div>
     <div class="summary-card">
@@ -177,26 +177,26 @@
       <div class="summary-lbl">進行中</div>
     </div>
     <div class="summary-card">
-      <div class="summary-num" style="color:var(--text-dim)">11</div>
+      <div class="summary-num" style="color:var(--text-dim)">2</div>
       <div class="summary-lbl">待開始</div>
     </div>
     <div class="summary-card">
-      <div class="summary-num" style="color:var(--accent-purple)">1</div>
+      <div class="summary-num" style="color:var(--accent-purple)">4</div>
       <div class="summary-lbl">管理員任務</div>
     </div>
     <div class="summary-card">
-      <div class="summary-num" style="color:var(--text-primary)">12</div>
-      <div class="summary-lbl">總任務數</div>
+      <div class="summary-num" style="color:var(--text-primary)">15</div>
+      <div class="summary-lbl">開發者任務</div>
     </div>
   </div>
 
   <div class="progress-wrap">
     <div class="progress-label">
-      <span>整體完成度</span>
-      <span style="color:var(--accent-orange);">0 / 12</span>
+      <span>開發者任務完成度</span>
+      <span style="color:var(--accent-orange);">13 / 15</span>
     </div>
     <div class="progress-bar-bg">
-      <div class="progress-bar-fill" style="width: 0%"></div>
+      <div class="progress-bar-fill" style="width: 87%"></div>
     </div>
   </div>
 </section>
@@ -212,20 +212,20 @@
     <div class="task-group-header">
       <div class="task-group-title">A-1 &nbsp; Enum 新增與重命名</div>
       <div class="task-group-meta">src/types/enums.ts</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
 
     <div class="task-row">
       <div>
         <div class="task-name">新增 RangeType enum</div>
         <div class="task-desc">
-          2 個值：<code>linear</code>（線性射程，有最小限制）/ <code>circle</code>（圓形範圍，以持有者為中心）。
+          2 個值：<code>linear</code>（線性射程，有最小限制）/ <code>ring</code>（環形 N 圈，以持有者為中心的方形區域）。
           用於取代射程字串表達，讓計算器可直接做數值比對。
         </div>
         <div class="task-file">src/types/enums.ts</div>
       </div>
       <div class="task-assignee">開發者</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
 
     <div class="task-row">
@@ -238,7 +238,7 @@
         <div class="task-file">src/types/enums.ts</div>
       </div>
       <div class="task-assignee">開發者</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
 
     <div class="task-row">
@@ -247,12 +247,12 @@
         <div class="task-desc">
           Enum 本身的值不變（SHOOTING / MELEE / ASSAULT / TACTICAL），只重命名 enum 識別符。
           對應中文術語「類型」，與下方欄位重命名一致。
-          需同步更新所有引用 <code>WeaponCategory</code> 的程式碼。
+          同步更新 AdminPage、WeaponsPage、SimulatorPage、PilotDetailPage 所有引用。
         </div>
-        <div class="task-file">src/types/enums.ts · 全域搜尋 WeaponCategory</div>
+        <div class="task-file">src/types/enums.ts · AdminPage · WeaponsPage · SimulatorPage · PilotDetailPage</div>
       </div>
       <div class="task-assignee">開發者</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
   </div>
 
@@ -261,7 +261,7 @@
     <div class="task-group-header">
       <div class="task-group-title">A-2 &nbsp; Weapon Interface 修改</div>
       <div class="task-group-meta">src/types/index.ts</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
 
     <div class="task-row">
@@ -271,12 +271,12 @@
           移除：<code>range: string</code><br>
           新增：<code>rangeType: RangeType</code>、<code>minRange: number</code>、<code>maxRange: number</code><br>
           線性射程（"2-4"）→ rangeType:'linear', minRange:2, maxRange:4<br>
-          圓形範圍（"2+"）→ rangeType:'circle', minRange:0, maxRange:2
+          環形 N 圈（"2+"）→ rangeType:'ring', minRange:0, maxRange:2
         </div>
         <div class="task-file">src/types/index.ts · Weapon</div>
       </div>
       <div class="task-assignee">開發者</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
 
     <div class="task-row">
@@ -289,7 +289,7 @@
         <div class="task-file">src/types/index.ts · Weapon</div>
       </div>
       <div class="task-assignee">開發者</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
 
     <div class="task-row">
@@ -299,12 +299,12 @@
           <code>category: string</code> → <code>type: WeaponType</code>（類型，大分類）<br>
           <code>type: string</code> → <code>kind: string</code>（種類，細分類）<br>
           <code>typeCoefficient: number</code> → <code>kindCoefficient: number</code><br>
-          需全域搜尋替換，前端元件及工具函式均需同步。
+          已全域搜尋替換，WeaponsPage / SimulatorPage / PilotDetailPage 同步更新。
         </div>
-        <div class="task-file">src/types/index.ts · Weapon · 全域搜尋</div>
+        <div class="task-file">src/types/index.ts · Weapon · WeaponsPage · SimulatorPage · PilotDetailPage</div>
       </div>
       <div class="task-assignee">開發者</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
 
     <div class="task-row">
@@ -317,7 +317,7 @@
         <div class="task-file">src/types/index.ts · Weapon</div>
       </div>
       <div class="task-assignee">開發者</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
   </div>
 
@@ -326,7 +326,7 @@
     <div class="task-group-header">
       <div class="task-group-title">A-3 &nbsp; SkillCondition Interface 修改</div>
       <div class="task-group-meta">src/types/index.ts（PLAN-001 定義，延伸擴充）</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
 
     <div class="task-row">
@@ -335,12 +335,12 @@
         <div class="task-desc">
           <code>weaponCategory?: string</code> → <code>weaponType?: string</code>（對應 WeaponType enum）<br>
           新增 <code>weaponKind?: string</code>（允許模組條件限定到種類層級，如「機槍」「狙擊步槍」）<br>
-          此修改確保模組生效條件的欄位名稱與武器 Schema 術語一致。
+          AdminPage 的 SkillCondition 編輯器同步更新觸發條件下拉選單。
         </div>
-        <div class="task-file">src/types/index.ts · SkillCondition</div>
+        <div class="task-file">src/types/index.ts · SkillCondition · AdminPage</div>
       </div>
       <div class="task-assignee">開發者</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
   </div>
 </section>
@@ -355,7 +355,7 @@
     <div class="task-group-header">
       <div class="task-group-title">B-1 &nbsp; weapons.html 全面更新</div>
       <div class="task-group-meta">docs/02_技術文件/02_資料模型/weapons.html</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
 
     <div class="task-row">
@@ -367,19 +367,19 @@
         <div class="task-file">docs/02_技術文件/02_資料模型/weapons.html · Schema 表格</div>
       </div>
       <div class="task-assignee">開發者</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
 
     <div class="task-row">
       <div>
-        <div class="task-name">補充射程型態說明（線性 vs 圓形）</div>
+        <div class="task-name">補充射程型態說明（linear 線性 vs ring 環形 N 圈）</div>
         <div class="task-desc">
           說明 rangeType / minRange / maxRange 三欄位的意義，並列出遊戲中各武器種類的射程型態對應。
         </div>
         <div class="task-file">docs/02_技術文件/02_資料模型/weapons.html · 補充說明段落</div>
       </div>
       <div class="task-assignee">開發者</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
 
     <div class="task-row">
@@ -391,7 +391,7 @@
         <div class="task-file">docs/02_技術文件/02_資料模型/weapons.html · 稀有度說明</div>
       </div>
       <div class="task-assignee">開發者</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
 
     <div class="task-row">
@@ -404,7 +404,7 @@
         <div class="task-file">docs/02_技術文件/02_資料模型/weapons.html · 術語說明區塊</div>
       </div>
       <div class="task-assignee">開發者</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
 
     <div class="task-row">
@@ -417,7 +417,7 @@
         <div class="task-file">docs/02_技術文件/02_資料模型/weapons.html · 填值指引區塊</div>
       </div>
       <div class="task-assignee">開發者</div>
-      <span class="status pending">○ 待開始</span>
+      <span class="status done">✓ 完成</span>
     </div>
   </div>
 </section>

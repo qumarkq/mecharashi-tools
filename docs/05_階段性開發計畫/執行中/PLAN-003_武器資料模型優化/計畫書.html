@@ -186,7 +186,7 @@
     <strong>問題一：射程欄位為字串，無法結構化處理</strong><br>
     現有 <code>range: string</code> 以 <code>"2-4"</code>、<code>"1+"</code> 等字串儲存射程，程式端需要額外解析才能比對數值。
     此外，遊戲中射程有兩種型態：<strong>線性射程</strong>（如 "2-4"，有最小射程限制）與
-    <strong>圓形範圍</strong>（如 "1+"、"2+"，以持有者為中心的菱形 N 圈），兩者語義不同，
+    <strong>環形 N 圈</strong>（如 "1+"、"2+"，以持有者為中心的 (2N+1)×(2N+1) 方形區域），兩者語義不同，
     但現有欄位無法區分。計算器若需要判斷「敵人在射程內」或「模組條件：近距離」，必須依賴字串解析，容易出錯。
   </div>
 
@@ -220,6 +220,21 @@
   </div>
 
   <div class="problem-block">
+    <strong>問題六：武器種類（kind）缺乏列舉型別保護</strong><br>
+    <code>kind: string</code> 為無型別字串，填值無靜態驗證，也無法保證與模組 <code>weaponKind?</code> 條件使用一致的字串。
+    遊戲中武器種類固定（共 17 種），應建立 enum 明確定義，讓 TypeScript 在編譯期驗證填值合法性。
+  </div>
+
+  <div class="problem-block">
+    <strong>問題七：武器缺少裝備部位欄位；機甲缺少肩膀 / 背後武器槽資訊</strong><br>
+    遊戲中武器有四種裝備部位：<strong>單手</strong>（左臂或右臂）、<strong>雙手</strong>（同時佔據左右臂）、
+    <strong>肩膀</strong>（左臂或右臂的肩膀槽）、<strong>背後</strong>（背後槽）。<br>
+    目前 <code>Weapon</code> interface 沒有裝備部位欄位，計算器無法驗證裝備合法性（如雙手武器佔用雙臂）。<br>
+    同時，<code>Mech</code> interface 沒有記錄機甲是否擁有肩膀 / 背後武器槽，
+    以及少部分機甲將特殊部件綁死於肩膀的情況，導致計算器無法驗證肩膀 / 背後武器的裝備合法性。
+  </div>
+
+  <div class="problem-block">
     <strong>問題五：專武被動效果填值模式不明確</strong><br>
     專屬武器（<code>isExclusive: true</code>）有類似模組的條件式被動效果，例如「對輕型機甲攻擊時傷害 +X%」。
     這些效果在 PLAN-001 完成後，技術上可透過 <code>skills[].activation = 'carry'</code> 搭配 <code>SkillEffect[]</code> 表達，
@@ -236,8 +251,8 @@
   <div class="decision-block">
     <strong>決策一：射程拆分為三個結構化欄位</strong><br>
     移除 <code>range: string</code>，改以三個欄位表達：<br>
-    · <code>rangeType: RangeType</code> — <code>'linear'</code>（線性，有最小射程限制）/ <code>'circle'</code>（圓形，以持有者為中心）<br>
-    · <code>minRange: number</code> — 最小射程。linear 型填遊戲的下限值（如狙擊 2-4 → 2）；circle 型填 0（持有者自身為中心，無最小限制）<br>
+    · <code>rangeType: RangeType</code> — <code>'linear'</code>（線性，有最小射程限制）/ <code>'ring'</code>（環形 N 圈，以持有者為中心的方形區域）<br>
+    · <code>minRange: number</code> — 最小射程。linear 型填遊戲的下限值（如狙擊 2-4 → 2）；ring 型固定填 0（無最小限制）<br>
     · <code>maxRange: number</code> — 最大射程（如狙擊 2-4 → 4；2+ → 2）<br>
     <br>
     計算器及篩選器可直接做數值比較，不再需要解析字串。
@@ -277,6 +292,28 @@
     計算器處理武器 carry 技能的邏輯與模組效果完全相同，不需要額外的處理分支。
     文件補充填值範例與說明，確保管理員理解此模式。
   </div>
+
+  <div class="decision-block">
+    <strong>決策六：建立 WeaponKind enum，取代無型別 kind string</strong><br>
+    定義 17 個值的 <code>WeaponKind</code> enum（格鬥類 7 種、射擊類 10 種），與
+    模組 SkillCondition 中 <code>weaponKind?</code> 欄位共用同一組字串值，確保填值一致性。<br>
+    <code>kind: string</code> 欄位在 interface 中保留為 <code>string</code>（與其他 enum 欄位慣例一致），
+    填值時參照 <code>WeaponKind</code> enum 值，TypeScript 編譯期靜態驗證由管理員工具層處理。
+  </div>
+
+  <div class="decision-block">
+    <strong>決策七：新增 WeaponEquipSlot enum；機甲新增肩膀 / 背後武器欄位</strong><br>
+    建立 <code>WeaponEquipSlot</code> enum：<code>singleHand / dualHand / shoulder / back</code>。<br>
+    <code>Weapon</code> interface 新增 <code>equipSlot: WeaponEquipSlot</code>，標記武器佔用的裝備格位。<br>
+    <br>
+    <code>Mech</code> interface 新增三個選填欄位：<br>
+    · <code>leftShoulderSlot?: string | null</code> — <code>undefined</code> = 無左肩槽；<code>null</code> = 空槽；<code>string</code> = 固定武器 ID<br>
+    · <code>rightShoulderSlot?: string | null</code> — 同左肩邏輯<br>
+    · <code>backSlot?: string | null</code> — 背後武器槽，邏輯相同<br>
+    <br>
+    此設計讓計算器可直接透過 <code>equipSlot</code> 知道武器需要哪種槽位，
+    再查詢目標機甲是否有對應槽位，做出裝備合法性判斷。
+  </div>
 </section>
 
 <!-- Schema 規格 -->
@@ -288,10 +325,43 @@
   <div class="section-title" style="font-size:16px;margin-top:24px;margin-bottom:12px;">1. 新增 Enum（enums.ts）</div>
 
   <div class="code-block">
+<span class="cm">// 武器種類（共 17 種，格鬥類 + 射擊類）</span>
+<span class="kw">export const</span> <span class="nm">WeaponKind</span> = {
+  <span class="cm">// 格鬥類</span>
+  <span class="nm">LARGE_SHIELD</span>:     <span class="st">'大盾'</span>,
+  <span class="nm">HAND_SHIELD</span>:      <span class="st">'手盾'</span>,
+  <span class="nm">BLADE</span>:            <span class="st">'刀劍'</span>,
+  <span class="nm">KNUCKLE</span>:          <span class="st">'拳套'</span>,
+  <span class="nm">PILE</span>:             <span class="st">'打樁機'</span>,
+  <span class="nm">CHAINSAW</span>:         <span class="st">'電鋸'</span>,
+  <span class="nm">POLEARM</span>:          <span class="st">'長柄'</span>,
+  <span class="cm">// 射擊類</span>
+  <span class="nm">RAILGUN</span>:          <span class="st">'電磁炮'</span>,
+  <span class="nm">FUNNEL</span>:           <span class="st">'浮游炮'</span>,
+  <span class="nm">MISSILE</span>:          <span class="st">'導彈'</span>,
+  <span class="nm">ROCKET</span>:           <span class="st">'火箭'</span>,
+  <span class="nm">SHOTGUN</span>:          <span class="st">'霰彈槍'</span>,
+  <span class="nm">MACHINEGUN</span>:       <span class="st">'機槍'</span>,
+  <span class="nm">HEAVY_MACHINEGUN</span>: <span class="st">'重機槍'</span>,
+  <span class="nm">FLAMETHROWER</span>:     <span class="st">'噴火器'</span>,
+  <span class="nm">SNIPER_LIGHT</span>:     <span class="st">'輕型狙擊步槍'</span>,
+  <span class="nm">SNIPER</span>:           <span class="st">'狙擊步槍'</span>,
+} <span class="kw">as const</span>;
+<span class="kw">export type</span> <span class="ty">WeaponKind</span> = <span class="kw">typeof</span> WeaponKind[<span class="kw">keyof typeof</span> WeaponKind];
+
+<span class="cm">// 武器裝備部位</span>
+<span class="kw">export const</span> <span class="nm">WeaponEquipSlot</span> = {
+  <span class="nm">SINGLE_HAND</span>: <span class="st">'singleHand'</span>,  <span class="cm">// 單手：左臂或右臂其中一個</span>
+  <span class="nm">DUAL_HAND</span>:   <span class="st">'dualHand'</span>,    <span class="cm">// 雙手：同時佔據左右臂</span>
+  <span class="nm">SHOULDER</span>:    <span class="st">'shoulder'</span>,    <span class="cm">// 肩膀：左臂或右臂的肩膀槽</span>
+  <span class="nm">BACK</span>:        <span class="st">'back'</span>,        <span class="cm">// 背後</span>
+} <span class="kw">as const</span>;
+<span class="kw">export type</span> <span class="ty">WeaponEquipSlot</span> = <span class="kw">typeof</span> WeaponEquipSlot[<span class="kw">keyof typeof</span> WeaponEquipSlot];
+
 <span class="cm">// 射程型態</span>
 <span class="kw">export const</span> <span class="nm">RangeType</span> = {
   <span class="nm">LINEAR</span>: <span class="st">'linear'</span>,  <span class="cm">// 線性射程：有最小射程限制（"2-4" → minRange:2, maxRange:4）</span>
-  <span class="nm">CIRCLE</span>: <span class="st">'circle'</span>,  <span class="cm">// 圓形範圍：以持有者為中心（"2+" → minRange:0, maxRange:2）</span>
+  <span class="nm">RING</span>:   <span class="st">'ring'</span>,    <span class="cm">// 環形 N 圈：(2N+1)×(2N+1) 方形區域（"2+" → minRange:0, maxRange:2）</span>
 } <span class="kw">as const</span>;
 <span class="kw">export type</span> <span class="ty">RangeType</span> = <span class="kw">typeof</span> RangeType[<span class="kw">keyof typeof</span> RangeType];
 
@@ -345,10 +415,11 @@
   weight:           <span class="ty">number</span>
   rarity:           <span class="ty">WeaponRarity</span> <span class="cm">// （原 string）武器專屬稀有度 SS / S+ / S</span>
   mechRestriction:  <span class="ty">MechRestriction</span>  <span class="cm">// 新增：none / light / medium / heavy</span>
+  equipSlot:        <span class="ty">WeaponEquipSlot</span>  <span class="cm">// 新增：singleHand / dualHand / shoulder / back</span>
 
   <span class="cm">// ─── 射程（原 range: string 拆分為三欄位） ───────</span>
-  rangeType:        <span class="ty">RangeType</span>    <span class="cm">// 'linear' | 'circle'</span>
-  minRange:         <span class="ty">number</span>       <span class="cm">// 線性型：遊戲最小值；圓形型：填 0</span>
+  rangeType:        <span class="ty">RangeType</span>    <span class="cm">// 'linear' | 'ring'</span>
+  minRange:         <span class="ty">number</span>       <span class="cm">// 線性型：遊戲最小值；ring 型：固定 0</span>
   maxRange:         <span class="ty">number</span>       <span class="cm">// 最大射程</span>
 
   <span class="cm">// ─── 專屬武器 ─────────────────────────────────</span>
@@ -374,7 +445,22 @@
 }
   </div>
 
-  <div class="section-title" style="font-size:16px;margin-top:32px;margin-bottom:12px;">4. 修改 SkillCondition Interface（index.ts，PLAN-001 定義）</div>
+  <div class="section-title" style="font-size:16px;margin-top:32px;margin-bottom:12px;">4. 修改 Mech Interface（index.ts）— 新增武器欄位</div>
+
+  <div class="code-block">
+<span class="cm">// 新增三個選填欄位（有對應槽位的機甲才填）</span>
+<span class="kw">export interface</span> <span class="ty">Mech</span> {
+  <span class="cm">// ... 既有欄位 ...</span>
+
+  <span class="cm">// ─── 武器裝備欄位（計算機用）──────────────────────────────────</span>
+  <span class="cm">// undefined = 無此槽；null = 空槽可裝備；string = 固定武器 ID（綁死）</span>
+  leftShoulderSlot?:  <span class="ty">string</span> | <span class="kw">null</span>
+  rightShoulderSlot?: <span class="ty">string</span> | <span class="kw">null</span>
+  backSlot?:          <span class="ty">string</span> | <span class="kw">null</span>
+}
+  </div>
+
+  <div class="section-title" style="font-size:16px;margin-top:32px;margin-bottom:12px;">6. 修改 SkillCondition Interface（index.ts，PLAN-001 定義）</div>
 
   <div class="code-block">
 <span class="kw">export interface</span> <span class="ty">SkillCondition</span> {
@@ -387,7 +473,7 @@
 }
   </div>
 
-  <div class="section-title" style="font-size:16px;margin-top:32px;margin-bottom:12px;">5. 武器稀有度識別規則</div>
+  <div class="section-title" style="font-size:16px;margin-top:32px;margin-bottom:12px;">7. 武器稀有度識別規則</div>
 
   <div class="data-table-wrap">
     <table class="rarity-table">
@@ -413,7 +499,7 @@
     </table>
   </div>
 
-  <div class="section-title" style="font-size:16px;margin-top:32px;margin-bottom:12px;">6. 專武被動效果填值範例</div>
+  <div class="section-title" style="font-size:16px;margin-top:32px;margin-bottom:12px;">8. 專武被動效果填值範例</div>
 
   <div class="code-block">
 <span class="cm">// 專武「昏星繼光」的被動效果：對輕型機甲攻擊時傷害 +15%</span>
@@ -449,12 +535,12 @@
     <div class="doc-item">
       <div class="doc-tag" style="color:var(--accent-orange)">TypeScript</div>
       <h4>src/types/enums.ts</h4>
-      <p>新增 RangeType、WeaponRarity；重命名 WeaponCategory → WeaponType</p>
+      <p>新增 RangeType、WeaponRarity、WeaponKind、WeaponEquipSlot；重命名 WeaponCategory → WeaponType</p>
     </div>
     <div class="doc-item">
       <div class="doc-tag" style="color:var(--accent-orange)">TypeScript</div>
       <h4>src/types/index.ts</h4>
-      <p>修改 Weapon interface（射程欄位、mechRestriction、欄位重命名、rarity 型別）；修改 SkillCondition（weaponCategory → weaponType，新增 weaponKind）</p>
+      <p>修改 Weapon interface（射程欄位、mechRestriction、equipSlot、欄位重命名、rarity 型別）；修改 Mech interface（新增 leftShoulderSlot / rightShoulderSlot / backSlot）；修改 SkillCondition（weaponCategory → weaponType，新增 weaponKind）</p>
     </div>
     <div class="doc-item">
       <div class="doc-tag" style="color:var(--accent-yellow)">Script</div>

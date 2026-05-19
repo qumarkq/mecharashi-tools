@@ -5,6 +5,68 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>weapons — 武器資料模型 — 鋼嵐工具站</title>
 <link rel="stylesheet" href="../../_shared/style.css">
+<style>
+.rarity-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0; }
+.rarity-table th {
+  text-align: left; padding: 9px 14px;
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--accent-yellow);
+  border-bottom: 2px solid var(--border-accent);
+}
+.rarity-table td { padding: 8px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px; }
+.rarity-table td:first-child { font-family: 'JetBrains Mono', monospace; color: var(--accent-orange); font-size: 12px; font-weight: 700; }
+
+.term-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+.term-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+.term-field { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent-orange); font-weight: 700; margin-bottom: 4px; }
+.term-label { font-size: 12px; color: var(--accent-yellow); font-weight: 600; margin-bottom: 6px; }
+.term-values { font-size: 12px; color: var(--text-dim); }
+
+.range-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+.range-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+.range-type { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent-cyan); font-weight: 700; margin-bottom: 6px; }
+.range-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
+.range-example { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent-green); margin-top: 8px; }
+
+.code-block {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 22px;
+  margin: 14px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.9;
+  overflow-x: auto;
+  color: #e6edf3;
+}
+.code-block .kw  { color: #ff7b72; }
+.code-block .ty  { color: #79c0ff; }
+.code-block .st  { color: #a5d6ff; }
+.code-block .cm  { color: #8b949e; }
+.code-block .nm  { color: #e3b341; }
+</style>
 </head>
 <body>
 
@@ -23,24 +85,105 @@
 <header class="hero purple">
   <div class="hero-badge purple">◆ Data Model</div>
   <h1>weapons<span>武器資料 · WEAPON DATA</span></h1>
-  <p class="hero-sub">武器屬性、元件插槽、固定/浮動改裝、三種技能生效方式</p>
-  <div class="version-badge" style="background:var(--accent-purple);">UPDATED v1.2</div>
+  <p class="hero-sub">武器屬性、射程型態、機甲限制、元件插槽、固定/浮動改裝、三種技能生效方式</p>
+  <div class="version-badge" style="background:var(--accent-purple);">UPDATED v2.0 · PLAN-003</div>
 </header>
 
 <main class="container">
 
+<!-- v2.0 更新說明 -->
 <section class="section">
-  <div class="section-label purple">v1.2 更新</div>
-  <div class="section-title">重構說明</div>
+  <div class="section-label purple">v2.0 更新（PLAN-003）</div>
+  <div class="section-title">Schema 重構說明</div>
 
   <div class="changed-block">
-    <strong>🔄 v1.2 修正：武器系統大幅擴充</strong>
-    武器有類型、元件插槽（觸元件/應元件數量不同）、固定改裝（確定效果）、浮動改裝（隨機範圍）。<br>
-    專武不限制使用者，但技能會加強特定機師的天賦。<br>
-    技能生效方式分三種：攜帶即生效（carry）/ 裝備中生效（equip）/ 僅使用時生效（use）。
+    <strong>PLAN-003 武器資料模型優化</strong>（2026-05-18 實施）<br><br>
+    · <strong>射程結構化</strong>：移除 <code>range: string</code>，改為三欄位：<code>rangeType</code> + <code>minRange</code> + <code>maxRange</code><br>
+    · <strong>術語對齊</strong>：<code>category</code> → <code>type</code>（類型），<code>type</code> → <code>kind</code>（種類），<code>typeCoefficient</code> → <code>kindCoefficient</code><br>
+    · <strong>稀有度強型別</strong>：<code>rarity: string</code> → <code>rarity: WeaponRarity</code>（SS / S+ / S）<br>
+    · <strong>機甲限制</strong>：新增 <code>mechRestriction: MechRestriction</code> 欄位<br>
+    · <strong>SkillCondition</strong>：<code>weaponCategory?</code> → <code>weaponType?</code>，新增 <code>weaponKind?</code>
   </div>
 </section>
 
+<!-- 術語說明 -->
+<section class="section">
+  <div class="section-label purple">Terminology</div>
+  <div class="section-title">類型 vs 種類 術語說明</div>
+  <div class="section-desc">武器分類有兩個層級，欄位命名與中文概念對齊。</div>
+
+  <div class="term-card">
+    <div class="term-item">
+      <div class="term-field">type（類型）</div>
+      <div class="term-label">大分類 — WeaponType enum</div>
+      <div class="term-values">射擊 / 格鬥 / 突擊 / 戰術</div>
+    </div>
+    <div class="term-item">
+      <div class="term-field">kind（種類）</div>
+      <div class="term-label">細分類 — WeaponKind enum</div>
+      <div class="term-values">格鬥類 7 種 / 戰術類 4 種 / 突擊類 4 種 / 射擊類 2 種</div>
+    </div>
+  </div>
+
+  <div class="note-block">
+    <strong>種類是模組條件篩選的關鍵維度</strong><br>
+    模組 SkillCondition 使用 <code>weaponKind?</code> 限定到種類層級（如「機槍」、「狙擊步槍」），
+    讓計算器能正確判斷模組是否對當前武器生效。
+    使用 <code>weaponType?</code> 則限定到大分類（如「射擊」、「格鬥」）。
+  </div>
+</section>
+
+<!-- 武器種類表 -->
+<section class="section">
+  <div class="section-label purple">WeaponKind</div>
+  <div class="section-title">武器種類列表（WeaponKind Enum）</div>
+  <div class="section-desc">共 17 種（格鬥類 7 種、戰術類 4 種、突擊類 4 種、射擊類 2 種），為模組條件篩選的關鍵維度。</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>Enum Key</th><th>值（string）</th><th>WeaponType（類型）</th><th>equipSlot（裝備部位）</th></tr>
+      <tr><td>LARGE_SHIELD</td><td>大盾</td><td>格鬥</td><td>雙手</td></tr>
+      <tr><td>HAND_SHIELD</td><td>手盾</td><td>格鬥</td><td>單手</td></tr>
+      <tr><td>BLADE</td><td>刀劍</td><td>格鬥</td><td>單手</td></tr>
+      <tr><td>KNUCKLE</td><td>拳套</td><td>格鬥</td><td>單手</td></tr>
+      <tr><td>PILE</td><td>打樁機</td><td>格鬥</td><td>單手</td></tr>
+      <tr><td>CHAINSAW</td><td>電鋸</td><td>格鬥</td><td>雙手</td></tr>
+      <tr><td>POLEARM</td><td>長柄</td><td>格鬥</td><td>雙手</td></tr>
+      <tr><td>RAILGUN</td><td>電磁炮</td><td>戰術</td><td>單手</td></tr>
+      <tr><td>FUNNEL</td><td>浮游炮</td><td>戰術</td><td>肩膀</td></tr>
+      <tr><td>MISSILE</td><td>導彈</td><td>戰術</td><td>肩膀</td></tr>
+      <tr><td>ROCKET</td><td>火箭</td><td>戰術</td><td>單手</td></tr>
+      <tr><td>SHOTGUN</td><td>霰彈槍</td><td>突擊</td><td>單手</td></tr>
+      <tr><td>MACHINEGUN</td><td>機槍</td><td>突擊</td><td>單手</td></tr>
+      <tr><td>HEAVY_MACHINEGUN</td><td>重機槍</td><td>突擊</td><td>雙手</td></tr>
+      <tr><td>FLAMETHROWER</td><td>噴火器</td><td>突擊</td><td>單手</td></tr>
+      <tr><td>SNIPER_LIGHT</td><td>輕型狙擊步槍</td><td>射擊</td><td>單手</td></tr>
+      <tr><td>SNIPER</td><td>狙擊步槍</td><td>射擊</td><td>單手</td></tr>
+    </table>
+  </div>
+  <div class="note-block">
+    <strong>裝備部位（equipSlot）與武器種類通常有固定對應關係</strong>，但以武器本身的 equipSlot 欄位為準，種類表僅供參考。
+  </div>
+</section>
+
+<!-- 裝備部位說明 -->
+<section class="section">
+  <div class="section-label purple">EquipSlot</div>
+  <div class="section-title">裝備部位說明（WeaponEquipSlot Enum）</div>
+  <div class="section-desc">武器裝備時佔用的機甲格位，計算器用於驗證裝備合法性。</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>Enum 值</th><th>中文</th><th>說明</th></tr>
+      <tr><td>singleHand</td><td>單手</td><td>佔用左臂或右臂其中一個；雙手可各裝一把</td></tr>
+      <tr><td>dualHand</td><td>雙手</td><td>同時佔據左臂與右臂（雙手武器）</td></tr>
+      <tr><td>shoulder</td><td>肩膀</td><td>佔用左臂或右臂的肩膀槽位；需機甲有肩膀欄位才可裝備</td></tr>
+      <tr><td>back</td><td>背後</td><td>佔用機甲背後槽位；需機甲有背後欄位才可裝備</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- 欄位定義 -->
 <section class="section">
   <div class="section-label purple">Schema</div>
   <div class="section-title">欄位定義</div>
@@ -50,20 +193,31 @@
       <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
       <tr><td>id</td><td>string</td><td>唯一識別碼</td></tr>
       <tr><td>name</td><td>string</td><td>武器名稱（如 "昏星繼光"）</td></tr>
-      <tr><td>category</td><td>WeaponCategory (Enum)</td><td>武器大類：射擊 / 格鬥 / 突擊 / 戰術</td></tr>
-      <tr><td>type</td><td>string</td><td>武器種類（機槍/狙擊步槍/重機槍/拳套…）</td></tr>
-      <tr><td>typeCoefficient</td><td>number</td><td>武器種類係數（狙擊步槍 = 5.92）</td></tr>
+      <tr class="group-header"><td colspan="3">▎分類</td></tr>
+      <tr><td>type</td><td>WeaponType (Enum)</td><td>武器類型（大分類）：射擊 / 格鬥 / 突擊 / 戰術<br><small style="color:var(--text-dim)">原欄位名 category</small></td></tr>
+      <tr><td>kind</td><td>WeaponKind (Enum)</td><td>武器種類（細分類）：機槍 / 狙擊步槍 / 刀劍…（共 17 種，見下方種類表）<br><small style="color:var(--text-dim)">原欄位名 type</small></td></tr>
+      <tr><td>kindCoefficient</td><td>number</td><td>武器種類係數（狙擊步槍 = 5.92）<br><small style="color:var(--text-dim)">原欄位名 typeCoefficient</small></td></tr>
+      <tr class="group-header"><td colspan="3">▎基礎屬性</td></tr>
       <tr><td>attack</td><td>string</td><td>攻擊力（如 "766×1"，含子彈數）</td></tr>
       <tr><td>accuracy</td><td>number</td><td>命中值</td></tr>
       <tr><td>critValue</td><td>number</td><td>暴擊值</td></tr>
-      <tr><td>range</td><td>string</td><td>射程（如 "2-4"）</td></tr>
       <tr><td>weight</td><td>number</td><td>重量（影響機甲出力限制）</td></tr>
-      <tr><td>rarity</td><td>Rarity (Enum)</td><td>稀有度</td></tr>
-      <tr><td>isExclusive</td><td>boolean</td><td>是否為專屬武器</td></tr>
+      <tr><td>ammoCount</td><td>number</td><td>彈藥量（0 = 無限彈藥）<br><small style="color:var(--text-dim)">導彈=2 / 火箭=1 / 電磁炮=3 / 浮游炮=3 / 其他=0</small></td></tr>
+      <tr><td>hitCount</td><td>number</td><td>連擊數（單次攻擊命中次數）<br><small style="color:var(--text-dim)">霰彈槍=12 / 機槍·重機槍·電鋸=10 / 噴火器=8 / 浮游炮=6 / 其他=1</small></td></tr>
+      <tr><td>rarity</td><td>WeaponRarity (Enum)</td><td>武器稀有度：SS / S+ / S（見稀有度識別規則）</td></tr>
+      <tr><td>mechRestriction</td><td>MechRestriction (Enum)</td><td>機甲限制：none（無限制）/ light / medium / heavy<br><small style="color:var(--text-dim)">新增欄位；無限制武器填 none</small></td></tr>
+      <tr><td>equipSlot</td><td>WeaponEquipSlot (Enum)</td><td>裝備部位：singleHand（單手）/ dualHand（雙手）/ shoulder（肩膀）/ back（背後）<br><small style="color:var(--text-dim)">新增欄位；計算機判斷武器佔用哪些機甲裝備格位用</small></td></tr>
+      <tr class="group-header"><td colspan="3">▎射程（原 range: string 拆分為三欄位）</td></tr>
+      <tr><td>rangeType</td><td>RangeType (Enum)</td><td>'linear'（線性射程）/ 'ring'（環形 N 圈）<br><small style="color:var(--text-dim)">新增欄位；詳見射程型態說明</small></td></tr>
+      <tr><td>minRange</td><td>number</td><td>最小射程。linear 型填遊戲下限值；ring 型固定填 0（含自身格，無最小限制）</td></tr>
+      <tr><td>maxRange</td><td>number</td><td>最大射程（linear: 上限值；ring: 圈數 N，覆蓋範圍為 (2N+1)×(2N+1) 方格）</td></tr>
+      <tr class="group-header"><td colspan="3">▎專屬武器</td></tr>
+      <tr><td>isExclusive</td><td>boolean</td><td>是否為專屬武器（SS 稀有度）</td></tr>
       <tr><td>exclusiveFor</td><td>string?</td><td>主要對應機師 ID（專武天賦加強對象）</td></tr>
       <tr class="group-header"><td colspan="3">▎元件插槽</td></tr>
       <tr><td>triggerSlots</td><td>number</td><td>觸元件插槽數量</td></tr>
       <tr><td>effectSlots</td><td>number</td><td>應元件插槽數量</td></tr>
+      <tr><td>componentLimit</td><td>number</td><td>元件上限：觸元件＋應元件總數不可超過此值（SS / S+ = 4；S = 3；其他 = 0）<br><small style="color:var(--text-dim)">配裝合法性驗證用；triggerSlots + effectSlots 各為可用槽位，合計不可超過此上限</small></td></tr>
       <tr class="group-header"><td colspan="3">▎固定改裝 fixedMod（效果固定，依武器等級解鎖）</td></tr>
       <tr><td>&nbsp;├ planName</td><td>string</td><td>改進方案名稱（如 "機槍VIII"）</td></tr>
       <tr><td>&nbsp;├ maxLevel</td><td>number</td><td>可改裝等級上限（如 70）</td></tr>
@@ -73,26 +227,179 @@
       <tr><td>&nbsp;├ slots</td><td>number</td><td>可裝填效果欄位數</td></tr>
       <tr><td>&nbsp;└ possibleEffects[]</td><td>array</td><td>所有可能效果 ↓</td></tr>
       <tr><td>&nbsp;&nbsp;├ stat</td><td>string</td><td>效果類型：attack / crit / accuracy / firepower</td></tr>
-      <tr><td>&nbsp;&nbsp;├ condition</td><td>string?</td><td>觸發條件：null（無條件）/ "targetHP&lt;50%" / "vsLight" / "vsMedium" / "vsHeavy"</td></tr>
+      <tr><td>&nbsp;&nbsp;├ condition</td><td>string?</td><td>觸發條件：null（無條件）/ 條件描述字串</td></tr>
       <tr><td>&nbsp;&nbsp;├ min</td><td>number</td><td>數值下限</td></tr>
       <tr><td>&nbsp;&nbsp;└ max</td><td>number</td><td>數值上限</td></tr>
-      <tr class="group-header"><td colspan="3">▎武器技能 skills[]</td></tr>
+      <tr class="group-header"><td colspan="3">▎武器技能 skills[]（WeaponSkill）</td></tr>
       <tr><td>&nbsp;├ name</td><td>string</td><td>技能名稱（如 "白鶴之眺"）</td></tr>
       <tr><td>&nbsp;├ type</td><td>string</td><td>技能類型（被動技能/主動技能）</td></tr>
       <tr><td>&nbsp;├ activation</td><td>SkillActivation (Enum)</td><td>carry = 攜帶即生效 / equip = 裝備中生效 / use = 僅使用時生效</td></tr>
       <tr><td>&nbsp;├ description</td><td>string</td><td>技能效果描述</td></tr>
-      <tr><td>&nbsp;├ dmg / crit / critDmg / acc</td><td>number</td><td>可量化的加成數值</td></tr>
-      <tr><td>&nbsp;└ enhancesTalent</td><td>string?</td><td>加強的特定機師天賦名稱（專武用）</td></tr>
+      <tr><td>&nbsp;├ effects[]</td><td>SkillEffect[]</td><td>結構化效果數值（計算器用）</td></tr>
+      <tr><td>&nbsp;├ buffIds[]</td><td>string[]</td><td>觸發的 Buff ID 列表</td></tr>
+      <tr><td>&nbsp;└ enhancesTalentName</td><td>string?</td><td>加強的特定機師天賦名稱（專武用）</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- 射程型態說明 -->
+<section class="section">
+  <div class="section-label purple">Range</div>
+  <div class="section-title">射程型態說明</div>
+  <div class="section-desc">武器射程有兩種型態，對應不同的遊戲機制。</div>
+
+  <div class="range-card">
+    <div class="range-item">
+      <div class="range-type">linear — 線性射程</div>
+      <div class="range-desc">
+        有最小射程限制的線性攻擊。<br>
+        攻擊目標須在 [minRange, maxRange] 格距內。
+      </div>
+      <div class="range-example">
+        例："2-4" → rangeType:'linear', minRange:2, maxRange:4<br>
+        例："1-3" → rangeType:'linear', minRange:1, maxRange:3
+      </div>
+    </div>
+    <div class="range-item">
+      <div class="range-type">ring — 環形 N 圈</div>
+      <div class="range-desc">
+        以持有者為中心，向外擴展 N 圈的<strong>方形</strong>覆蓋區域。<br>
+        N 圈 = (2N+1)×(2N+1) 方格（含自身格，無最小限制）。<br>
+        採 Chebyshev 距離（水平、垂直、斜角均計 1 格）。
+      </div>
+      <div class="range-example">
+        例："2+" → rangeType:'ring', minRange:0, maxRange:2<br>
+        例："1+" → rangeType:'ring', minRange:0, maxRange:1
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:14px 0;">
+    <div style="font-size:12px;color:var(--accent-yellow);font-weight:700;margin-bottom:10px;">▎ring 型 2 圈視覺示意（maxRange = 2）</div>
+    <pre style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-secondary);line-height:1.8;margin:0;">■ ■ ■ ■ ■
+■ ■ ■ ■ ■
+■ ■ <span style="color:var(--accent-cyan)">0</span> ■ ■
+■ ■ ■ ■ ■
+■ ■ ■ ■ ■</pre>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:8px;">
+      0 = 持有者位置；■ = 攻擊範圍格；2圈 = 5×5 = 25 格（含自身）<br>
+      <strong>計算機開發備注</strong>：判斷格子 (dx, dy) 是否在攻擊範圍內 → <code>Math.max(Math.abs(dx), Math.abs(dy)) &lt;= maxRange</code>
+    </div>
+  </div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>武器種類</th><th>rangeType</th><th>典型射程</th><th>填值示例</th></tr>
+      <tr><td>狙擊步槍</td><td>linear</td><td>2-4</td><td>minRange:2, maxRange:4</td></tr>
+      <tr><td>機槍</td><td>linear</td><td>1-3</td><td>minRange:1, maxRange:3</td></tr>
+      <tr><td>霰彈</td><td>linear</td><td>1-2</td><td>minRange:1, maxRange:2</td></tr>
+      <tr><td>刀劍 / 拳套</td><td>linear</td><td>1-1</td><td>minRange:1, maxRange:1</td></tr>
+      <tr><td>戰術武器（範圍型）</td><td>ring</td><td>2+</td><td>minRange:0, maxRange:2</td></tr>
     </table>
   </div>
 
   <div class="note-block">
-    <strong>💡 固定改裝 vs 浮動改裝</strong>
-    固定改裝（基礎改裝）：效果確定，達到等級即解鎖，管理者填入確切數值。<br>
-    浮動改裝（高級改裝）：效果從可能池中隨機獲得，數值有範圍，模擬器中由使用者手動輸入已改裝的效果。
+    <strong>顯示格式（前端）</strong><br>
+    · linear 型：<code>${minRange}-${maxRange}</code>（如 2-4）<br>
+    · ring 型：<code>${maxRange}+</code>（如 2+）
   </div>
 </section>
 
+<!-- 稀有度識別規則 -->
+<section class="section">
+  <div class="section-label purple">Rarity</div>
+  <div class="section-title">武器稀有度識別規則</div>
+  <div class="section-desc">WeaponRarity enum 共五級，由 API <code>quality</code> 欄位直接對應，與通用 ItemRarity 無關。</div>
+
+  <div class="data-table-wrap">
+    <table class="rarity-table">
+      <tr><th>Enum 值</th><th>API quality</th><th>識別規則</th><th>說明</th></tr>
+      <tr>
+        <td>SS</td>
+        <td>SSSR</td>
+        <td>API quality = SSSR，isExclusive = true</td>
+        <td>專屬武器。遊戲中最高等級武器。</td>
+      </tr>
+      <tr>
+        <td>S+</td>
+        <td>UR</td>
+        <td>API quality = UR；名稱通常含「改」字</td>
+        <td>改版武器，一般為通用高階武器的強化版本。</td>
+      </tr>
+      <tr>
+        <td>S</td>
+        <td>SSR</td>
+        <td>API quality = SSR；名稱通常含「EX」字樣</td>
+        <td>EX 版本武器，標準高階武器。</td>
+      </tr>
+      <tr>
+        <td>A</td>
+        <td>SR</td>
+        <td>API quality = SR</td>
+        <td>標準武器（高階）。</td>
+      </tr>
+      <tr>
+        <td>B</td>
+        <td>R</td>
+        <td>API quality = R</td>
+        <td>標準武器（一般）。</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="note-block">
+    <strong>對應邏輯</strong>：爬蟲腳本以 <code>quality</code> 欄位為主要來源（RARITY_FROM_API）；
+    若 quality 欄位缺失，fallback 使用名稱規則（含「改」→ S+、含「EX」→ S）。
+  </div>
+</section>
+
+<!-- 專武被動效果填值指引 -->
+<section class="section">
+  <div class="section-label purple">Guide</div>
+  <div class="section-title">專武被動效果填值指引</div>
+  <div class="section-desc">
+    專屬武器（isExclusive = true）的條件式被動效果，以 skills[] 中 activation='carry' 的技能條目表達。
+  </div>
+
+  <div class="note-block">
+    <strong>填值原則</strong><br>
+    不新增額外欄位。專武條件式被動效果 = <code>skills[]</code> 中一筆 <code>activation: 'carry'</code> 的 WeaponSkill。
+    其 <code>effects: SkillEffect[]</code> 依模組效果格式填入結構化數值。<br>
+    計算器處理武器 carry 技能的邏輯與模組效果完全相同，不需要額外的處理分支。
+  </div>
+
+  <div class="code-block">
+<span class="cm">// 專武「昏星繼光」的被動效果：對輕型機甲攻擊時傷害 +15%</span>
+<span class="cm">// → 以 activation='carry' 的 WeaponSkill 條目表達</span>
+{
+  name:        <span class="st">"昏星繼光‧被動"</span>,
+  type:        <span class="st">'被動技能'</span>,
+  activation:  <span class="st">'carry'</span>,
+  description: <span class="st">"攻擊輕型機甲時，傷害提升 15%"</span>,
+  effects: [
+    {
+      stat:      <span class="st">'dmg'</span>,
+      value:     <span class="ty">15</span>,
+      scope:     <span class="st">'self'</span>,
+      condition: {
+        trigger:     <span class="st">'always'</span>,
+        targetClass: <span class="st">'light'</span>   <span class="cm">// 目標為輕型機甲</span>
+      }
+    }
+  ],
+  buffIds: []
+}
+  </div>
+
+  <div class="note-block">
+    <strong>管理員作業優先序</strong><br>
+    1. 確認所有 isExclusive = true 的武器，skills[] 中已有 activation:'carry' 的條目<br>
+    2. 目前僅有文字描述（description）而缺 effects[] 結構化數值的條目優先處理<br>
+    3. 長期持續補填，不阻塞功能開發
+  </div>
+</section>
+
+<!-- 相關文件 -->
 <section class="section">
   <div class="section-label purple">相關文件</div>
   <div class="section-title">關聯資料</div>
@@ -111,6 +418,11 @@
       <div class="doc-tag">Page</div>
       <h4>🔫 武器圖鑑頁</h4>
       <p>武器列表頁面規劃</p>
+    </a>
+    <a class="doc-item" href="../../05_階段性開發計畫/執行中/PLAN-003_武器資料模型優化/計畫書.html">
+      <div class="doc-tag">Plan</div>
+      <h4>◆ PLAN-003 計畫書</h4>
+      <p>本次 Schema 重構的問題背景與設計決策說明</p>
     </a>
   </div>
 </section>

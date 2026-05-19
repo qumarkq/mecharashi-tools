@@ -31,11 +31,12 @@ export function formatWeaponReq(weapon: WeaponRequirement | string | undefined):
 
 /** 觸發條件（顯示給玩家的說明標籤，計算器不自動判斷） */
 export interface SkillCondition {
-  trigger:         string
-  weaponCategory?: string
-  hpThreshold?:    number
-  minApCost?:      number
-  targetClass?:    string
+  trigger:      string
+  weaponType?:  string
+  weaponKind?:  string
+  hpThreshold?: number
+  minApCost?:   number
+  targetClass?: string
 }
 
 /** 單一可計算效果條目 */
@@ -324,6 +325,18 @@ export interface Mech {
   module8Id?: string
   /** → modules.json 固定模組 ID 列表（多數機甲1個，特殊機甲可有多個） */
   moduleFixedIds: string[]
+  /**
+   * 肩膀武器欄位（有肩膀武器槽的機甲才有此欄位）
+   * null = 空槽（可自由裝備肩膀武器）
+   * string = 固定武器 ID（部件綁死，不可更換）
+   */
+  leftShoulderSlot?: string | null
+  rightShoulderSlot?: string | null
+  /**
+   * 背後武器欄位（有背後武器槽的機甲才有此欄位）
+   * null = 空槽，string = 固定武器 ID
+   */
+  backSlot?: string | null
   portrait?: string
   /** 立繪半身像路徑 */
   halfPortrait?: string
@@ -367,19 +380,29 @@ export interface WeaponFloatingModEffect {
 export interface Weapon {
   id: string
   name: string
-  category: string
-  type: string
-  typeCoefficient: number
+  /** 武器圖示本地路徑，如 /images/weapons/Icon_weapon_10001.png */
+  icon?: string
+  type:            string  // WeaponType：射擊 / 格鬥 / 突擊 / 戰術
+  kind:            string  // 武器種類：機槍 / 狙擊步槍 / 刀劍…
+  kindCoefficient: number
   attack: string
   accuracy: number
   critValue: number
-  range: string
+  rangeType:  string  // RangeType：'linear' | 'ring'
+  minRange:   number
+  maxRange:   number
   weight: number
-  rarity: string
+  ammoCount: number
+  hitCount: number
+  rarity: string  // WeaponRarity：'SS' | 'S+' | 'S'
+  mechRestriction: string  // MechRestriction：'none' | 'light' | 'medium' | 'heavy'
+  equipSlot: string  // WeaponEquipSlot：singleHand / dualHand / shoulder / back
   isExclusive: boolean
   exclusiveFor?: string
   triggerSlots: number
   effectSlots: number
+  /** 元件上限：觸元件＋應元件總數不可超過此值（SS/S+=4, S=3, 其他=0） */
+  componentLimit: number
   fixedMod: {
     planName: string
     maxLevel: number

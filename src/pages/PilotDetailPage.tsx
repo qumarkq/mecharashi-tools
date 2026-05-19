@@ -1,7 +1,7 @@
 import { useState, useRef, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, Link } from 'react-router-dom'
-import type { PilotStats, NeuralDrive } from '../types'
+import type { PilotStats, NeuralDrive, Weapon } from '../types'
 import { formatWeaponReq } from '../types'
 type NdLevel = NeuralDrive['levels'][number]
 import { assetUrl } from '../utils/assets'
@@ -205,12 +205,91 @@ function DiffHighlight({ base, enhanced }: { base: string; enhanced: string }) {
 
 const ACTIVATION_LABEL: Record<string, string> = { carry: '攜帶', equip: '裝備', use: '使用' }
 const WEAPON_RARITY_CLS: Record<string, string> = {
-  S: 'text-accent-yellow bg-accent-yellow/10 border-accent-yellow/40',
-  A: 'text-accent-purple bg-accent-purple/10 border-accent-purple/40',
+  SS:  'text-accent-yellow bg-accent-yellow/10 border-accent-yellow/40',
+  'S+':'text-accent-purple bg-accent-purple/10 border-accent-purple/40',
+  S:   'text-accent-blue   bg-accent-blue/10   border-accent-blue/40',
+  A:   'text-text-secondary bg-bg-card border-border',
 }
 
-function ExclusiveWeaponPanel({ pilotName }: { pilotName: string }) {
-  const { data: weapon, loading } = usePilotExclusiveWeapon(pilotName)
+function WeaponDetailTooltip({ weapon, x, anchorTop }: { weapon: Weapon; x: number; anchorTop: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [top, setTop] = useState(anchorTop)
+
+  useLayoutEffect(() => {
+    if (!ref.current) return
+    const h = ref.current.offsetHeight
+    setTop(Math.max(8, Math.min(anchorTop, window.innerHeight - h - 8)))
+  }, [anchorTop, weapon])
+
+  const rangeStr = weapon.rangeType === 'ring'
+    ? `${weapon.maxRange}+`
+    : `${weapon.minRange}-${weapon.maxRange}`
+  const rarityCls = WEAPON_RARITY_CLS[weapon.rarity] ?? 'text-text-dim border-border'
+
+  return createPortal(
+    <div ref={ref} className="fixed z-50 pointer-events-none" style={{ left: x, top }}>
+      <div className="w-80 bg-bg-card border border-border-accent rounded-xl shadow-2xl overflow-hidden text-xs">
+        <div className="px-4 py-3 border-b border-border bg-accent-yellow/5">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="font-bold text-sm text-text-primary">{weapon.name}</span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded border font-bold ${rarityCls}`}>
+              {weapon.rarity}
+            </span>
+          </div>
+          <p className="text-text-dim">{weapon.type} · {weapon.kind} · 射程 {rangeStr}</p>
+        </div>
+        <div className="px-4 py-3 grid grid-cols-2 gap-x-6 gap-y-1 border-b border-border">
+          {[
+            { label: '攻擊力', value: weapon.attack },
+            { label: '精度',   value: weapon.accuracy },
+            { label: '暴擊值', value: weapon.critValue },
+            { label: '重量',   value: weapon.weight },
+            { label: '彈藥量', value: weapon.ammoCount },
+            { label: '連擊數', value: weapon.hitCount },
+            { label: '觸發槽', value: weapon.triggerSlots },
+            { label: '效果槽', value: weapon.effectSlots },
+          ].map(({ label, value }) => (
+            <div key={label} className="flex justify-between">
+              <span className="text-text-dim">{label}</span>
+              <span className="text-text-primary font-medium font-[JetBrains_Mono,monospace]">{value}</span>
+            </div>
+          ))}
+        </div>
+        {weapon.skills.length > 0 && (
+          <div className="px-4 py-3 space-y-2.5">
+            <div className="text-[10px] text-text-dim tracking-widest uppercase">武器技能</div>
+            {weapon.skills.map((sk, i) => (
+              <div key={i}>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="font-bold text-text-primary">{sk.name}</span>
+                  <span className="text-[10px] text-text-dim bg-bg-dark border border-border px-1.5 py-0.5 rounded">
+                    {ACTIVATION_LABEL[sk.activation] ?? sk.activation}
+                  </span>
+                </div>
+                <p className="text-text-secondary leading-relaxed">{highlightNumbers(sk.description)}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body
+  )
+}
+
+function ExclusiveWeaponPanel({ pilotId, talentNames }: { pilotId: string; talentNames: string[] }) {
+  const { data: weapon, loading } = usePilotExclusiveWeapon(pilotId)
+  const [imgErr, setImgErr] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; anchorTop: number } | null>(null)
+
+  const handleMouseEnter = () => {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const ttW = 320
+    const x = rect.left - ttW - 12 < 8 ? rect.right + 12 : rect.left - ttW - 12
+    setTooltipPos({ x, anchorTop: rect.top })
+  }
 
   if (loading) {
     return <div className="rounded-xl border border-border min-h-[120px] animate-pulse bg-bg-dark" />
@@ -225,52 +304,75 @@ function ExclusiveWeaponPanel({ pilotName }: { pilotName: string }) {
   }
 
   const rarityCls = WEAPON_RARITY_CLS[weapon.rarity] ?? 'text-text-dim bg-bg-dark border-border'
+  const talentSet = new Set(talentNames)
+  const enhancingSkills = weapon.skills.filter(
+    sk => sk.enhancesTalentName && talentSet.has(sk.enhancesTalentName)
+  )
 
   return (
-    <div className="bg-bg-dark border border-border rounded-xl overflow-hidden text-sm">
-      <div className="px-4 py-3 border-b border-border bg-accent-yellow/5">
-        <div className="flex items-center gap-2 mb-0.5">
-          <span className="font-bold text-text-primary">{weapon.name}</span>
-          <span className={`text-[10px] px-1.5 py-0.5 rounded border font-bold ${rarityCls}`}>
-            {weapon.rarity}
-          </span>
-        </div>
-        <p className="text-xs text-text-dim">{weapon.category} · {weapon.type}</p>
-      </div>
-
-      <div className="px-4 py-3 border-b border-border grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
-        {[
-          { label: '攻擊力', value: weapon.attack },
-          { label: '精度',   value: weapon.accuracy },
-          { label: '暴擊值', value: weapon.critValue },
-          { label: '重量',   value: weapon.weight },
-          { label: '觸發槽', value: weapon.triggerSlots },
-          { label: '效果槽', value: weapon.effectSlots },
-        ].map(({ label, value }) => (
-          <div key={label} className="flex justify-between">
-            <span className="text-text-dim">{label}</span>
-            <span className="text-text-primary font-medium font-[JetBrains_Mono,monospace]">{value}</span>
-          </div>
-        ))}
-      </div>
-
-      {weapon.skills.length > 0 && (
-        <div className="px-4 py-3 space-y-3">
-          <div className="text-[10px] text-text-dim tracking-widest uppercase">武器技能</div>
-          {weapon.skills.map((sk, i) => (
-            <div key={i}>
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="font-bold text-text-primary">{sk.name}</span>
-                <span className="text-[10px] text-text-dim bg-bg-card border border-border px-1.5 py-0.5 rounded">
-                  {ACTIVATION_LABEL[sk.activation] ?? sk.activation}
+    <>
+      {tooltipPos && (
+        <WeaponDetailTooltip weapon={weapon} x={tooltipPos.x} anchorTop={tooltipPos.anchorTop} />
+      )}
+      <div
+        ref={cardRef}
+        className="bg-bg-dark border border-border rounded-xl overflow-hidden text-sm cursor-default hover:border-border-accent transition-colors"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={() => setTooltipPos(null)}
+      >
+        {/* Header: icon + name + rarity */}
+        <div className="px-3 py-3 border-b border-border bg-accent-yellow/5">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 flex-shrink-0 bg-bg-card border border-border rounded-lg overflow-hidden flex items-center justify-center">
+              {weapon.icon && !imgErr ? (
+                <img
+                  src={assetUrl(weapon.icon)}
+                  alt={weapon.name}
+                  className="w-full h-full object-contain"
+                  onError={() => setImgErr(true)}
+                />
+              ) : (
+                <span className="text-text-dim text-xl">⚔</span>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                <span className="font-bold text-text-primary leading-tight">{weapon.name}</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded border font-bold flex-shrink-0 ${rarityCls}`}>
+                  {weapon.rarity}
                 </span>
               </div>
-              <p className="text-xs text-text-secondary leading-relaxed">{highlightNumbers(sk.description)}</p>
+              <p className="text-xs text-text-dim">{weapon.type} · {weapon.kind}</p>
             </div>
-          ))}
+          </div>
         </div>
-      )}
-    </div>
+
+        {/* Skills that enhance this pilot's talents */}
+        {enhancingSkills.length > 0 && (
+          <div className="px-3 py-3 space-y-2.5">
+            <div className="text-[10px] text-accent-yellow tracking-widest uppercase">強化天賦</div>
+            {enhancingSkills.map((sk, i) => (
+              <div key={i}>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="font-bold text-xs text-text-primary">{sk.name}</span>
+                  <span className="text-[10px] text-text-dim bg-bg-card border border-border px-1.5 py-0.5 rounded">
+                    {ACTIVATION_LABEL[sk.activation] ?? sk.activation}
+                  </span>
+                </div>
+                {sk.enhancesTalentName && (
+                  <p className="text-[10px] text-accent-yellow/70 mb-0.5">▶ {sk.enhancesTalentName}</p>
+                )}
+                <p className="text-xs text-text-secondary leading-relaxed">{highlightNumbers(sk.description)}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className={`px-3 py-2 ${enhancingSkills.length > 0 ? 'border-t border-border' : ''}`}>
+          <p className="text-[10px] text-text-dim text-center">◈ 懸停查看詳細數值</p>
+        </div>
+      </div>
+    </>
   )
 }
 
@@ -579,7 +681,7 @@ export default function PilotDetailPage() {
               ))}
             </div>
             <div className="w-72 flex-shrink-0">
-              <ExclusiveWeaponPanel pilotName={pilot.name} />
+              <ExclusiveWeaponPanel pilotId={pilot.id} talentNames={pilot.talents.map(t => t.name)} />
             </div>
             </div>
           )}
