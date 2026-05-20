@@ -536,7 +536,7 @@ export default function PilotDetailPage() {
       {/* Hero Row: 3-col grid */}
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[160px_1fr_auto] lg:gap-12 mb-4 lg:items-start">
         {/* 左欄: 肖像，固定 160px */}
-        <div className="w-full max-h-48 bg-bg-card border border-border rounded-xl overflow-hidden lg:w-40 lg:h-52 lg:flex-shrink-0">
+        <div className="w-32 h-44 mx-auto bg-bg-card border border-border rounded-xl overflow-hidden lg:w-40 lg:h-52 lg:mx-0 lg:flex-shrink-0">
           <img
             src={assetUrl(pilot.portrait)}
             alt={pilot.name}
