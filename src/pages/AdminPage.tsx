@@ -147,7 +147,7 @@ function makeDefaultWeapon(id: string): Weapon {
     type: WeaponType.Sniper,
     kind: WeaponKind.HeavySniper,
     kindCoefficient: 0,
-    attack: '0×1',
+    attack: 0,
     accuracy: 0,
     critValue: 0,
     rangeType: RangeType.MANHATTAN,
@@ -2661,8 +2661,8 @@ function WeaponEditPanel({
           {editTab === 'stats' && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
-                <Field label="攻擊力 attack（含子彈數）">
-                  <input value={form.attack} onChange={(e) => update('attack', e.target.value)} className="input-field" placeholder="如 766×1" />
+                <Field label="攻擊力 attack">
+                  <input type="number" value={form.attack} onChange={(e) => update('attack', Number(e.target.value))} className="input-field" />
                 </Field>
                 <Field label="命中值 accuracy">
                   <input type="number" value={form.accuracy} onChange={(e) => update('accuracy', Number(e.target.value))} className="input-field" />
