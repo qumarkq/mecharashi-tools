@@ -116,48 +116,85 @@ export default function WeaponDetailPage() {
         </Link>
       </div>
 
-      {/* ── B-1 Hero ─────────────────────────────────────────────────────────── */}
-      <div className="bg-bg-card border border-border rounded-xl p-6">
-        <div className="flex items-start gap-4">
-          <WeaponIcon icon={weapon.icon} name={weapon.name} size="lg" isExclusive={weapon.isExclusive} />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start gap-3 flex-wrap mb-3">
-              <h1 className="text-2xl font-bold text-text-primary leading-tight">{weapon.name}</h1>
-              <WeaponRarityBadge rarity={weapon.rarity} />
-            </div>
+      {/* ── B-1 Hero + B-5 Component Slots ──────────────────────────────────── */}
+      <div className={hasSlots ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : ''}>
 
-            <div className="flex flex-wrap gap-2">
-              <WeaponTypeBadge type={weapon.type} />
-              <span className="px-2 py-0.5 rounded text-[13px] border text-text-secondary bg-bg-dark border-border">
-                {weapon.kind}
-              </span>
-              <WeaponEquipSlotBadge slot={weapon.equipSlot} />
-              <WeaponMechRestrictionBadge restriction={weapon.mechRestriction} />
-            </div>
-
-            {weapon.isExclusive && pilotName && weapon.exclusiveFor && (
-              <div className="mt-3 flex items-center gap-2">
-                <span className="text-[13px] text-accent-yellow font-bold">⭐ 專屬武器</span>
-                <Link
-                  to={`/pilots/${weapon.exclusiveFor}`}
-                  className="text-[13px] text-accent-pink hover:underline"
-                >
-                  {pilotName}
-                </Link>
+        <div className="bg-bg-card border border-border rounded-xl p-6">
+          <div className="flex items-start gap-4">
+            <WeaponIcon icon={weapon.icon} name={weapon.name} size="lg" isExclusive={weapon.isExclusive} />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start gap-3 flex-wrap mb-3">
+                <h1 className="text-2xl font-bold text-text-primary leading-tight">{weapon.name}</h1>
+                <WeaponRarityBadge rarity={weapon.rarity} />
               </div>
-            )}
+
+              <div className="flex flex-wrap gap-2">
+                <WeaponTypeBadge type={weapon.type} />
+                <span className="px-2 py-0.5 rounded text-[13px] border text-text-secondary bg-bg-dark border-border">
+                  {weapon.kind}
+                </span>
+                <WeaponEquipSlotBadge slot={weapon.equipSlot} />
+                <WeaponMechRestrictionBadge restriction={weapon.mechRestriction} />
+              </div>
+
+              {weapon.isExclusive && pilotName && weapon.exclusiveFor && (
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="text-[13px] text-accent-yellow font-bold">⭐ 專屬武器</span>
+                  <Link
+                    to={`/pilots/${weapon.exclusiveFor}`}
+                    className="text-[13px] text-accent-pink hover:underline"
+                  >
+                    {pilotName}
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
+        {hasSlots && (
+          <div className="bg-bg-card border border-border rounded-xl p-5">
+            <SectionHeading>元件插槽</SectionHeading>
+            <div className="flex flex-wrap gap-8">
+
+              <div>
+                <div className="text-[13px] text-text-dim mb-2">觸發元件</div>
+                <SlotBoxes
+                  count={weapon.triggerSlots}
+                  colorClass="border-accent-orange text-accent-orange"
+                />
+              </div>
+
+              <div>
+                <div className="text-[13px] text-text-dim mb-2">應用元件</div>
+                <SlotBoxes
+                  count={weapon.effectSlots}
+                  colorClass="border-accent-cyan text-accent-cyan"
+                />
+              </div>
+
+              {weapon.componentLimit > 0 && (
+                <div className="border-l border-border pl-8">
+                  <div className="text-[13px] text-text-dim mb-2">元件上限</div>
+                  <div className="text-2xl font-bold text-accent-red font-[JetBrains_Mono,monospace]">
+                    {weapon.componentLimit}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
       </div>
 
       {/* ── B-2 Stats ────────────────────────────────────────────────────────── */}
       <div className="bg-bg-card border border-border rounded-xl p-5">
         <SectionHeading>基礎屬性</SectionHeading>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-          <StatCell label="攻擊力" value={weapon.attack} />
-          <StatCell label="命中"   value={weapon.accuracy.toLocaleString()} />
-          <StatCell label="暴擊"   value={weapon.critValue.toLocaleString()} />
-          <StatCell label="重量"   value={weapon.weight} />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <StatCell label="攻擊力"   value={weapon.attack} />
+          <StatCell label="命中"     value={weapon.accuracy.toLocaleString()} />
+          <StatCell label="暴擊"     value={weapon.critValue.toLocaleString()} />
+          <StatCell label="重量"     value={weapon.weight} />
           <StatCell
             label="射程"
             value={formatRange(weapon)}
@@ -167,15 +204,9 @@ export default function WeaponDetailPage() {
             label="彈藥量"
             value={weapon.ammoCount === 0 ? '∞' : weapon.ammoCount}
           />
+          <StatCell label="連擊數"   value={weapon.hitCount} />
+          <StatCell label="種類係數" value={weapon.kindCoefficient.toFixed(2)} />
         </div>
-        {weapon.hitCount > 1 && (
-          <div className="mt-3 text-center text-[13px] text-text-dim">
-            連擊數{' '}
-            <span className="text-accent-red font-bold font-[JetBrains_Mono,monospace]">
-              {weapon.hitCount}
-            </span>
-          </div>
-        )}
       </div>
 
       {/* ── B-3 Skills ───────────────────────────────────────────────────────── */}
@@ -274,39 +305,6 @@ export default function WeaponDetailPage() {
         </div>
       )}
 
-      {/* ── B-5 Component Slots ──────────────────────────────────────────────── */}
-      {hasSlots && (
-        <div className="bg-bg-card border border-border rounded-xl p-5">
-          <SectionHeading>元件插槽</SectionHeading>
-          <div className="flex flex-wrap gap-8">
-
-            <div>
-              <div className="text-[13px] text-text-dim mb-2">觸發元件</div>
-              <SlotBoxes
-                count={weapon.triggerSlots}
-                colorClass="border-accent-orange text-accent-orange"
-              />
-            </div>
-
-            <div>
-              <div className="text-[13px] text-text-dim mb-2">應用元件</div>
-              <SlotBoxes
-                count={weapon.effectSlots}
-                colorClass="border-accent-cyan text-accent-cyan"
-              />
-            </div>
-
-            {weapon.componentLimit > 0 && (
-              <div className="border-l border-border pl-8">
-                <div className="text-[13px] text-text-dim mb-2">元件上限</div>
-                <div className="text-2xl font-bold text-accent-red font-[JetBrains_Mono,monospace]">
-                  {weapon.componentLimit}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
     </div>
   )

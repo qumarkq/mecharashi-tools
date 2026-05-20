@@ -390,23 +390,25 @@ export interface WeaponFloatingModEffect {
 export interface Weapon {
   id: string
   name: string
+  /** 武器背景故事文字（API: describe） */
+  description?: string
   /** 武器圖示本地路徑，如 /images/weapons/Icon_weapon_10001.png */
   icon?: string
   type:            string  // WeaponType：射擊 / 格鬥 / 突擊 / 戰術
   kind:            string  // 武器種類：機槍 / 狙擊步槍 / 刀劍…
   kindCoefficient: number
-  attack: string
-  accuracy: number
-  critValue: number
+  attack: number           // API: WeaponBasicAttackingPower
+  accuracy: number         // API: WeaponHitPoint（命中）
+  critValue: number        // API: WeaponUnderstanding（暴擊值）
   rangeType:  string  // RangeType：'manhattan' | 'orthogonal' | 'ring'
   minRange:   number
   maxRange:   number
-  weight: number
+  weight: number      // API: WeaponWeight（重量）
   ammoCount: number
   hitCount: number
-  rarity: string  // WeaponRarity：'SS' | 'S+' | 'S'
-  mechRestriction: string  // MechRestriction：'none' | 'light' | 'medium' | 'heavy'
-  equipSlot: string  // WeaponEquipSlot：singleHand / dualHand / shoulder / back
+  rarity: string  // WeaponRarity：'SS' | 'S+' | 'S' | 'A' | 'B'
+  mechRestriction: string  // MechRestriction：'none' | 'light' | 'medium' | 'heavy' · API: LimitedModelOfWeapon
+  equipSlot: string        // WeaponEquipSlot：singleHand / dualHand / shoulder / back · API: RestrictionsPositionOfWeapon
   isExclusive: boolean
   exclusiveFor?: string
   triggerSlots: number
@@ -423,7 +425,7 @@ export interface Weapon {
     slots: number
     possibleEffects: WeaponFloatingModEffect[]
   }
-  skills: WeaponSkill[]
+  skills: WeaponSkill[]    // API: PassiveSkill[]
 }
 
 // ─── 背包 ──────────────────────────────────────────────────────────────────

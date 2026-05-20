@@ -1,18 +1,26 @@
 /**
- * 鋼嵐工具站 — 武器資料擷取腳本 v1
+ * 鋼嵐工具站 — 武器資料擷取腳本 v2
  *
  * 來源：weapon_data API → Firestore weapons collection
- * Schema：PLAN-003（rangeType / minRange / maxRange / mechRestriction / WeaponRarity）
+ * Schema：PLAN-003（rangeType / minRange / maxRange / mechRestriction / WeaponRarity / componentLimit）
+ *
+ * SS/S+ 武器技能處理：
+ *   · API detail 以 PassiveSkill[] 欄位返回技能陣列（PLAN-007 修正前腳本找錯欄位名）
+ *   · 腳本保護 prev.skills（管理員手動填入時不覆蓋，以 != null 判斷）
+ *   · 若技能有 icon 欄位（key 格式），自動下載至 public/images/skills/
+ *   · 執行後會列出尚無技能的 SS/S+ 武器清單，提示管理員補填
  *
  * 使用方式：
- *   node scripts/scrape-weapons.js --probe --limit=3   ← 印出原始 API 資料（不寫入）
- *   node scripts/scrape-weapons.js --dry-run --limit=3 ← 解析並預覽前 3 筆，不寫入
- *   node scripts/scrape-weapons.js --limit=3           ← 實際寫入前 3 筆（互動確認）
- *   node scripts/scrape-weapons.js                     ← 全量更新（互動確認）
- *   node scripts/scrape-weapons.js --no-images         ← 只更新文字，不下載圖示
- *   node scripts/scrape-weapons.js --force             ← 強制重抓（含已有圖片）
- *   node scripts/scrape-weapons.js --auto              ← 略過確認，直接寫入 Firestore
- *   node scripts/scrape-weapons.js --debug             ← 輸出完整原始欄位
+ *   node scripts/scrape-weapons.js --probe --limit=3        ← 印出原始 API 資料（不寫入）
+ *   node scripts/scrape-weapons.js --dry-run --limit=3      ← 解析並預覽前 3 筆，不寫入
+ *   node scripts/scrape-weapons.js --limit=3                ← 實際寫入前 3 筆（互動確認）
+ *   node scripts/scrape-weapons.js                          ← 全量更新（互動確認）
+ *   node scripts/scrape-weapons.js --no-images              ← 只更新文字，不下載圖示
+ *   node scripts/scrape-weapons.js --force                  ← 強制重抓（含已有圖片）
+ *   node scripts/scrape-weapons.js --auto                   ← 略過確認，直接寫入 Firestore
+ *   node scripts/scrape-weapons.js --debug                  ← 輸出完整原始欄位
+ *   node scripts/scrape-weapons.js --rarity=SS              ← 只處理 SS 武器（SSSR）
+ *   node scripts/scrape-weapons.js --rarity=SS,S+           ← 只處理 SS 和 S+ 武器（SSSR + UR）
  *
  * 射程解析規則：
  *   "2-4"  → rangeType:'manhattan', minRange:2, maxRange:4
@@ -40,6 +48,7 @@ const API_BASE   = 'https://ma-activity.zlongame.com/common/infodata/mQuery.do';
 const APP_KEY    = '1616148215678';
 const IMG_BASE   = 'https://media.zlongame.com/media/pictures/cn/community/img/gl/gameInfo';
 const WEAPONS_DIR = path.join(__dirname, '../public/images/weapons');
+const SKILLS_DIR  = path.join(__dirname, '../public/images/skills');
 
 // ── 命令列參數 ────────────────────────────────────────────────────────────────
 const args         = process.argv.slice(2);
@@ -52,6 +61,12 @@ const AUTO         = args.includes('--auto');
 const LIMIT        = (() => {
   const l = args.find(a => a.startsWith('--limit='));
   return l ? parseInt(l.split('=')[1]) : Infinity;
+})();
+// --rarity=SS 或 --rarity=SS,S+：只處理指定稀有度的武器
+const RARITY_FILTER = (() => {
+  const r = args.find(a => a.startsWith('--rarity='));
+  if (!r) return null;
+  return new Set(r.split('=')[1].split(',').map(s => s.trim()));
 })();
 
 // ── 武器類型映射（API → WeaponType enum 值）──────────────────────────────────
@@ -163,6 +178,9 @@ const RARITY_FROM_API = {
   SR:   'A',
   R:    'B',
 };
+
+// API quality → Firestore rarity 對應（與 RARITY_FROM_API 相同，另外命名供過濾器使用）
+const QUALITY_TO_RARITY = RARITY_FROM_API;
 
 // ════════════════════════════════════════════════════════════════════════════
 // Firebase Admin 初始化
@@ -295,8 +313,8 @@ async function fetchWeaponList() {
   return res.data?.data || [];
 }
 
-async function fetchWeaponDetail(id) {
-  const res = await fetchJson(apiUrl('weapon_data', 'detail', id));
+async function fetchWeaponDetail(nameQuery) {
+  const res = await fetchJson(apiUrl('weapon_data', 'detail', nameQuery));
   const d = res.data?.data;
   // 空陣列 = endpoint 無此資料，回傳 null
   if (!d || (Array.isArray(d) && d.length === 0)) return null;
@@ -368,14 +386,38 @@ function inferRarity(nameTW, isExclusive, apiQuality) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// 機甲限制解析：LimitedModelOfWeapon → MechRestriction enum 值
+// "Light/Medium/Heavy"（三種均含）→ 'none'
+// "Light" / "Medium" / "Heavy"（單一）→ 對應 enum 值
+// 其他組合（如 "Light/Medium"）→ '__REVIEW__none' 待人工確認
+// ════════════════════════════════════════════════════════════════════════════
+function parseMechRestriction(raw) {
+  if (!raw) return null;
+  const parts = raw.split('/').map(s => s.trim()).filter(Boolean);
+  if (parts.length >= 3) return 'none';
+  if (parts.length === 1) {
+    const single = { Light: 'light', Medium: 'medium', Heavy: 'heavy' };
+    return single[parts[0]] ?? null;
+  }
+  return '__REVIEW__none';
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // 組裝武器 JSON（PLAN-003 Schema）
 // listItem = 清單 API 回傳的單筆物件；detail = detail API 回傳（可能為 null）
 // ════════════════════════════════════════════════════════════════════════════
 function buildWeaponJson(listItem, detail, index, prev) {
-  // 合併：detail 有值時補充，否則純用清單資料
-  const src = (detail && typeof detail === 'object' && !Array.isArray(detail))
-    ? { ...listItem, ...detail }
-    : { ...listItem };
+  // 合併：detail 為陣列時取最高等級那筆，否則直接合併（或僅用清單資料）
+  const src = (() => {
+    if (!detail) return { ...listItem };
+    if (Array.isArray(detail)) {
+      const maxEntry = detail.reduce((best, cur) =>
+        parseInt(cur.grade ?? 0) >= parseInt(best.grade ?? 0) ? cur : best
+      , detail[0]);
+      return { ...listItem, ...maxEntry };
+    }
+    return { ...listItem, ...detail };
+  })();
 
   // ── 名稱 ──
   const nameCN = src.WeaponName || src.name || '';
@@ -393,19 +435,20 @@ function buildWeaponJson(listItem, detail, index, prev) {
   const typeTW = WEAPON_TYPE_MAP[typeRaw] || WEAPON_TYPE_MAP[s2t(typeRaw)] || s2t(typeRaw) || '射擊';
   const kindTW = WEAPON_KIND_MAP[kindRaw] || WEAPON_KIND_MAP[s2t(kindRaw)] || s2t(kindRaw) || prev?.kind || '';
 
+  // ── 武器描述（背景故事）──
+  const description = s2t(src.describe ?? src.Describe ?? prev?.description ?? '');
+
   // ── 種類係數 ──
   const kindCoefficient = parseFloat(src.TypeCoefficient ?? src.kindCoefficient ?? prev?.kindCoefficient ?? 1);
 
-  // ── 攻擊力（範圍字串）──
-  const atkMin  = src.MinAttack ?? src.minAttack ?? '';
-  const atkMax  = src.MaxAttack ?? src.maxAttack ?? '';
-  const attack  = atkMin && atkMax ? `${atkMin}~${atkMax}`
-                : String(src.Attack ?? src.attack ?? prev?.attack ?? '');
+  // ── 攻擊力（number）── API: WeaponBasicAttackingPower（字串數值）→ parseInt
+  const attack = parseInt(src.WeaponBasicAttackingPower ?? src.Attack ?? src.attack ?? prev?.attack ?? 0) || 0;
 
-  // ── 命中 / 爆擊值 / 重量 ──
-  const accuracy  = parseInt(src.Accuracy  ?? src.accuracy  ?? prev?.accuracy  ?? 0) || 0;
-  const critValue = parseInt(src.CritValue ?? src.critValue ?? src.Crit ?? prev?.critValue ?? 0) || 0;
-  const weight    = parseInt(src.Weight    ?? src.weight    ?? prev?.weight    ?? 0) || 0;
+  // ── 命中 / 爆擊值 / 重量 ── (API: WeaponHitPoint / WeaponUnderstanding / WeaponWeight)
+  const accuracy  = parseInt(src.WeaponHitPoint     ?? src.HitPoint    ?? src.Accuracy  ?? src.accuracy  ?? prev?.accuracy  ?? 0) || 0;
+  const critValue = parseInt(src.WeaponUnderstanding ?? src.Understanding ?? src.CritValue ?? src.critValue ?? src.Crit ?? prev?.critValue ?? 0) || 0;
+  // API 同時有 WeaponWeight（遊戲屬性）與 weight（API 排序用途），只取前者
+  const weight    = parseInt(src.WeaponWeight        ?? src.Weight       ?? prev?.weight    ?? 0) || 0;
 
   // ── 種類預設值（單一來源查表）──
   const kd = KIND_DEFAULTS[kindTW] ?? {};
@@ -423,7 +466,8 @@ function buildWeaponJson(listItem, detail, index, prev) {
   // ── 連擊數（API > prev > 種類預設 > 1）──
   const hitCount = parseInt(src.HitCount ?? src.hitCount ?? prev?.hitCount ?? kd.hitCount ?? 1) || 1;
 
-  // ── 機甲限制（API > prev > 種類預設 > none）──
+  // ── 機甲限制（API LimitedModelOfWeapon > 舊欄位 > prev > 種類預設 > none）──
+  const mechFromApi = parseMechRestriction(src.LimitedModelOfWeapon ?? src.LimitedModel ?? null);
   const mechRaw = src.MechRestriction ?? src.mechRestriction ?? '';
   const mechMap = {
     Heavy: 'heavy', Medium: 'medium', Light: 'light',
@@ -431,11 +475,14 @@ function buildWeaponJson(listItem, detail, index, prev) {
     '重型': 'heavy', '中甲': 'medium', '中型': 'medium',
     '輕型': 'light', '轻型': 'light',
   };
-  const mechRestriction = mechMap[mechRaw] ?? prev?.mechRestriction ?? kd.mechRestriction ?? 'none';
+  const mechRestriction = mechFromApi ?? mechMap[mechRaw] ?? prev?.mechRestriction ?? kd.mechRestriction ?? 'none';
 
-  // ── 裝備部位（equipSlot）──
-  const equipSlotRaw = src.EquipSlot ?? src.equipSlot ?? src.WeaponSlot ?? '';
+  // ── 裝備部位（API RestrictionsPositionOfWeapon > 舊欄位 > prev > 種類預設）──
+  const equipSlotRaw = src.RestrictionsPositionOfWeapon ?? src.EquipSlot ?? src.equipSlot ?? src.WeaponSlot ?? '';
   const equipSlotMap = {
+    // API RestrictionsPositionOfWeapon 值
+    Hand: 'singleHand', DualHand: 'dualHand', Shoulder: 'shoulder', Back: 'back',
+    // 既有值（保持相容）
     singleHand: 'singleHand', dualHand: 'dualHand', shoulder: 'shoulder', back: 'back',
     '單手': 'singleHand', '单手': 'singleHand',
     '雙手': 'dualHand',   '双手': 'dualHand',
@@ -458,6 +505,9 @@ function buildWeaponJson(listItem, detail, index, prev) {
   const triggerSlots = hasSlots ? 3 : 0;
   const effectSlots  = hasSlots ? 3 : 0;
 
+  // ── 元件上限（SS/S+ = 4；S = 3；A/B = 0）──
+  const componentLimit = (rarity === 'SS' || rarity === 'S+') ? 4 : rarity === 'S' ? 3 : 0;
+
   // ── 固定改裝 ──
   const fixedMod = prev?.fixedMod ?? {
     planName: s2t(src.FixedModName ?? src.fixedModName ?? ''),
@@ -473,16 +523,19 @@ function buildWeaponJson(listItem, detail, index, prev) {
   };
 
   // ── 武器技能 ──
-  const skills = prev?.skills ?? buildWeaponSkills(src);
+  // API 清單端點的 PassiveSkill[] 已包含技能資料，buildWeaponSkills 從 src 直接讀取。
+  // prev.skills 為管理員手動填入的資料，永遠優先保護，不以 API 資料覆蓋。
+  const skills = (prev?.skills != null) ? prev.skills : buildWeaponSkills(src);
 
-  // ── 圖示 ──
-  const iconKey  = src.icon || src.Icon || src.SkillIcon || '';
+  // ── 武器圖示 ──
+  const iconKey  = src.icon || src.Icon || '';
   const iconPath = iconKey ? `/images/weapons/${iconKey}.png` : (prev?.icon ?? '');
   const iconUrl  = iconKey ? `${IMG_BASE}/weapons/${iconKey}.png` : '';
 
   const weapon = {
     id,
     name: nameTW,
+    description,
     type: typeTW,
     kind: kindTW,
     kindCoefficient,
@@ -501,6 +554,7 @@ function buildWeaponJson(listItem, detail, index, prev) {
     isExclusive,
     triggerSlots,
     effectSlots,
+    componentLimit,
     fixedMod,
     floatingMod,
     skills,
@@ -514,18 +568,30 @@ function buildWeaponJson(listItem, detail, index, prev) {
   return weapon;
 }
 
-// ── 武器技能骨架（API 有資料時填入，否則留空陣列供管理員補填）────────────────
+// ── 武器技能解析（API PassiveSkill[] → WeaponSkill[]）──────────────────────
+// API 欄位：PassiveSkill（PLAN-007 修正；舊欄位名 Skills/skills 作 fallback）
+// activation 預設 'carry'（武器被動技能語意：攜帶即生效）
+// BufCarried 為斜線分隔字串，解析為 buffIds: string[]
 function buildWeaponSkills(detail) {
-  const skillData = detail.Skills ?? detail.skills ?? detail.WeaponSkills ?? [];
+  const skillData = detail.PassiveSkill ?? detail.Skills ?? detail.skills ?? [];
   if (!Array.isArray(skillData) || skillData.length === 0) return [];
-  return skillData.map(sk => ({
-    name:        s2t(sk.name ?? sk.SkillName ?? ''),
-    type:        s2t(sk.type ?? sk.SkillType ?? '被動技能'),
-    activation:  sk.activation ?? sk.Activation ?? 'equip',
-    description: s2t(cleanRichText(sk.SpecificEffects ?? sk.description ?? sk.describe ?? '')),
-    effects:     [],
-    buffIds:     [],
-  }));
+  return skillData.map(sk => {
+    const skillIconKey = sk.SkillIcon ?? sk.icon ?? sk.skillIcon ?? '';
+    const bufCarried   = sk.BufCarried ?? sk.bufCarried ?? '';
+    const buffIds      = bufCarried ? bufCarried.split('/').filter(Boolean) : [];
+    return {
+      name:        s2t(sk.name ?? sk.SkillName ?? ''),
+      type:        s2t(sk.type ?? sk.SkillType ?? '被動技能'),
+      activation:  sk.activation ?? sk.Activation ?? 'carry',
+      description: s2t(cleanRichText(sk.SpecificEffects ?? sk.description ?? sk.describe ?? '')),
+      ...(skillIconKey ? {
+        icon:      skillIconKey,
+        iconLocal: `/images/skills/${skillIconKey}.png`,
+      } : {}),
+      effects: [],
+      buffIds,
+    };
+  });
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -570,6 +636,16 @@ async function main() {
   });
   console.log(` ${list.length} 筆`);
 
+  // ── 套用稀有度預篩（在 LIMIT 之前，確保 --limit 從目標稀有度中取前 N 筆）──
+  if (RARITY_FILTER) {
+    const before = list.length;
+    list = list.filter(w => {
+      const r = QUALITY_TO_RARITY[w.quality] ?? w.quality;
+      return RARITY_FILTER.has(r);
+    });
+    console.log(`🔍 稀有度過濾 (${[...RARITY_FILTER].join('/')}): ${before} → ${list.length} 筆`);
+  }
+
   // ── 套用上限 ──
   if (isFinite(LIMIT)) list = list.slice(0, LIMIT);
 
@@ -580,11 +656,11 @@ async function main() {
     console.log(JSON.stringify(list, null, 2));
     console.log('');
     for (let i = 0; i < list.length; i++) {
-      const probeId = list[i]?.ID ?? list[i]?.id;
-      if (!probeId) continue;
-      console.log(`══════════════════ Detail [${i + 1}/${list.length}] ID=${probeId} ══════════════════`);
+      const probeName = list[i]?.WeaponName ?? list[i]?.name ?? String(list[i]?.ID ?? list[i]?.id ?? '');
+      if (!probeName) continue;
+      console.log(`══════════════════ Detail [${i + 1}/${list.length}] 名稱=${probeName} ══════════════════`);
       try {
-        const detail = await fetchWeaponDetail(String(probeId));
+        const detail = await fetchWeaponDetail(probeName);
         console.log(JSON.stringify(detail, null, 2));
       } catch (err) {
         console.log(`❌ 取得 detail 失敗: ${err.message}`);
@@ -599,13 +675,17 @@ async function main() {
   console.log(` ${existingMap.size} 筆`);
   console.log('');
 
-  if (DOWNLOAD_IMG) fs.mkdirSync(WEAPONS_DIR, { recursive: true });
+  if (DOWNLOAD_IMG) {
+    fs.mkdirSync(WEAPONS_DIR, { recursive: true });
+    fs.mkdirSync(SKILLS_DIR,  { recursive: true });
+  }
 
   // ── 逐筆擷取 detail，組裝 JSON ──
   const results = [];
   let reviewCount = 0;
   let newIconCount = 0;
   let skipIconCount = 0;
+  let skillIconCount = 0;
 
   for (let i = 0; i < list.length; i++) {
     const item     = list[i];
@@ -619,10 +699,10 @@ async function main() {
       if (v.name === nameTW) { prev = v; break; }
     }
 
-    // 取 detail（可能為 null，此時以清單資料為準）
+    // 取 detail（以武器名稱查詢，可能為 null 時以清單資料為準）
     let detail = null;
     try {
-      detail = await fetchWeaponDetail(apiId);
+      detail = await fetchWeaponDetail(nameCN);
       await new Promise(r => setTimeout(r, 150));
     } catch (err) {
       console.log(`  [${i+1}/${list.length}] ⚠ ${nameTW || apiId} detail 失敗（略過 detail）: ${err.message}`);
@@ -630,16 +710,21 @@ async function main() {
 
     const weapon = buildWeaponJson(item, detail, i, prev);
 
+    const hasSkills = weapon.skills && weapon.skills.length > 0;
+    const needsSkills = (weapon.rarity === 'SS' || weapon.rarity === 'S+') && !hasSkills;
+
     if (typeof weapon.rangeType === 'string' && weapon.rangeType.startsWith('__REVIEW__')) {
       reviewCount++;
       console.log(`  [${i+1}/${list.length}] ⚠ ${weapon.name} — 射程「${weapon._rawRange}」需人工確認`);
     } else if (DEBUG) {
-      console.log(`  [${i+1}/${list.length}] ✓ ${weapon.name} (${weapon.type}/${weapon.kind}, 射程:${weapon.rangeType} ${weapon.minRange}-${weapon.maxRange})`);
+      const skillsNote = hasSkills ? ` 技能:${weapon.skills.length}筆` : (needsSkills ? ' ⚠技能待補' : '');
+      console.log(`  [${i+1}/${list.length}] ✓ ${weapon.name} (${weapon.type}/${weapon.kind}, 射程:${weapon.rangeType} ${weapon.minRange}-${weapon.maxRange})${skillsNote}`);
     } else {
-      process.stdout.write(`  [${i+1}/${list.length}] ✓ ${weapon.name}\n`);
+      const skillsNote = hasSkills ? ` [技能:${weapon.skills.length}]` : (needsSkills ? ' [⚠需補技能]' : '');
+      process.stdout.write(`  [${i+1}/${list.length}] ✓ ${weapon.name}${skillsNote}\n`);
     }
 
-    // ── 下載圖示 ──
+    // ── 下載武器圖示 ──
     if (DOWNLOAD_IMG && weapon._iconUrl) {
       const iconKey = path.basename(weapon._iconUrl, '.png');
       const dest    = path.join(WEAPONS_DIR, `${iconKey}.png`);
@@ -647,7 +732,28 @@ async function main() {
         const r = await downloadImage(weapon._iconUrl, dest);
         if (r === 'downloaded') newIconCount++;
         else skipIconCount++;
-      } catch (err) { console.warn(`  ⚠ 圖示下載失敗 ${iconKey}: ${err.message}`); }
+      } catch (err) { console.warn(`  ⚠ 武器圖示下載失敗 ${iconKey}: ${err.message}`); }
+    }
+
+    // ── 下載技能圖示（若技能有 icon 欄位）──
+    // icon 欄位格式：僅 key（如 Icon_skill_main_XXXX），下載 URL = IMG_BASE/skill/{key}.png
+    if (DOWNLOAD_IMG && hasSkills) {
+      for (const skill of weapon.skills) {
+        const rawIcon = skill.icon || '';
+        if (!rawIcon) continue;
+        const isUrl    = rawIcon.startsWith('http');
+        const iconKey  = isUrl ? path.basename(rawIcon, '.png') : rawIcon;
+        const iconUrl  = isUrl ? rawIcon : `${IMG_BASE}/skill/${iconKey}.png`;
+        const dest     = path.join(SKILLS_DIR, `${iconKey}.png`);
+        try {
+          await downloadImage(iconUrl, dest);
+          // 補填 iconLocal（若技能未設）
+          if (!skill.iconLocal) skill.iconLocal = `/images/skills/${iconKey}.png`;
+          skillIconCount++;
+        } catch (err) {
+          console.warn(`  ⚠ 技能圖示下載失敗 ${iconKey}: ${err.message}`);
+        }
+      }
     }
 
     // 清除腳本內部工作欄位
@@ -660,7 +766,19 @@ async function main() {
   console.log(`📊 解析結果`);
   console.log(`   共解析: ${results.length} 筆`);
   if (reviewCount > 0) console.log(`   ⚠ 射程需人工確認: ${reviewCount} 筆（rangeType 以 __REVIEW__manhattan 標記）`);
-  if (DOWNLOAD_IMG)    console.log(`   圖示: ${newIconCount} 新 / ${skipIconCount} 已有`);
+  if (DOWNLOAD_IMG)    console.log(`   武器圖示: ${newIconCount} 新 / ${skipIconCount} 已有`);
+  if (DOWNLOAD_IMG && skillIconCount > 0) console.log(`   技能圖示: ${skillIconCount} 筆`);
+
+  // ── SS/S+ 武器技能檢查 ──
+  const ssNoSkills = results.filter(w => (w.rarity === 'SS' || w.rarity === 'S+') && (!w.skills || w.skills.length === 0));
+  const ssHasSkills = results.filter(w => (w.rarity === 'SS' || w.rarity === 'S+') && w.skills && w.skills.length > 0);
+  if (ssHasSkills.length > 0) {
+    console.log(`   SS/S+ 武器（已有技能）: ${ssHasSkills.length} 筆`);
+  }
+  if (ssNoSkills.length > 0) {
+    console.log(`   ⚠ SS/S+ 武器（尚無技能，需手動補填）: ${ssNoSkills.length} 筆`);
+    ssNoSkills.forEach(w => console.log(`     · ${w.name} (${w.rarity}, ${w.isExclusive ? '專屬武器' : '改版武器'})`));
+  }
 
   // ── DRY RUN：預覽資料後結束 ──
   if (DRY_RUN) {
@@ -672,8 +790,11 @@ async function main() {
       console.log(`   attack: ${w.attack}  accuracy: ${w.accuracy}  critValue: ${w.critValue}  weight: ${w.weight}`);
       console.log(`   rangeType: ${w.rangeType}  minRange: ${w.minRange}  maxRange: ${w.maxRange}`);
       console.log(`   rarity: ${w.rarity}  mechRestriction: ${w.mechRestriction}  equipSlot: ${w.equipSlot}  isExclusive: ${w.isExclusive}`);
-      console.log(`   triggerSlots: ${w.triggerSlots}  effectSlots: ${w.effectSlots}`);
-      console.log(`   skills: ${w.skills.length} 筆  icon: ${w.icon}`);
+      console.log(`   triggerSlots: ${w.triggerSlots}  effectSlots: ${w.effectSlots}  componentLimit: ${w.componentLimit}`);
+      const skillsSummary = w.skills.length > 0
+        ? w.skills.map(s => `${s.name}(${s.activation}${s.icon ? ' 有icon' : ''})`).join(', ')
+        : (w.rarity === 'SS' || w.rarity === 'S+') ? '⚠ 無技能（需手動補填）' : '無';
+      console.log(`   skills: ${w.skills.length} 筆  [${skillsSummary}]  icon: ${w.icon}`);
     });
     console.log('');
     console.log('（DRY RUN 完成，未寫入 Firestore）');
@@ -697,6 +818,10 @@ async function main() {
   console.log('✅ 完成！');
   if (reviewCount > 0) {
     console.log(`⚠ 請至 Firestore 搜尋 rangeType 含 "__REVIEW__" 的文件，人工確認射程。`);
+  }
+  if (ssNoSkills.length > 0) {
+    console.log(`⚠ ${ssNoSkills.length} 筆 SS/S+ 武器尚無技能，請手動補填（skills 陣列）：`);
+    ssNoSkills.forEach(w => console.log(`   · ${w.name} (${w.id})`));
   }
 }
 

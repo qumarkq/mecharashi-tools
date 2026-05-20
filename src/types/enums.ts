@@ -125,10 +125,10 @@ export const WeaponKind = {
 export type WeaponKind = typeof WeaponKind[keyof typeof WeaponKind];
 
 export const WeaponEquipSlot = {
-  SINGLE_HAND: 'singleHand', // 單手：左臂或右臂其中一個
-  DUAL_HAND:   'dualHand',   // 雙手：同時佔據左右臂
-  SHOULDER:    'shoulder',   // 肩膀：左臂或右臂其中一個肩膀
-  BACK:        'back',       // 背後
+  SINGLE_HAND: 'singleHand', // 單手：左臂或右臂其中一個 · API RestrictionsPositionOfWeapon: "Hand"
+  DUAL_HAND:   'dualHand',   // 雙手：同時佔據左右臂 · API RestrictionsPositionOfWeapon: "DualHand"
+  SHOULDER:    'shoulder',   // 肩膀：左臂或右臂其中一個肩膀 · API RestrictionsPositionOfWeapon: "Shoulder"
+  BACK:        'back',       // 背後 · API RestrictionsPositionOfWeapon: "Back"
 } as const;
 export type WeaponEquipSlot = typeof WeaponEquipSlot[keyof typeof WeaponEquipSlot];
 
@@ -156,10 +156,10 @@ export const SkillActivation = {
 export type SkillActivation = typeof SkillActivation[keyof typeof SkillActivation];
 
 export const MechRestriction = {
-  NONE:       'none',
-  LIGHT_ONLY: 'light',
-  MEDIUM_ONLY:'medium',
-  HEAVY_ONLY: 'heavy',
+  NONE:        'none',   // API LimitedModelOfWeapon: "Light/Medium/Heavy"（三種均含）
+  LIGHT_ONLY:  'light',  // API LimitedModelOfWeapon: "Light"
+  MEDIUM_ONLY: 'medium', // API LimitedModelOfWeapon: "Medium"
+  HEAVY_ONLY:  'heavy',  // API LimitedModelOfWeapon: "Heavy"
 } as const;
 export type MechRestriction = typeof MechRestriction[keyof typeof MechRestriction];
 

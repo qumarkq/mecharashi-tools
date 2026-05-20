@@ -65,14 +65,15 @@ function WeaponTooltip({ weapon, pilotNameMap }: {
 }) {
   const pilotName = weapon.exclusiveFor ? pilotNameMap[weapon.exclusiveFor] : null
   const stats: Array<{ label: string; value: string; noRed?: boolean }> = [
-    { label: '攻擊力',  value: weapon.attack },
+    { label: '攻擊力',  value: weapon.attack.toLocaleString() },
     { label: '命中',    value: weapon.accuracy.toLocaleString() },
     { label: '暴擊',    value: weapon.critValue.toLocaleString() },
     { label: '重量',    value: weapon.weight.toString() },
     { label: '射程',    value: formatRange(weapon) },
-    { label: '射程型態',    value: formatRangeType(weapon.rangeType), noRed: true },
+    { label: '射程型態',value: formatRangeType(weapon.rangeType), noRed: true },
     { label: '連擊數',  value: weapon.hitCount.toString() },
     { label: '彈藥量',  value: weapon.ammoCount === 0 ? '∞' : weapon.ammoCount.toString() },
+    { label: '種類係數',value: weapon.kindCoefficient.toFixed(2) },
     { label: '裝備部位',value: EQUIP_SLOT_LABELS[weapon.equipSlot] ?? weapon.equipSlot, noRed: true },
     ...(weapon.mechRestriction !== 'none'
       ? [{ label: '機甲限制', value: MECH_RESTRICTION_LABELS[weapon.mechRestriction] ?? weapon.mechRestriction, noRed: true }]
@@ -475,6 +476,13 @@ export default function WeaponsPage() {
                     <span className="text-text-dim">暴擊 </span>
                     <Num>{w.critValue.toLocaleString()}</Num>
                   </div>
+                  {w.hitCount > 1 && (
+                    <div className="col-span-2">
+                      <span className="text-text-dim">連擊 </span>
+                      <Num>{w.hitCount}</Num>
+                      <span className="text-text-dim text-[12px] ml-0.5">次</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )

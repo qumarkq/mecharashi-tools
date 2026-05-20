@@ -66,6 +66,18 @@
 .code-block .st  { color: #a5d6ff; }
 .code-block .cm  { color: #8b949e; }
 .code-block .nm  { color: #e3b341; }
+
+.api-map-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0; }
+.api-map-table th {
+  text-align: left; padding: 9px 14px;
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--accent-cyan);
+  border-bottom: 2px solid var(--border-accent);
+}
+.api-map-table td { padding: 8px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px; }
+.api-map-table td:first-child { font-family: 'JetBrains Mono', monospace; color: var(--accent-orange); font-size: 12px; font-weight: 700; }
+.api-map-table td:nth-child(2){ font-family: 'JetBrains Mono', monospace; color: var(--accent-green);  font-size: 12px; font-weight: 700; }
 </style>
 </head>
 <body>
@@ -86,7 +98,7 @@
   <div class="hero-badge purple">◆ Data Model</div>
   <h1>weapons<span>武器資料 · WEAPON DATA</span></h1>
   <p class="hero-sub">武器屬性、射程型態、機甲限制、元件插槽、固定/浮動改裝、三種技能生效方式</p>
-  <div class="version-badge" style="background:var(--accent-purple);">UPDATED v2.0 · PLAN-003</div>
+  <div class="version-badge" style="background:var(--accent-purple);">UPDATED v2.1 · PLAN-007</div>
 </header>
 
 <main class="container">
@@ -103,6 +115,13 @@
     · <strong>稀有度強型別</strong>：<code>rarity: string</code> → <code>rarity: WeaponRarity</code>（SS / S+ / S）<br>
     · <strong>機甲限制</strong>：新增 <code>mechRestriction: MechRestriction</code> 欄位<br>
     · <strong>SkillCondition</strong>：<code>weaponCategory?</code> → <code>weaponType?</code>，新增 <code>weaponKind?</code>
+  </div>
+
+  <div class="changed-block" style="border-left-color:var(--accent-cyan);background:rgba(6,182,212,0.04);">
+    <strong>PLAN-007 武器 API 欄位映射修正</strong>（2026-05-20 實施）<br><br>
+    · <strong>基礎屬性修正</strong>：<code>accuracy</code>（WeaponHitPoint）、<code>critValue</code>（WeaponUnderstanding）、<code>weight</code>（WeaponWeight）原本因 API 欄位名稱查找錯誤而全部填 0，已修正<br>
+    · <strong>技能自動填入</strong>：<code>skills[]</code>（PassiveSkill[]）原本因欄位名查找錯誤而永遠為空，已修正；子欄位 <code>buffIds</code>（BufCarried）、<code>icon</code>（SkillIcon）、<code>description</code>（SpecificEffects）同步修正<br>
+    · <strong>裝備部位 / 機甲限制</strong>：<code>equipSlot</code>（RestrictionsPositionOfWeapon）、<code>mechRestriction</code>（LimitedModelOfWeapon）改由 API 直接取值，不再全部仰賴種類預設值
   </div>
 </section>
 
@@ -193,20 +212,21 @@
       <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
       <tr><td>id</td><td>string</td><td>唯一識別碼</td></tr>
       <tr><td>name</td><td>string</td><td>武器名稱（如 "昏星繼光"）</td></tr>
+      <tr><td>description</td><td>string</td><td>武器背景故事文字（遊戲內裝備說明）<br><small style="color:var(--text-dim)">API: describe；腳本自動轉繁體後寫入；可為空字串</small></td></tr>
       <tr class="group-header"><td colspan="3">▎分類</td></tr>
       <tr><td>type</td><td>WeaponType (Enum)</td><td>武器類型（大分類）：射擊 / 格鬥 / 突擊 / 戰術<br><small style="color:var(--text-dim)">原欄位名 category</small></td></tr>
       <tr><td>kind</td><td>WeaponKind (Enum)</td><td>武器種類（細分類）：機槍 / 狙擊步槍 / 刀劍…（共 17 種，見下方種類表）<br><small style="color:var(--text-dim)">原欄位名 type</small></td></tr>
       <tr><td>kindCoefficient</td><td>number</td><td>武器種類係數（狙擊步槍 = 5.92）<br><small style="color:var(--text-dim)">原欄位名 typeCoefficient</small></td></tr>
       <tr class="group-header"><td colspan="3">▎基礎屬性</td></tr>
-      <tr><td>attack</td><td>string</td><td>攻擊力（如 "766×1"，含子彈數）</td></tr>
-      <tr><td>accuracy</td><td>number</td><td>命中值</td></tr>
-      <tr><td>critValue</td><td>number</td><td>暴擊值</td></tr>
-      <tr><td>weight</td><td>number</td><td>重量（影響機甲出力限制）</td></tr>
+      <tr><td>attack</td><td>number</td><td>攻擊力數值（整數）<br><small style="color:var(--text-dim)">API: WeaponBasicAttackingPower（清單 / detail 端點皆有）→ parseInt；原為 string 型，PLAN-007 修正後改為 number</small></td></tr>
+      <tr><td>accuracy</td><td>number</td><td>命中值<br><small style="color:var(--text-dim)">API: WeaponHitPoint</small></td></tr>
+      <tr><td>critValue</td><td>number</td><td>暴擊值<br><small style="color:var(--text-dim)">API: WeaponUnderstanding</small></td></tr>
+      <tr><td>weight</td><td>number</td><td>重量（影響機甲出力限制）<br><small style="color:var(--text-dim)">API: WeaponWeight（game stat）；API 同時有 weight 欄位為排序用途，不可混用</small></td></tr>
       <tr><td>ammoCount</td><td>number</td><td>彈藥量（0 = 無限彈藥）<br><small style="color:var(--text-dim)">導彈=2 / 火箭=1 / 電磁炮=3 / 浮游炮=3 / 其他=0</small></td></tr>
       <tr><td>hitCount</td><td>number</td><td>連擊數（單次攻擊命中次數）<br><small style="color:var(--text-dim)">霰彈槍=12 / 機槍·重機槍·電鋸=10 / 噴火器=8 / 浮游炮=6 / 其他=1</small></td></tr>
       <tr><td>rarity</td><td>WeaponRarity (Enum)</td><td>武器稀有度：SS / S+ / S（見稀有度識別規則）</td></tr>
-      <tr><td>mechRestriction</td><td>MechRestriction (Enum)</td><td>機甲限制：none（無限制）/ light / medium / heavy<br><small style="color:var(--text-dim)">新增欄位；無限制武器填 none</small></td></tr>
-      <tr><td>equipSlot</td><td>WeaponEquipSlot (Enum)</td><td>裝備部位：singleHand（單手）/ dualHand（雙手）/ shoulder（肩膀）/ back（背後）<br><small style="color:var(--text-dim)">新增欄位；計算機判斷武器佔用哪些機甲裝備格位用</small></td></tr>
+      <tr><td>mechRestriction</td><td>MechRestriction (Enum)</td><td>機甲限制：none（無限制）/ light / medium / heavy<br><small style="color:var(--text-dim)">API: LimitedModelOfWeapon · "Light/Medium/Heavy"（三含）→ none；單一值 → 對應 enum</small></td></tr>
+      <tr><td>equipSlot</td><td>WeaponEquipSlot (Enum)</td><td>裝備部位：singleHand（單手）/ dualHand（雙手）/ shoulder（肩膀）/ back（背後）<br><small style="color:var(--text-dim)">API: RestrictionsPositionOfWeapon · "Hand"→singleHand / "DualHand"→dualHand / "Shoulder"→shoulder / "Back"→back</small></td></tr>
       <tr class="group-header"><td colspan="3">▎射程（原 range: string 拆分為三欄位）</td></tr>
       <tr><td>rangeType</td><td>RangeType (Enum)</td><td>'manhattan'（菱形射程）/ 'orthogonal'（十字直線）/ 'ring'（環形 N 圈）<br><small style="color:var(--text-dim)">詳見射程型態說明</small></td></tr>
       <tr><td>minRange</td><td>number</td><td>最小射程。manhattan / orthogonal 型填遊戲下限值；ring 型固定填 0（含自身格，無最小限制）</td></tr>
@@ -230,16 +250,105 @@
       <tr><td>&nbsp;&nbsp;├ condition</td><td>string?</td><td>觸發條件：null（無條件）/ 條件描述字串</td></tr>
       <tr><td>&nbsp;&nbsp;├ min</td><td>number</td><td>數值下限</td></tr>
       <tr><td>&nbsp;&nbsp;└ max</td><td>number</td><td>數值上限</td></tr>
-      <tr class="group-header"><td colspan="3">▎武器技能 skills[]（WeaponSkill）</td></tr>
-      <tr><td>&nbsp;├ name</td><td>string</td><td>技能名稱（如 "白鶴之眺"）</td></tr>
+      <tr class="group-header"><td colspan="3">▎武器技能 skills[]（WeaponSkill · API: PassiveSkill[]）</td></tr>
+      <tr><td>&nbsp;├ name</td><td>string</td><td>技能名稱（如 "阔步"）<br><small style="color:var(--text-dim)">API: PassiveSkill[].name</small></td></tr>
       <tr><td>&nbsp;├ type</td><td>string</td><td>技能類型（被動技能/主動技能）</td></tr>
-      <tr><td>&nbsp;├ activation</td><td>SkillActivation (Enum)</td><td>carry = 攜帶即生效 / equip = 裝備中生效 / use = 僅使用時生效</td></tr>
-      <tr><td>&nbsp;├ description</td><td>string</td><td>技能效果描述</td></tr>
+      <tr><td>&nbsp;├ icon</td><td>string?</td><td>技能圖示鍵名（如 <code>Icon_skill_passive_5161</code>）<br><small style="color:var(--text-dim)">API: PassiveSkill[].SkillIcon（或 .icon）；前端用此值組合圖示 URL</small></td></tr>
+      <tr><td>&nbsp;├ iconLocal</td><td>string?</td><td>技能圖示本地路徑（如 <code>/images/weapons/skills/Icon_skill_passive_5161.png</code>）<br><small style="color:var(--text-dim)">腳本下載後自動補填；前端縮圖顯示用</small></td></tr>
+      <tr><td>&nbsp;├ activation</td><td>SkillActivation (Enum)</td><td>carry = 攜帶即生效 / equip = 裝備中生效 / use = 僅使用時生效<br><small style="color:var(--text-dim)">API 無此欄位；武器被動技能語義為攜帶即生效，腳本預設填 'carry'；管理員可手動改為 'equip' 或 'use'</small></td></tr>
+      <tr><td>&nbsp;├ description</td><td>string</td><td>技能效果描述（遊戲原文，已清洗 rich text 標籤）<br><small style="color:var(--text-dim)">API: PassiveSkill[].SpecificEffects；原始值含 &lt;color=#...&gt;…&lt;/color&gt; 標籤，腳本以正規表示式清洗後寫入</small></td></tr>
       <tr><td>&nbsp;├ effects[]</td><td>SkillEffect[]</td><td>結構化效果數值（計算器用）</td></tr>
-      <tr><td>&nbsp;├ buffIds[]</td><td>string[]</td><td>觸發的 Buff ID 列表</td></tr>
+      <tr><td>&nbsp;├ buffIds[]</td><td>string[]</td><td>觸發的 Buff ID 列表<br><small style="color:var(--text-dim)">API: PassiveSkill[].BufCarried（斜線分隔字串）→ split('/').filter(Boolean)</small></td></tr>
       <tr><td>&nbsp;├ enhancesTalentName</td><td>string?</td><td>加強的特定機師天賦名稱（專武用）；計算器用於辨識此技能與哪個天賦關聯</td></tr>
       <tr><td>&nbsp;└ enhancedTalentDescription</td><td>string?</td><td>天賦被此專武強化後的完整描述文字（遊戲原文）；用於 PilotDetailPage「專武強化」區塊做 DiffHighlight 差異對比<br><small style="color:var(--text-dim)">填值：直接複製遊戲內天賦的強化後版本文字。以最大強化版本（descriptionMax）為比較基準。</small></td></tr>
     </table>
+  </div>
+</section>
+
+<!-- API 欄位對照表 -->
+<section class="section">
+  <div class="section-label" style="color:var(--accent-cyan)">API Mapping</div>
+  <div class="section-title">API 欄位對照表</div>
+  <div class="section-desc">擷取腳本（scripts/scrape-weapons.js）使用的 weapon_data detail 端點欄位名稱，與 Firestore / TypeScript 欄位名稱的對應關係。（PLAN-007 修正項目）</div>
+
+  <div class="data-table-wrap">
+    <table class="api-map-table">
+      <tr>
+        <th>TypeScript / Firestore 欄位</th>
+        <th>API 欄位（detail 端點）</th>
+        <th>轉換規則</th>
+      </tr>
+      <tr>
+        <td>attack</td>
+        <td>WeaponBasicAttackingPower</td>
+        <td>parseInt(value, 10)；清單 / detail 端點皆有此欄位；型別為 number（非 string）</td>
+      </tr>
+      <tr>
+        <td>accuracy</td>
+        <td>WeaponHitPoint</td>
+        <td>parseInt(value, 10)</td>
+      </tr>
+      <tr>
+        <td>critValue</td>
+        <td>WeaponUnderstanding</td>
+        <td>parseInt(value, 10)</td>
+      </tr>
+      <tr>
+        <td>weight</td>
+        <td>WeaponWeight</td>
+        <td>parseInt(value, 10)</td>
+      </tr>
+      <tr>
+        <td>equipSlot</td>
+        <td>RestrictionsPositionOfWeapon</td>
+        <td>"Hand"→singleHand / "DualHand"→dualHand / "Shoulder"→shoulder / "Back"→back</td>
+      </tr>
+      <tr>
+        <td>mechRestriction</td>
+        <td>LimitedModelOfWeapon</td>
+        <td>"Light/Medium/Heavy"（三種均含）→ none；單一值 → 對應 enum；其他組合 → '__REVIEW__none' 標記</td>
+      </tr>
+      <tr>
+        <td>skills</td>
+        <td>PassiveSkill[]</td>
+        <td>武器技能陣列；管理員已填入時不覆蓋（prev?.skills != null 保護）</td>
+      </tr>
+      <tr>
+        <td>skills[].icon</td>
+        <td>PassiveSkill[].SkillIcon / .icon</td>
+        <td>鍵名格式，如 "Icon_skill_passive_5161"；iconLocal 由腳本下載後自動補填</td>
+      </tr>
+      <tr>
+        <td>skills[].buffIds</td>
+        <td>PassiveSkill[].BufCarried</td>
+        <td>斜線分隔字串 → split('/').filter(Boolean)；如 "530351" / "530361/530362"</td>
+      </tr>
+      <tr>
+        <td>skills[].description</td>
+        <td>PassiveSkill[].SpecificEffects</td>
+        <td>清洗 &lt;color=#...&gt;…&lt;/color&gt; 等 rich text 標籤後寫入</td>
+      </tr>
+      <tr>
+        <td>skills[].activation</td>
+        <td>（無對應欄位）</td>
+        <td>腳本預設填 'carry'；管理員可手動改為 'equip' 或 'use'</td>
+      </tr>
+      <tr>
+        <td>description</td>
+        <td>describe</td>
+        <td>s2t() 繁體轉換後寫入；武器背景故事文字；可為空字串</td>
+      </tr>
+      <tr>
+        <td>weight</td>
+        <td>WeaponWeight（game stat）</td>
+        <td>parseInt(value, 10)；注意 API 同時有 weight 欄位（排序用），腳本只取 WeaponWeight</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="note-block">
+    <strong>API 端點</strong>：<code>GET https://ma-activity.zlongame.com/common/infodata/mQuery.do?appkey=1616148215678&amp;target=weapon_data&amp;type=detail&amp;query={武器名稱}</code><br>
+    <strong>API 優先原則</strong>：擷取到 API 欄位時直接使用；fallback 才採用 KIND_DEFAULTS 種類預設值（equipSlot / mechRestriction）。
   </div>
 </section>
 
@@ -474,6 +583,11 @@
       <div class="doc-tag">Plan</div>
       <h4>◆ PLAN-003 計畫書</h4>
       <p>本次 Schema 重構的問題背景與設計決策說明</p>
+    </a>
+    <a class="doc-item" href="../../05_階段性開發計畫/執行中/PLAN-007_武器API欄位映射修正/計畫書.html">
+      <div class="doc-tag">Plan</div>
+      <h4>◆ PLAN-007 計畫書</h4>
+      <p>API 欄位映射修正：PassiveSkill / WeaponHitPoint / WeaponUnderstanding 等 6 個欄位</p>
     </a>
   </div>
 </section>
