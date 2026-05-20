@@ -12,6 +12,7 @@
 
 ### ✨ 新功能
 
+- PilotsPage新增專武顯示 (`f33fcbe`)
 - **weapons**: PLAN-007 武器 API 欄位映射修正；武器詳情頁 UI 優化 (`ca6477f`)
 - **weapons**: 武器詳情頁（PLAN-006）完成；新增全模組 Badge 元件重構 (`d6e2485`)
 - **weapons**: 武器資料模型全面重構（PLAN-003）；新增 PLAN-004 計畫文件 (`37cbee7`)
