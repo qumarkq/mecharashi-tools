@@ -26,6 +26,7 @@
 
 ### 🐛 修復
 
+- **admin**: 修正武器表單 attack 欄位型別不符導致 build 失敗 (`05dc704`)
 - 修正build因Weapon 的資料型別調整失敗的bug (`f863548`)
 - **admin**: 移除 AdminPage 未使用的 WeaponRequirement import (`6cf5528`)
 - **mech**: module4Id/module8Id 改為選填；修正部件卡佈局及左右臂順序 (`5399367`)
