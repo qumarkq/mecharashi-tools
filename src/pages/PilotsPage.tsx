@@ -1,7 +1,8 @@
-﻿import { useState } from 'react'
+﻿import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { assetUrl } from '../utils/assets'
-import { usePilots } from '../hooks/useFirestore'
+import { usePilots, useWeapons } from '../hooks/useFirestore'
+import { WeaponIcon } from '../components/WeaponIcon'
 
 const CLASS_STYLES: Record<string, { text: string; border: string; bg: string }> = {
   守護者: { text: 'text-accent-green', border: 'border-accent-green/40', bg: 'bg-accent-green/10' },
@@ -18,9 +19,18 @@ const LICENSES = ['重型', '中型', '輕型']
 
 export default function PilotsPage() {
   const { data: pilots, loading } = usePilots()
+  const { data: weapons } = useWeapons()
   const [search, setSearch] = useState('')
   const [classFilter, setClassFilter] = useState('')
   const [licenseFilter, setLicenseFilter] = useState('')
+
+  const exclusiveWeaponMap = useMemo(() => {
+    const map: Record<string, { name: string; icon?: string }> = {}
+    for (const w of weapons) {
+      if (w.isExclusive && w.exclusiveFor) map[w.exclusiveFor] = { name: w.name, icon: w.icon }
+    }
+    return map
+  }, [weapons])
 
   const filtered = pilots.filter((p) => {
     if (classFilter && p.class !== classFilter) return false
@@ -151,10 +161,27 @@ export default function PilotsPage() {
                 </div>
 
                 {/* Info */}
-                <div className="p-3">
-                  <p className="font-bold text-sm text-text-primary truncate">{pilot.name}</p>
-                  <p className="text-[14px] text-text-dim truncate mt-0.5">{pilot.faction}</p>
-                  <p className="text-[13px] text-text-dim mt-1">{pilot.masterLevel}</p>
+                <div className="p-3 flex gap-2">
+                  {/* Left: pilot info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-text-primary truncate">{pilot.name}</p>
+                    <p className="text-[12px] text-text-dim truncate mt-0.5">{pilot.faction}</p>
+                    <p className="text-[11px] text-text-dim mt-1">{pilot.masterLevel}</p>
+                  </div>
+                  {/* Right: exclusive weapon */}
+                  {exclusiveWeaponMap[pilot.id] && (
+                    <div className="flex-shrink-0 flex flex-col items-center gap-1 w-14">
+                      <WeaponIcon
+                        icon={exclusiveWeaponMap[pilot.id].icon}
+                        name={exclusiveWeaponMap[pilot.id].name}
+                        size="sm"
+                        isExclusive
+                      />
+                      <p className="text-[10px] text-accent-yellow text-center leading-tight line-clamp-2">
+                        {exclusiveWeaponMap[pilot.id].name}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </Link>
             )
