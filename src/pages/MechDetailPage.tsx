@@ -405,26 +405,48 @@ export default function MechDetailPage() {
       <div className="mb-6">
         <SectionLabel>部件資訊（滿級）</SectionLabel>
         {hasParts ? (
-          <div className="grid grid-cols-3 gap-3 items-stretch">
-            <div />
-            {torso ? <PartCard part={torso} name="軀幹" /> : <div />}
-            <div />
-            {rightArm ? <PartCard part={rightArm} name="右臂" /> : <div />}
-            <div className="bg-bg-card border border-border rounded-xl flex items-center justify-center min-h-[200px]">
-              {mech.portrait && (
-                <img
-                  src={assetUrl(mech.portrait)}
-                  alt={mech.name}
-                  className="max-h-52 w-full object-contain"
-                  onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
-                />
-              )}
+          <>
+            {/* 手機：機體圖 + 2×2 部件卡 */}
+            <div className="lg:hidden space-y-3">
+              <div className="bg-bg-card border border-border rounded-xl flex items-center justify-center h-40">
+                {mech.portrait && (
+                  <img
+                    src={assetUrl(mech.portrait)}
+                    alt={mech.name}
+                    className="max-h-36 w-full object-contain"
+                    onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+                  />
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {torso    && <PartCard part={torso}    name="軀幹" />}
+                {rightArm && <PartCard part={rightArm} name="右臂" />}
+                {leftArm  && <PartCard part={leftArm}  name="左臂" />}
+                {legs     && <PartCard part={legs}     name="腿部" />}
+              </div>
             </div>
-            {leftArm ? <PartCard part={leftArm} name="左臂" /> : <div />}
-            <div />
-            {legs ? <PartCard part={legs} name="腿部" /> : <div />}
-            <div />
-          </div>
+            {/* 桌面：十字形佈局 */}
+            <div className="hidden lg:grid grid-cols-3 gap-3 items-stretch">
+              <div />
+              {torso ? <PartCard part={torso} name="軀幹" /> : <div />}
+              <div />
+              {rightArm ? <PartCard part={rightArm} name="右臂" /> : <div />}
+              <div className="bg-bg-card border border-border rounded-xl flex items-center justify-center min-h-[200px]">
+                {mech.portrait && (
+                  <img
+                    src={assetUrl(mech.portrait)}
+                    alt={mech.name}
+                    className="max-h-52 w-full object-contain"
+                    onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+                  />
+                )}
+              </div>
+              {leftArm ? <PartCard part={leftArm} name="左臂" /> : <div />}
+              <div />
+              {legs ? <PartCard part={legs} name="腿部" /> : <div />}
+              <div />
+            </div>
+          </>
         ) : (
           <p className="text-sm text-text-dim">部件資料不可用</p>
         )}

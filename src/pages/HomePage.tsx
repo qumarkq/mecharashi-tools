@@ -16,7 +16,7 @@ export default function HomePage() {
             alt="吉祥物"
             className="w-52 md:w-64 object-contain pointer-events-none"
           />
-          <p className="text-text-secondary text-lg whitespace-nowrap mx-auto mt-6">
+          <p className="text-text-secondary text-base md:text-lg max-w-2xl mx-auto mt-6 leading-relaxed">
             傷害模擬器(沒做完) · 配裝計算器(沒做完) · 角色資料庫 · 機甲資料庫 · 模組資料庫 · 武器資料庫(沒做完) · 元件資料庫(沒做完) · 攻略百科(等你加入)
           </p>
         </div>
@@ -32,7 +32,7 @@ export default function HomePage() {
           <div className="relative bg-bg-card border border-border-accent rounded-2xl overflow-hidden">
             {/* Top accent bar */}
             <div className="h-0.5 bg-gradient-to-r from-transparent via-accent-orange to-transparent" />
-            <div className="px-10 py-10 text-center">
+            <div className="px-6 py-8 sm:px-10 sm:py-10 text-center">
               <p className="text-2xl md:text-3xl font-bold text-text-primary leading-relaxed mb-5">
                 你的到來真是讓人獾天喜地！
               </p>
