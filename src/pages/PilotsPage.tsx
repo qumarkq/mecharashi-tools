@@ -177,7 +177,7 @@ export default function PilotsPage() {
                         size="sm"
                         isExclusive
                       />
-                      <p className="text-[10px] text-accent-yellow text-center leading-tight line-clamp-2">
+                      <p className="hidden sm:block text-[10px] text-accent-yellow text-center leading-tight line-clamp-2">
                         {exclusiveWeaponMap[pilot.id].name}
                       </p>
                     </div>

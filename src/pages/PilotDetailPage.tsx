@@ -534,9 +534,9 @@ export default function PilotDetailPage() {
       </Link>
 
       {/* Hero Row: 3-col grid */}
-      <div className="grid grid-cols-[160px_1fr_auto] gap-12 mb-4 items-start">
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[160px_1fr_auto] lg:gap-12 mb-4 lg:items-start">
         {/* 左欄: 肖像，固定 160px */}
-        <div className="w-40 h-52 bg-bg-card border border-border rounded-xl overflow-hidden flex-shrink-0">
+        <div className="w-full max-h-48 bg-bg-card border border-border rounded-xl overflow-hidden lg:w-40 lg:h-52 lg:flex-shrink-0">
           <img
             src={assetUrl(pilot.portrait)}
             alt={pilot.name}
@@ -580,7 +580,7 @@ export default function PilotDetailPage() {
             const hasNdBonus = ndAp.init + ndAp.max + ndAp.recovery > 0
             return (
               <div className="mt-1">
-                <div className="flex gap-4">
+                <div className="flex flex-wrap gap-3">
                   <APBadge label="初始AP" value={pilot.ap.init} bonus={ndAp.init} />
                   <APBadge label="上限AP" value={pilot.ap.max} bonus={ndAp.max} />
                   <APBadge label="AP回復" value={pilot.ap.recovery} bonus={ndAp.recovery} />
@@ -594,7 +594,7 @@ export default function PilotDetailPage() {
         </div>
 
         {/* 右欄: 縮小版雷達圖 */}
-        <div className="w-64 flex-shrink-0">
+        <div className="w-full max-w-xs mx-auto lg:w-64 lg:mx-0 lg:flex-shrink-0">
           <SectionLabel>六維屬性</SectionLabel>
           <RadarChart stats={pilot.stats} />
         </div>
@@ -623,7 +623,7 @@ export default function PilotDetailPage() {
 
         <div className="p-4">
           {activeSkillTab === '天賦' && (
-            <div className="flex gap-4 items-start">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
             <div className="flex-1 min-w-0 space-y-3">
               {pilot.talents.map((t, i) => (
                 <div key={i} className="flex gap-3 p-3 bg-bg-dark rounded-xl border border-border">
@@ -659,7 +659,7 @@ export default function PilotDetailPage() {
                 </div>
               ))}
             </div>
-            <div className="w-72 flex-shrink-0">
+            <div className="w-full lg:w-72 lg:flex-shrink-0">
               <ExclusiveWeaponPanel weapon={exclusiveWeapon} loading={exclusiveWeaponLoading} talentNames={pilot.talents.map(t => t.name)} />
             </div>
             </div>
