@@ -4,7 +4,7 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [Unreleased] - 2026-05-19
+## [Unreleased] - 2026-05-20
 
 ### ⚠ 重大變更
 
@@ -12,6 +12,7 @@
 
 ### ✨ 新功能
 
+- **weapons**: PLAN-007 武器 API 欄位映射修正；武器詳情頁 UI 優化 (`ca6477f`)
 - **weapons**: 武器詳情頁（PLAN-006）完成；新增全模組 Badge 元件重構 (`d6e2485`)
 - **weapons**: 武器資料模型全面重構（PLAN-003）；新增 PLAN-004 計畫文件 (`37cbee7`)
 - **weapons/admin**: 武器需求結構化模型（PLAN-003）；新增機師編輯面板；移除科研設定 (`bea0e73`)
