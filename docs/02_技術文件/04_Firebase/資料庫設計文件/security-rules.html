@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>安全規則 · 索引 · 遷移計畫 — Firebase 資料庫設計 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../../index.html">技術文件</a>
+    <span>›</span>
+    <a href="Firebase資料庫設計文件.html">Firebase 資料庫設計</a>
+    <span>›</span>
+    <span class="current">安全規則 · 索引 · 遷移</span>
+  </div>
+</nav>
+
+<header class="hero blue">
+  <div class="hero-badge blue">◆ SECURITY &amp; OPS</div>
+  <h1 style="background:linear-gradient(135deg,#fff 0%,var(--accent-blue) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+    安全規則 · 索引 · 遷移計畫
+    <span>MECHARASHI — FIRESTORE OPERATIONS v1.0</span>
+  </h1>
+  <p class="hero-sub">Firestore Security Rules · 複合索引策略 · JSON → Firestore 資料遷移步驟</p>
+  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.0 — 2026-05-15</div>
+</header>
+
+<main class="container">
+
+<!-- ═══ 安全規則 ═══ -->
+<section class="section">
+  <div class="section-label blue">01 — Security Rules</div>
+  <div class="section-title">Firestore 安全規則</div>
+  <div class="section-desc">遊戲資料 Collection 公開可讀、管理員可寫；用戶資料僅本人可讀寫。</div>
+
+  <div class="code-block"><span class="label">firestore.rules</span><span class="comment">rules_version = '2';</span>
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    <span class="comment">// ── 輔助函數 ──────────────────────────────</span>
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    function isAdmin() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)/profile)
+          .data.role == <span class="string">'ADMIN'</span>;
+    }
+
+    <span class="comment">// ── 遊戲資料 Collections（所有人可讀，管理員可寫）──</span>
+    match /pilots/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /mechs/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /modules/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /weapons/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /backpacks/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /components/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /skills/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /buffs/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /pilotResearch/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /globalResearch/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /enemies/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    <span class="comment">// ── 用戶資料（本人可讀寫）────────────────────</span>
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /profile/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /builds/{buildId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+  }
+}</div>
+
+  <div class="note-block">
+    <strong>⚠️ 管理員設定</strong>
+    初始管理員需透過 Firebase Console 或 Admin SDK 手動在 users/{uid}/profile 中設定 role = 'ADMIN'。<br>
+    安全規則使用 get() 讀取用戶角色，注意此操作計入 Firestore 讀取次數，頻繁的管理員操作不影響一般用戶的讀取配額。
+  </div>
+</section>
+
+<!-- ═══ 索引策略 ═══ -->
+<section class="section">
+  <div class="section-label blue">02 — Indexing</div>
+  <div class="section-title">複合索引策略</div>
+  <div class="section-desc">Firestore 單欄位自動建立索引；以下為需手動設定的複合索引（firestore.indexes.json）。</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table blue-head">
+      <tr><th>Collection</th><th>欄位組合</th><th>用途</th></tr>
+      <tr><td>pilots</td><td>class ASC, rarity DESC</td><td>依職業篩選、依稀有度排序</td></tr>
+      <tr><td>pilots</td><td>license ASC, class ASC</td><td>依駕照許可與職業聯合篩選</td></tr>
+      <tr><td>modules</td><td>slot ASC, rarity DESC</td><td>依槽位篩選模組、依稀有度排序</td></tr>
+      <tr><td>modules</td><td>boundMechId ASC, boundPart ASC</td><td>依綁定機甲查詢副模組</td></tr>
+      <tr><td>modules</td><td>available ASC, slot ASC</td><td>模組圖鑑頁（僅顯示 available=true）</td></tr>
+      <tr><td>weapons</td><td>category ASC, type ASC</td><td>依大類與種類聯合篩選</td></tr>
+      <tr><td>weapons</td><td>isExclusive ASC, category ASC</td><td>專武篩選</td></tr>
+      <tr><td>components</td><td>slot ASC, rarity DESC</td><td>依觸/應元件分類篩選</td></tr>
+      <tr><td>skills</td><td>tags ARRAY_CONTAINS, type ASC</td><td>依標籤搜尋技能</td></tr>
+      <tr><td>users/{uid}/builds</td><td>createdAt DESC</td><td>個人配裝依時間排序</td></tr>
+    </table>
+  </div>
+
+  <div class="code-block"><span class="label">firestore.indexes.json（部分範例）</span>{
+  "indexes": [
+    {
+      "collectionGroup": <span class="string">"pilots"</span>,
+      "queryScope": <span class="string">"COLLECTION"</span>,
+      "fields": [
+        { "fieldPath": <span class="string">"class"</span>,  "order": <span class="string">"ASCENDING"</span> },
+        { "fieldPath": <span class="string">"rarity"</span>, "order": <span class="string">"DESCENDING"</span> }
+      ]
+    },
+    {
+      "collectionGroup": <span class="string">"modules"</span>,
+      "queryScope": <span class="string">"COLLECTION"</span>,
+      "fields": [
+        { "fieldPath": <span class="string">"boundMechId"</span>, "order": <span class="string">"ASCENDING"</span> },
+        { "fieldPath": <span class="string">"boundPart"</span>,  "order": <span class="string">"ASCENDING"</span> }
+      ]
+    }
+  ]
+}</div>
+</section>
+
+<!-- ═══ 資料遷移計畫 ═══ -->
+<section class="section">
+  <div class="section-label blue">03 — Migration Plan</div>
+  <div class="section-title">資料遷移計畫：JSON → Firestore</div>
+  <div class="section-desc">Phase 4（Firebase 資料庫建置）的具體執行步驟。</div>
+
+  <div class="step-list">
+    <div class="step-item">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">建立 Firebase 專案 + 啟用 Firestore</div>
+        <div class="step-desc">Firebase Console 建立專案，選擇 Cloud Firestore（Production mode），設定台灣/亞洲地區（asia-east1）。安裝 Firebase SDK：npm install firebase。</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">建立 src/types/enums.ts</div>
+        <div class="step-desc">將所有 Enum 定義寫入 enums.ts，同步更新 src/types/index.ts 的 interface 定義，所有字串字面量欄位替換為對應 Enum 型別。</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">建立 src/lib/firebase.ts — Firebase 初始化</div>
+        <div class="step-desc">初始化 Firebase App、Auth、Firestore 實例。環境變數存放 Firebase 設定（VITE_FIREBASE_API_KEY 等）於 .env.local。</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">撰寫遷移腳本：scripts/migrate-to-firestore.ts</div>
+        <div class="step-desc">讀取現有 JSON 檔案 → 欄位值轉換為 Enum 字串值 → 使用 Firebase Admin SDK 批量寫入（每批 500 筆，Firestore 批次限制）。腳本支援 dry-run 模式，先驗證資料格式再實際寫入。</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-title">部署 Firestore Security Rules + 複合索引</div>
+        <div class="step-desc">執行 firebase deploy --only firestore:rules,firestore:indexes。驗證：用一般帳號測試只能讀不能寫；用 Admin 帳號測試可寫入。</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <div class="step-title">建立 Firestore 資料讀取 Hooks</div>
+        <div class="step-desc">src/hooks/ 下建立 usePilots、useMechs、useModules 等 React Query / SWR hooks，取代現有的 fetch('/data/pilots.json')。實作分頁、篩選、快取策略。</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">7</div>
+      <div class="step-content">
+        <div class="step-title">逐頁替換資料來源</div>
+        <div class="step-desc">依序更新：機師圖鑑 → 機甲圖鑑 → 模組圖鑑 → 武器圖鑑 → 背包圖鑑 → 配裝模擬器。每頁替換後執行 build + 功能測試，確認無回歸問題。</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">8</div>
+      <div class="step-content">
+        <div class="step-title">移除靜態 JSON 檔案（或保留為備份）</div>
+        <div class="step-desc">確認所有頁面均從 Firestore 讀取後，可將 public/data/*.json 移至 scripts/backup/ 做為歷史備份，不再部署至 GitHub Pages。</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">9</div>
+      <div class="step-content">
+        <div class="step-title">初始化 buffs + skills Collections</div>
+        <div class="step-desc">建立空的 buffs Collection（文件結構佔位），從現有 pilot 技能資料抽取共用技能寫入 skills Collection。BUFF 具體定義待遊戲資料整理後補充。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-block">
+    <strong>⚠️ 注意事項</strong>
+    • Firestore 免費方案（Spark）：50,000 讀取/天、20,000 寫入/天。網站初期規模應足夠，未來流量增長後評估升級至 Blaze 方案。<br>
+    • 靜態資料建議加入前端快取（React Query staleTime / SWR revalidateOnFocus: false），避免每次頁面切換都重新讀取 Firestore。<br>
+    • GitHub Pages 部署無需後端，Firebase 直接由前端 SDK 存取。請確認 Firestore 安全規則允許公開讀取後再移除 JSON 備份。
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 · 技術文件 · Firebase 資料庫設計 — <a href="Firebase資料庫設計文件.html" style="color:var(--accent-cyan);text-decoration:none;">← 返回目錄</a>
+</footer>
+
+</body>
+</html>

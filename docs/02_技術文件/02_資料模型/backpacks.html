@@ -5,6 +5,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>backpacks — 背包資料模型 — 鋼嵐工具站</title>
 <link rel="stylesheet" href="../../_shared/style.css">
+<style>
+.rarity-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0; }
+.rarity-table th {
+  text-align: left; padding: 9px 14px;
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--accent-pink);
+  border-bottom: 2px solid var(--border-accent);
+}
+.rarity-table td { padding: 8px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px; }
+.rarity-table td:first-child { font-family: 'JetBrains Mono', monospace; color: var(--accent-orange); font-size: 12px; font-weight: 700; }
+
+.api-map-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0; }
+.api-map-table th {
+  text-align: left; padding: 9px 14px;
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--accent-cyan);
+  border-bottom: 2px solid var(--border-accent);
+}
+.api-map-table td { padding: 8px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px; }
+.api-map-table td:first-child { font-family: 'JetBrains Mono', monospace; color: var(--accent-orange); font-size: 12px; font-weight: 700; }
+.api-map-table td:nth-child(2) { font-family: 'JetBrains Mono', monospace; color: var(--accent-green); font-size: 12px; font-weight: 700; }
+
+.type-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+.type-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+.type-key { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent-orange); font-weight: 700; margin-bottom: 2px; }
+.type-val { font-size: 13px; color: var(--accent-pink); font-weight: 600; margin-bottom: 4px; }
+.type-desc { font-size: 12px; color: var(--text-dim); }
+</style>
 </head>
 <body>
 
@@ -23,59 +63,307 @@
 <header class="hero" style="background:radial-gradient(ellipse 80% 50% at 50% 0%, rgba(236,72,153,0.12) 0%, transparent 60%), var(--bg-dark);">
   <div class="hero-badge" style="border-color:var(--accent-pink);color:var(--accent-pink);background:rgba(236,72,153,0.06);">◆ Data Model</div>
   <h1 style="background:linear-gradient(135deg,#fff 0%,var(--accent-pink) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">backpacks<span style="-webkit-text-fill-color:var(--text-secondary);">背包資料 · BACKPACK DATA</span></h1>
-  <p class="hero-sub">背包技能、重量、機甲裝甲類型限制</p>
-  <div class="version-badge" style="background:var(--accent-pink);">NEW v1.1</div>
+  <p class="hero-sub">背包種類、稀有度、可裝備機甲類型、修理量、附帶技能（SS 限定）</p>
+  <div class="version-badge" style="background:var(--accent-pink);">UPDATED v1.3 · PLAN-009</div>
 </header>
 
 <main class="container">
 
+<!-- v1.2 更新說明 -->
 <section class="section">
-  <div class="section-label">Schema</div>
+  <div class="section-label" style="color:var(--accent-pink)">v1.2 更新（PLAN-009）</div>
+  <div class="section-title">Schema 更新說明</div>
+
+  <div class="changed-block">
+    <strong>PLAN-009 背包擷取腳本</strong>（2026-05-21 確立）<br><br>
+    · <strong>圖示</strong>：新增 <code>icon: string</code>，由腳本根據 ID 自動組裝 CDN URL（v1.3）<br>
+    · <strong>稀有度</strong>：新增 <code>rarity: WeaponRarity</code>（與武器共用），API <code>quality</code> 欄位直接對應<br>
+    · <strong>背包種類強型別</strong>：<code>type: string</code> → 對應新建 <code>BackpackType</code> enum（API: BackpackMainType）<br>
+    · <strong>可裝備機甲類型</strong>：<code>assemblableArmorType: AssemblableArmorType[]</code> 陣列（正向邏輯，API: AssemblableAirmenType）；允許多種機甲，空陣列代表無限制；<code>mechRestriction</code> 已移除<br>
+    · <strong>修理量</strong>：新增 <code>repairAmount: number</code>（API: AmountOfRepair；非修理類背包填 0）<br>
+    · <strong>附帶技能</strong>：<code>skill</code> 欄位改名為 <code>mainSkill</code>，並補入 API 欄位（id / icon / buffIds）；僅 SS 稀有度（SSSR）背包才有此欄位
+  </div>
+</section>
+
+<!-- BackpackType 列舉 -->
+<section class="section">
+  <div class="section-label" style="color:var(--accent-pink)">BackpackType</div>
+  <div class="section-title">背包種類列表（BackpackType Enum）</div>
+  <div class="section-desc">API 欄位 <code>BackpackMainType</code> 直接對應，共 11 種。</div>
+
+  <div class="type-card">
+    <div class="type-item">
+      <div class="type-key">HEAL</div>
+      <div class="type-val">Heal</div>
+      <div class="type-desc">修理</div>
+    </div>
+    <div class="type-item">
+      <div class="type-key">AMMO</div>
+      <div class="type-val">Ammo</div>
+      <div class="type-desc">彈藥</div>
+    </div>
+    <div class="type-item">
+      <div class="type-key">INTERFERENCE</div>
+      <div class="type-val">Interference</div>
+      <div class="type-desc">誘導</div>
+    </div>
+    <div class="type-item">
+      <div class="type-key">INVISIBLE</div>
+      <div class="type-val">Invisible</div>
+      <div class="type-desc">隱形</div>
+    </div>
+    <div class="type-item">
+      <div class="type-key">BACKUP_EQUIPMENT</div>
+      <div class="type-val">BackupEquipment</div>
+      <div class="type-desc">武器擴充</div>
+    </div>
+    <div class="type-item">
+      <div class="type-key">MOVE_POINT_ADD</div>
+      <div class="type-val">MovePointAdd</div>
+      <div class="type-desc">移動</div>
+    </div>
+    <div class="type-item">
+      <div class="type-key">FLOW</div>
+      <div class="type-val">Flow</div>
+      <div class="type-desc">飛行</div>
+    </div>
+    <div class="type-item">
+      <div class="type-key">RADAR</div>
+      <div class="type-val">Radar</div>
+      <div class="type-desc">雷達</div>
+    </div>
+    <div class="type-item">
+      <div class="type-key">EMP</div>
+      <div class="type-val">EMP</div>
+      <div class="type-desc">干擾背包</div>
+    </div>
+    <div class="type-item">
+      <div class="type-key">ENHANCE</div>
+      <div class="type-val">Enhance</div>
+      <div class="type-desc">強化背包</div>
+    </div>
+    <div class="type-item">
+      <div class="type-key">POWERADD</div>
+      <div class="type-val">PowerAdd</div>
+      <div class="type-desc">出力背包</div>
+    </div>
+  </div>
+</section>
+
+<!-- AssemblableArmorType 說明 -->
+<section class="section">
+  <div class="section-label" style="color:var(--accent-pink)">AssemblableArmorType</div>
+  <div class="section-title">可裝備機甲類型（AssemblableArmorType Enum）</div>
+  <div class="section-desc">正向邏輯陣列：指定「哪些機甲可以裝備此背包」。空陣列 <code>[]</code> 代表無限制。</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>Enum Key</th><th>值</th><th>說明</th><th>API 對應</th></tr>
+      <tr><td>LIGHT</td><td>Light</td><td>輕型機甲可裝備</td><td>AssemblableAirmenType: "Light"</td></tr>
+      <tr><td>MEDIUM</td><td>Medium</td><td>中型機甲可裝備</td><td>AssemblableAirmenType: "Medium"</td></tr>
+      <tr><td>HEAVY</td><td>Heavy</td><td>重型機甲可裝備</td><td>AssemblableAirmenType: "Heavy"</td></tr>
+    </table>
+  </div>
+
+  <div class="note-block">
+    <strong>欄位為陣列，允許多種機甲同時裝備</strong><br>
+    例如 <code>["Light", "Medium"]</code> 代表輕型與中型皆可裝備。<br>
+    <code>[]</code>（空陣列）= 無限制，所有機甲皆可裝備。<br>
+    API <code>AssemblableAirmenType</code> 以斜線分隔多值（如 <code>"Light/Medium"</code>），腳本自動 split 後寫入陣列。
+  </div>
+</section>
+
+<!-- 欄位定義 -->
+<section class="section">
+  <div class="section-label" style="color:var(--accent-pink)">Schema</div>
   <div class="section-title">欄位定義</div>
-  <div class="section-desc">背包是獨立裝備，有自己的技能效果與重量，部分背包有機甲裝甲類型限制（如「僅限輕型機甲裝配」）。</div>
+  <div class="section-desc">背包是獨立裝備，有自己的種類、稀有度、修理量，以及可裝備機甲類型限制。SS 稀有度背包另有 API 提供的附帶技能資料。</div>
 
   <div class="data-table-wrap">
     <table class="data-table">
       <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
-      <tr><td>id</td><td>string</td><td>唯一識別碼</td></tr>
-      <tr><td>name</td><td>string</td><td>背包名稱（如 "侵獵者背包"）</td></tr>
-      <tr><td>type</td><td>string</td><td>效果分類標籤（增傷/護甲/再攻擊/首攻…）</td></tr>
-      <tr><td>weight</td><td>number</td><td>重量（佔機甲出力）</td></tr>
-      <tr><td>slot</td><td>string</td><td>裝配位置（如 "背部"）</td></tr>
-      <tr><td>mechRestriction</td><td>ArmorType? (Enum)</td><td>機甲限制：null = 無限制 / "輕型" = 僅輕甲 / "重型" = 僅重甲</td></tr>
-      <tr class="group-header"><td colspan="3">▎背包技能 skill</td></tr>
-      <tr><td>&nbsp;├ name</td><td>string</td><td>技能名稱（如 "侵獵者驅動·增傷"）</td></tr>
-      <tr><td>&nbsp;├ type</td><td>string</td><td>技能類型（被動技能）</td></tr>
-      <tr><td>&nbsp;├ description</td><td>string</td><td>完整效果描述</td></tr>
-      <tr><td>&nbsp;├ dmg</td><td>number</td><td>增傷加成 %</td></tr>
-      <tr><td>&nbsp;├ crit</td><td>number</td><td>暴擊率加成</td></tr>
-      <tr><td>&nbsp;├ critDmg</td><td>number</td><td>暴擊傷害加成 %</td></tr>
-      <tr><td>&nbsp;├ acc</td><td>number</td><td>命中率加成</td></tr>
-      <tr><td>&nbsp;└ specialEffects[]</td><td>array?</td><td>非數值效果（如 "移動方式變為漂浮"）</td></tr>
+      <tr><td>id</td><td>string</td><td>唯一識別碼（API: ID）</td></tr>
+      <tr><td>name</td><td>string</td><td>背包名稱（如 "拯救者背包"）</td></tr>
+      <tr><td>icon</td><td>string?</td><td>背包圖示 CDN URL（由腳本根據 ID 自動組裝）<br><small style="color:var(--text-dim)">格式：https://media.zlongame.com/media/pictures/cn/community/img/gl/gameInfo/pack/Icon_backpack_{ID}.png</small></td></tr>
+      <tr><td>type</td><td>BackpackType (string)</td><td>背包種類：Heal / Ammo / Interference / Invisible / BackupEquipment / MovePointAdd / Flow / Radar / EMP / Enhance / PowerAdd<br><small style="color:var(--text-dim)">API: BackpackMainType（英文值直接對應）</small></td></tr>
+      <tr><td>rarity</td><td>WeaponRarity (string)</td><td>稀有度（與武器共用）：SS / S+ / S / A / B<br><small style="color:var(--text-dim)">API: quality · SSSR→SS / UR→S+ / SSR→S / SR→A / R→B</small></td></tr>
+      <tr><td>weight</td><td>number</td><td>重量（佔機甲出力）<br><small style="color:var(--text-dim)">API: weight（頂層欄位；WithPassiveSkills 內的 weight 為排序用途，不可混用）</small></td></tr>
+      <tr><td>slot</td><td>WeaponEquipSlot (string)</td><td>裝配位置；背包固定為 <code>'back'</code>（WeaponEquipSlot.BACK），與武器共用 enum，供裝備計算器統一判斷部位</td></tr>
+      <tr><td>assemblableArmorType</td><td>AssemblableArmorType[] (string[])</td><td>可裝備機甲類型陣列（正向邏輯）：<code>[]</code> = 無限制；<code>["Light"]</code> / <code>["Medium"]</code> / <code>["Heavy"]</code> / 複數值<br><small style="color:var(--text-dim)">API: AssemblableAirmenType · 斜線分隔多值 → split('/') → 過濾已知型別</small></td></tr>
+      <tr><td>repairAmount</td><td>number</td><td>修理量；非修理類背包固定填 0<br><small style="color:var(--text-dim)">API: AmountOfRepair · parseInt；不存在時預設 0</small></td></tr>
+      <tr class="group-header"><td colspan="3">▎附帶技能 mainSkill（僅 SS 稀有度，API: WithPassiveSkills[0]）</td></tr>
+      <tr><td>&nbsp;├ id</td><td>string</td><td>技能 ID<br><small style="color:var(--text-dim)">API: WithPassiveSkills[0].ID</small></td></tr>
+      <tr><td>&nbsp;├ name</td><td>string</td><td>技能名稱（如 "拯救者驅動·攻擊"）<br><small style="color:var(--text-dim)">API: WithPassiveSkills[0].name</small></td></tr>
+      <tr><td>&nbsp;├ icon</td><td>string?</td><td>技能圖示鍵名（如 "Icon_skill_passive_3130"）<br><small style="color:var(--text-dim)">API: WithPassiveSkills[0].SkillIcon / .icon</small></td></tr>
+      <tr><td>&nbsp;├ description</td><td>string</td><td>技能效果描述（清洗 rich text 標籤後）<br><small style="color:var(--text-dim)">API: WithPassiveSkills[0].SpecificEffects · 清除 &lt;color=#…&gt;…&lt;/color&gt; 後寫入</small></td></tr>
+      <tr><td>&nbsp;├ buffIds</td><td>string[]</td><td>觸發的 Buff ID 列表<br><small style="color:var(--text-dim)">API: WithPassiveSkills[0].BufCarried · '/' 分隔字串 → split('/').filter(Boolean)</small></td></tr>
+      <tr><td>&nbsp;├ dmg</td><td>number?</td><td>增傷加成 %（管理員手動填入）</td></tr>
+      <tr><td>&nbsp;├ crit</td><td>number?</td><td>暴擊率加成（管理員手動填入）</td></tr>
+      <tr><td>&nbsp;├ critDmg</td><td>number?</td><td>暴擊傷害加成 %（管理員手動填入）</td></tr>
+      <tr><td>&nbsp;├ acc</td><td>number?</td><td>命中率加成（管理員手動填入）</td></tr>
+      <tr><td>&nbsp;└ specialEffects</td><td>string[]?</td><td>非數值效果（如 "移動方式變為漂浮"）（管理員手動填入）</td></tr>
     </table>
   </div>
 </section>
 
+<!-- 稀有度識別規則 -->
 <section class="section">
-  <div class="section-label">篩選邏輯</div>
+  <div class="section-label" style="color:var(--accent-pink)">Rarity</div>
+  <div class="section-title">背包稀有度識別規則（共用 WeaponRarity）</div>
+  <div class="section-desc">背包稀有度與武器使用同一 enum，由 API <code>quality</code> 欄位直接對應。</div>
+
+  <div class="data-table-wrap">
+    <table class="rarity-table">
+      <tr><th>Enum 值</th><th>API quality</th><th>說明</th><th>mainSkill</th></tr>
+      <tr>
+        <td>SS</td>
+        <td>SSSR</td>
+        <td>最高等級背包；API 提供 WithPassiveSkills 技能資料</td>
+        <td style="color:var(--accent-green)">✓ 有（API 自動填入）</td>
+      </tr>
+      <tr>
+        <td>S+</td>
+        <td>UR</td>
+        <td>次高等級背包</td>
+        <td style="color:var(--text-dim)">— 無 API 資料</td>
+      </tr>
+      <tr>
+        <td>S</td>
+        <td>SSR</td>
+        <td>標準高階背包</td>
+        <td style="color:var(--text-dim)">— 無 API 資料</td>
+      </tr>
+      <tr>
+        <td>A</td>
+        <td>SR</td>
+        <td>標準背包（高階）</td>
+        <td style="color:var(--text-dim)">— 無 API 資料</td>
+      </tr>
+      <tr>
+        <td>B</td>
+        <td>R</td>
+        <td>標準背包（一般）</td>
+        <td style="color:var(--text-dim)">— 無 API 資料</td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<!-- API 欄位對照表 -->
+<section class="section">
+  <div class="section-label" style="color:var(--accent-cyan)">API Mapping</div>
+  <div class="section-title">API 欄位對照表</div>
+  <div class="section-desc">擷取腳本（scripts/scrape-backpacks.js）使用的 backpack_data detail 端點欄位名稱與 Firestore / TypeScript 欄位對應。</div>
+
+  <div class="data-table-wrap">
+    <table class="api-map-table">
+      <tr>
+        <th>TypeScript / Firestore 欄位</th>
+        <th>API 欄位（detail 端點）</th>
+        <th>轉換規則</th>
+      </tr>
+      <tr>
+        <td>id</td>
+        <td>ID</td>
+        <td>直接使用字串值</td>
+      </tr>
+      <tr>
+        <td>name</td>
+        <td>name</td>
+        <td>s2t() 簡→繁轉換後寫入</td>
+      </tr>
+      <tr>
+        <td>icon</td>
+        <td>（無直接欄位）</td>
+        <td>腳本以 ID 組裝 CDN URL：<code>https://…/pack/Icon_backpack_{ID}.png</code></td>
+      </tr>
+      <tr>
+        <td>type</td>
+        <td>BackpackMainType</td>
+        <td>英文值直接對應 BackpackType enum（Heal / Ammo / Interference / Invisible / BackupEquipment / MovePointAdd / Flow / Radar / EMP / Enhance / PowerAdd）</td>
+      </tr>
+      <tr>
+        <td>rarity</td>
+        <td>quality</td>
+        <td>SSSR→'SS' / UR→'S+' / SSR→'S' / SR→'A' / R→'B'</td>
+      </tr>
+      <tr>
+        <td>weight</td>
+        <td>weight（頂層）</td>
+        <td>parseInt(value, 10)；注意 WithPassiveSkills 內亦有 weight 欄位，為排序用途，不可混用</td>
+      </tr>
+      <tr>
+        <td>assemblableArmorType</td>
+        <td>AssemblableAirmenType</td>
+        <td>斜線分隔多值字串 → <code>split('/')</code> → 過濾 Light/Medium/Heavy → 陣列；空值 → <code>[]</code>（無限制）</td>
+      </tr>
+      <tr>
+        <td>repairAmount</td>
+        <td>AmountOfRepair</td>
+        <td>parseInt(value, 10)；欄位不存在時填 0</td>
+      </tr>
+      <tr>
+        <td>mainSkill.id</td>
+        <td>WithPassiveSkills[0].ID</td>
+        <td>僅 quality=SSSR 時存在；陣列為空時整個 mainSkill 欄位不寫入</td>
+      </tr>
+      <tr>
+        <td>mainSkill.name</td>
+        <td>WithPassiveSkills[0].name</td>
+        <td>s2t() 簡→繁轉換後寫入</td>
+      </tr>
+      <tr>
+        <td>mainSkill.icon</td>
+        <td>WithPassiveSkills[0].SkillIcon / .icon</td>
+        <td>鍵名格式，如 "Icon_skill_passive_3130"</td>
+      </tr>
+      <tr>
+        <td>mainSkill.description</td>
+        <td>WithPassiveSkills[0].SpecificEffects</td>
+        <td>清洗 &lt;color=#...&gt;…&lt;/color&gt; 等 rich text 標籤；s2t() 繁體化</td>
+      </tr>
+      <tr>
+        <td>mainSkill.buffIds</td>
+        <td>WithPassiveSkills[0].BufCarried</td>
+        <td>斜線分隔字串 → split('/').filter(Boolean)</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="note-block">
+    <strong>API 端點</strong>：<code>GET https://ma-activity.zlongame.com/common/infodata/mQuery.do?appkey=1616148215678&amp;target=backpack_data&amp;type=detail&amp;query={背包ID}</code><br>
+    <strong>列表端點</strong>：<code>type=list</code>（取得所有背包 ID 清單後，逐一呼叫 detail）<br>
+    <strong>管理員保護</strong>：腳本寫入時若 <code>prev.mainSkill</code> 已存在且包含手動填入的 dmg/crit/critDmg/acc，不覆蓋這些欄位。
+  </div>
+</section>
+
+<!-- 篩選邏輯 -->
+<section class="section">
+  <div class="section-label" style="color:var(--accent-pink)">篩選邏輯</div>
   <div class="section-title">配裝模擬器中的篩選規則</div>
 
   <div class="info-block">
-    <strong>📋 背包選擇篩選邏輯</strong>
-    1. mechRestriction 過濾：若背包限輕甲，選了中/重機甲的玩家看不到此背包。<br>
-    2. 重量過濾：背包重量 ≤ 機甲剩餘出力（出力 - 武器重量）才顯示。<br>
+    <strong>📋 背包選擇篩選邏輯</strong><br>
+    1. <strong>機甲類型過濾</strong>：依 <code>assemblableArmorType</code> 判斷。若為 'Light'，選了中/重機甲的玩家看不到此背包；'All' = 無限制。<br>
+    2. <strong>重量過濾</strong>：背包 weight ≤ 機甲剩餘出力（output - 武器 weight 總和）才顯示。<br>
     3. 以上兩個條件皆由前端自動過濾，不需使用者判斷。
   </div>
 </section>
 
+<!-- 相關文件 -->
 <section class="section">
-  <div class="section-label">相關文件</div>
+  <div class="section-label" style="color:var(--accent-pink)">相關文件</div>
   <div class="section-title">關聯資料</div>
   <div class="doc-grid">
     <a class="doc-item" href="mechs.html">
       <div class="doc-tag">Collection</div>
       <h4>🤖 mechs</h4>
       <p>機甲的 armorType 與 output 決定可裝備的背包範圍</p>
+    </a>
+    <a class="doc-item" href="weapons.html">
+      <div class="doc-tag">Collection</div>
+      <h4>🔫 weapons</h4>
+      <p>WeaponRarity enum 共用；MechRestriction 邏輯對比</p>
     </a>
     <a class="doc-item" href="../03_遊戲機制/配裝模擬器流程.html">
       <div class="doc-tag">Mechanic</div>
@@ -86,6 +374,11 @@
       <div class="doc-tag">Page</div>
       <h4>🎒 背包圖鑑頁</h4>
       <p>背包列表頁面規劃</p>
+    </a>
+    <a class="doc-item" href="../../05_階段性開發計畫/執行中/PLAN-009_背包擷取腳本/計畫書.html">
+      <div class="doc-tag">Plan</div>
+      <h4>◆ PLAN-009 計畫書</h4>
+      <p>背包擷取腳本規劃：API 欄位映射、脚本架構與實作說明</p>
     </a>
   </div>
 </section>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>型別枚舉定義 — Firebase 資料庫設計 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../../index.html">技術文件</a>
+    <span>›</span>
+    <a href="Firebase資料庫設計文件.html">Firebase 資料庫設計</a>
+    <span>›</span>
+    <span class="current">型別枚舉定義</span>
+  </div>
+</nav>
+
+<header class="hero blue">
+  <div class="hero-badge blue">◆ TYPE ENUMS</div>
+  <h1 style="background:linear-gradient(135deg,#fff 0%,var(--accent-blue) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+    型別枚舉定義
+    <span>MECHARASHI — ENUMS v1.0</span>
+  </h1>
+  <p class="hero-sub">所有分類欄位的 TypeScript Enum 完整定義 · Firestore 儲存 enum 字串值</p>
+  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.0 — 2026-05-15</div>
+</header>
+
+<main class="container">
+
+<section class="section">
+  <div class="section-label blue">01 — Overview</div>
+  <div class="section-title">枚舉設計原則</div>
+  <div class="section-desc">所有分類欄位改用 TypeScript Enum 管理，Firestore 中儲存 enum 的字串值（value）。</div>
+
+  <div class="info-block">
+    <strong>📁 統一存放於 src/types/enums.ts</strong>
+    前端所有元件統一 import 此檔案的 enum，不再使用散落各處的字串字面量（string literal）。
+  </div>
+
+  <div class="enum-grid">
+    <div class="enum-card">
+      <div class="enum-name">PilotClass — 機師職業</div>
+      <div class="enum-item"><span class="enum-key">ASSAULT</span><span class="enum-val">突擊手</span></div>
+      <div class="enum-item"><span class="enum-key">SNIPER</span><span class="enum-val">狙擊手</span></div>
+      <div class="enum-item"><span class="enum-key">TACTICIAN</span><span class="enum-val">戰術家</span></div>
+      <div class="enum-item"><span class="enum-key">FIGHTER</span><span class="enum-val">格鬥家</span></div>
+      <div class="enum-item"><span class="enum-key">GUARDIAN</span><span class="enum-val">守護者</span></div>
+      <div class="enum-item"><span class="enum-key">ENGINEER</span><span class="enum-val">機械師</span></div>
+      <div class="enum-item"><span class="enum-key">CONSTRUCTOR</span><span class="enum-val">調構師</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">ItemRarity — 稀有度（通用）</div>
+      <div class="enum-item"><span class="enum-key">EX</span><span class="enum-val">EX（最高，僅專武使用）</span></div>
+      <div class="enum-item"><span class="enum-key">S</span><span class="enum-val">S 級</span></div>
+      <div class="enum-item"><span class="enum-key">A</span><span class="enum-val">A 級</span></div>
+      <div class="enum-item"><span class="enum-key">B</span><span class="enum-val">B 級</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">WeaponRarity — 武器 / 背包稀有度</div>
+      <div class="enum-item"><span class="enum-key">SS</span><span class="enum-val">SS（最高，API: SSSR）</span></div>
+      <div class="enum-item"><span class="enum-key">S_PLUS</span><span class="enum-val">S+（API: UR）</span></div>
+      <div class="enum-item"><span class="enum-key">S</span><span class="enum-val">S（API: SSR）</span></div>
+      <div class="enum-item"><span class="enum-key">A</span><span class="enum-val">A（API: SR）</span></div>
+      <div class="enum-item"><span class="enum-key">B</span><span class="enum-val">B（API: R）</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">MechLicense — 駕駛許可</div>
+      <div class="enum-item"><span class="enum-key">LIGHT</span><span class="enum-val">輕型</span></div>
+      <div class="enum-item"><span class="enum-key">MEDIUM</span><span class="enum-val">中型</span></div>
+      <div class="enum-item"><span class="enum-key">HEAVY</span><span class="enum-val">重型</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">ArmorType — 機甲裝甲類型</div>
+      <div class="enum-item"><span class="enum-key">LIGHT</span><span class="enum-val">輕型</span></div>
+      <div class="enum-item"><span class="enum-key">MEDIUM</span><span class="enum-val">中甲</span></div>
+      <div class="enum-item"><span class="enum-key">HEAVY</span><span class="enum-val">重型</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">AssemblableArmorType — 可裝備機甲（正向邏輯）</div>
+      <div class="enum-item"><span class="enum-key">ALL</span><span class="enum-val">All（無限制）</span></div>
+      <div class="enum-item"><span class="enum-key">LIGHT</span><span class="enum-val">Light（僅限輕型）</span></div>
+      <div class="enum-item"><span class="enum-key">MEDIUM</span><span class="enum-val">Medium（僅限中型）</span></div>
+      <div class="enum-item"><span class="enum-key">HEAVY</span><span class="enum-val">Heavy（僅限重型）</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">MechRestriction — 武器機甲限制（負向邏輯）</div>
+      <div class="enum-item"><span class="enum-key">NONE</span><span class="enum-val">none（無限制）</span></div>
+      <div class="enum-item"><span class="enum-key">LIGHT_ONLY</span><span class="enum-val">light（僅限輕型）</span></div>
+      <div class="enum-item"><span class="enum-key">MEDIUM_ONLY</span><span class="enum-val">medium（僅限中型）</span></div>
+      <div class="enum-item"><span class="enum-key">HEAVY_ONLY</span><span class="enum-val">heavy（僅限重型）</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">ModuleSlot — 模組槽位</div>
+      <div class="enum-item"><span class="enum-key">SLOT_4</span><span class="enum-val">機甲特性模組</span></div>
+      <div class="enum-item"><span class="enum-key">SLOT_8</span><span class="enum-val">機甲8級模組</span></div>
+      <div class="enum-item"><span class="enum-key">UNIVERSAL</span><span class="enum-val">通用模組</span></div>
+      <div class="enum-item"><span class="enum-key">BUILT_IN</span><span class="enum-val">機甲副模組</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">MechPart — 機甲部件位置</div>
+      <div class="enum-item"><span class="enum-key">TORSO</span><span class="enum-val">torso（軀幹）</span></div>
+      <div class="enum-item"><span class="enum-key">LEFT_ARM</span><span class="enum-val">leftArm（左臂）</span></div>
+      <div class="enum-item"><span class="enum-key">RIGHT_ARM</span><span class="enum-val">rightArm（右臂）</span></div>
+      <div class="enum-item"><span class="enum-key">LEGS</span><span class="enum-val">legs（腿部）</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">ModuleSource — 模組遊戲取得途徑</div>
+      <div class="enum-item"><span class="enum-key">SHOP</span><span class="enum-val">商店</span></div>
+      <div class="enum-item"><span class="enum-key">DISMANTLE</span><span class="enum-val">拆機甲</span></div>
+      <div class="enum-item"><span class="enum-key">UNKNOWN</span><span class="enum-val">未知</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">DataManaged — 資料維護方式</div>
+      <div class="enum-item"><span class="enum-key">SCRIPT</span><span class="enum-val">腳本自動取得</span></div>
+      <div class="enum-item"><span class="enum-key">MANUAL</span><span class="enum-val">手動維護</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">WeaponCategory — 武器大類</div>
+      <div class="enum-item"><span class="enum-key">SHOOTING</span><span class="enum-val">射擊</span></div>
+      <div class="enum-item"><span class="enum-key">MELEE</span><span class="enum-val">格鬥</span></div>
+      <div class="enum-item"><span class="enum-key">ASSAULT</span><span class="enum-val">突擊</span></div>
+      <div class="enum-item"><span class="enum-key">TACTICAL</span><span class="enum-val">戰術</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">BackpackType — 背包種類</div>
+      <div class="enum-item"><span class="enum-key">HEAL</span><span class="enum-val">Heal（修理）</span></div>
+      <div class="enum-item"><span class="enum-key">AMMO</span><span class="enum-val">Ammo（彈藥）</span></div>
+      <div class="enum-item"><span class="enum-key">INTERFERENCE</span><span class="enum-val">Interference（雷達干擾）</span></div>
+      <div class="enum-item"><span class="enum-key">INVISIBLE</span><span class="enum-val">Invisible（隱形）</span></div>
+      <div class="enum-item"><span class="enum-key">BACKUP_EQUIPMENT</span><span class="enum-val">BackupEquipment（武器擴充）</span></div>
+      <div class="enum-item"><span class="enum-key">MOVE_POINT_ADD</span><span class="enum-val">MovePointAdd（移動）</span></div>
+      <div class="enum-item"><span class="enum-key">FLOW</span><span class="enum-val">Flow（飛行）</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">SkillType — 技能類型</div>
+      <div class="enum-item"><span class="enum-key">PASSIVE</span><span class="enum-val">被動技能</span></div>
+      <div class="enum-item"><span class="enum-key">ACTIVE</span><span class="enum-val">主動技能</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">SkillActivation — 武器技能生效時機</div>
+      <div class="enum-item"><span class="enum-key">CARRY</span><span class="enum-val">carry（攜帶即生效）</span></div>
+      <div class="enum-item"><span class="enum-key">EQUIP</span><span class="enum-val">equip（裝備中生效）</span></div>
+      <div class="enum-item"><span class="enum-key">USE</span><span class="enum-val">use（使用時生效）</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">ComponentSlot — 元件槽類型</div>
+      <div class="enum-item"><span class="enum-key">TRIGGER</span><span class="enum-val">trigger（觸元件）</span></div>
+      <div class="enum-item"><span class="enum-key">EFFECT</span><span class="enum-val">effect（應元件）</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">ConditionType — 觸發條件類型</div>
+      <div class="enum-item"><span class="enum-key">DUAL_WIELD</span><span class="enum-val">dualWield</span></div>
+      <div class="enum-item"><span class="enum-key">SINGLE_WIELD</span><span class="enum-val">singleWield</span></div>
+      <div class="enum-item"><span class="enum-key">FIRST_ATTACK</span><span class="enum-val">firstAttack</span></div>
+      <div class="enum-item"><span class="enum-key">AP_COST</span><span class="enum-val">apCost</span></div>
+      <div class="enum-item"><span class="enum-key">TARGET_TORSO</span><span class="enum-val">targetTorso</span></div>
+      <div class="enum-item"><span class="enum-key">ALWAYS</span><span class="enum-val">always</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">EffectType — 應元件效果類型</div>
+      <div class="enum-item"><span class="enum-key">DMG_BOOST</span><span class="enum-val">dmgBoost（增傷）</span></div>
+      <div class="enum-item"><span class="enum-key">BULLET_ADD</span><span class="enum-val">bulletAdd（增加子彈）</span></div>
+      <div class="enum-item"><span class="enum-key">MULTIPLIER</span><span class="enum-val">multiplierBoost（增加倍率）</span></div>
+      <div class="enum-item"><span class="enum-key">ARMOR_BREAK</span><span class="enum-val">armorBreak（破甲）</span></div>
+      <div class="enum-item"><span class="enum-key">AP_DMG_BOOST</span><span class="enum-val">apDmgBoost（AP增傷）</span></div>
+      <div class="enum-item"><span class="enum-key">TORSO_DMG</span><span class="enum-val">torsoDmgBoost（軀幹增傷）</span></div>
+    </div>
+    <div class="enum-card">
+      <div class="enum-name">UserRole — 用戶權限</div>
+      <div class="enum-item"><span class="enum-key">USER</span><span class="enum-val">一般用戶</span></div>
+      <div class="enum-item"><span class="enum-key">ADMIN</span><span class="enum-val">管理員（可寫遊戲資料）</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label blue">02 — Code</div>
+  <div class="section-title">完整 Enum 定義範例</div>
+  <div class="code-block"><span class="label">src/types/enums.ts</span><span class="keyword">export enum</span> <span class="type">PilotClass</span> {
+  ASSAULT    = <span class="string">'突擊手'</span>,
+  SNIPER     = <span class="string">'狙擊手'</span>,
+  TACTICIAN  = <span class="string">'戰術家'</span>,
+  FIGHTER    = <span class="string">'格鬥家'</span>,
+  GUARDIAN   = <span class="string">'守護者'</span>,
+  ENGINEER   = <span class="string">'機械師'</span>,
+  CONSTRUCTOR = <span class="string">'調構師'</span>,
+}
+
+<span class="keyword">export enum</span> <span class="type">ModuleSlot</span> {
+  SLOT_4    = <span class="string">'機甲特性模組'</span>,
+  SLOT_8    = <span class="string">'機甲8級模組'</span>,
+  UNIVERSAL = <span class="string">'通用模組'</span>,
+  BUILT_IN  = <span class="string">'機甲副模組'</span>,
+}
+
+<span class="keyword">export enum</span> <span class="type">ItemRarity</span> {
+  EX = <span class="string">'EX'</span>,  <span class="comment">// 僅專武使用</span>
+  S  = <span class="string">'S'</span>,
+  A  = <span class="string">'A'</span>,
+  B  = <span class="string">'B'</span>,
+}
+
+<span class="keyword">export enum</span> <span class="type">DataManaged</span> {
+  SCRIPT = <span class="string">'SCRIPT'</span>,
+  MANUAL = <span class="string">'MANUAL'</span>,
+}
+
+<span class="comment">// ... 其餘 enum 依同樣模式定義</span></div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 · 技術文件 · Firebase 資料庫設計 — <a href="Firebase資料庫設計文件.html" style="color:var(--accent-cyan);text-decoration:none;">← 返回目錄</a>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>modules — 模組資料 Schema — Firebase 資料庫設計 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../../index.html">技術文件</a>
+    <span>›</span>
+    <a href="Firebase資料庫設計文件.html">Firebase 資料庫設計</a>
+    <span>›</span>
+    <span class="current">modules — 模組</span>
+  </div>
+</nav>
+
+<header class="hero blue">
+  <div class="hero-badge blue">◆ COLLECTION SCHEMA</div>
+  <h1 style="background:linear-gradient(135deg,#fff 0%,var(--accent-blue) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+    modules — 模組資料
+    <span>MECHARASHI — FIRESTORE SCHEMA v1.0</span>
+  </h1>
+  <p class="hero-sub">4模 / 8模 / 通用 / 副模組 · 各等級效果數值 · 綁定機甲關聯</p>
+  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.0 — 2026-05-15</div>
+</header>
+
+<main class="container">
+
+<section class="section">
+  <div class="section-label blue">01 — Schema</div>
+  <div class="section-title">modules Collection 欄位定義</div>
+  <div class="section-desc">每份 Document 均自動附帶 Firestore 系統欄位（_id、createdAt、updatedAt），以下僅列業務欄位。</div>
+
+  <div class="sub-h">🗃️ modules — 模組資料</div>
+  <div class="data-table-wrap">
+    <table class="data-table blue-head">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>id</td><td>string</td><td>唯一識別碼（特性/8級/通用：mod_{masterApiId}；副模組：mod_{機甲名}_{position}）</td></tr>
+      <tr><td>name</td><td>string</td><td>模組名稱</td></tr>
+      <tr><td>slot</td><td>ModuleSlot</td><td>槽位 Enum：機甲特性模組 / 機甲8級模組 / 通用模組 / 機甲副模組</td></tr>
+      <tr><td>boundMechId</td><td>string?</td><td>綁定機甲 ID → 引用 mechs collection；null = 可獨立取得</td></tr>
+      <tr><td>boundPart</td><td>MechPart?</td><td>綁定部位 Enum：torso / leftArm / rightArm / legs；null = 無綁定</td></tr>
+      <tr><td>available</td><td>boolean</td><td>可獨立取得：特性/8級/通用 = true；副模組 = false</td></tr>
+      <tr><td>source</td><td>ModuleSource</td><td>遊戲取得途徑 Enum：商店 / 拆機甲 / 未知</td></tr>
+      <tr><td>managedBy</td><td>DataManaged</td><td>資料維護方式 Enum：SCRIPT / MANUAL</td></tr>
+      <tr><td>output_bonus</td><td>number</td><td>機甲出力增加（預設 0）</td></tr>
+      <tr><td>dmg</td><td>number</td><td>增傷加成 %（最高等級）</td></tr>
+      <tr><td>crit_rate</td><td>number</td><td>暴擊率加成（最高等級）</td></tr>
+      <tr><td>critDmg</td><td>number</td><td>暴擊傷害加成 %（最高等級）</td></tr>
+      <tr><td>acc_rate</td><td>number</td><td>命中率加成（最高等級）</td></tr>
+      <tr><td>firepower_rate</td><td>number</td><td>火力提升 %（最高等級）</td></tr>
+      <tr><td>armor_rate</td><td>number</td><td>護甲提升 %（最高等級）</td></tr>
+      <tr><td>crit_resist_rate</td><td>number</td><td>被暴擊率降低 %（最高等級）</td></tr>
+      <tr><td>dodge_rate</td><td>number</td><td>回避率 %（最高等級）</td></tr>
+      <tr><td>durable_rate</td><td>number</td><td>耐久值提升 %（最高等級）</td></tr>
+      <tr><td>dmg_resist_rate</td><td>number</td><td>遭受傷害降低 %（最高等級）</td></tr>
+      <tr><td>description</td><td>string</td><td>最高等級效果描述</td></tr>
+      <tr><td>rarity</td><td>ItemRarity</td><td>稀有度 Enum：S / A / B（模組不使用 EX）</td></tr>
+      <tr><td>icon</td><td>string?</td><td>圖示路徑</td></tr>
+      <tr><td>buffIds[]</td><td>string[]?</td><td>關聯 BUFF ID 列表 → 引用 buffs collection</td></tr>
+      <tr><td colspan="3" style="color:var(--accent-blue);font-weight:700;">▎levels[]（特性/8級/通用模組有各等級資料；副模組為空陣列）</td></tr>
+      <tr><td>&nbsp;├ level</td><td>number</td><td>等級上限（該筆資料的最高等級，如 4 代表此為 4 級時的數值）</td></tr>
+      <tr><td>&nbsp;├ description</td><td>string</td><td>該等級效果描述</td></tr>
+      <tr><td>&nbsp;├ dmg</td><td>number</td><td>該等級增傷加成（預設 0）</td></tr>
+      <tr><td>&nbsp;├ crit_rate</td><td>number</td><td>該等級暴擊率加成</td></tr>
+      <tr><td>&nbsp;├ critDmg</td><td>number</td><td>該等級暴擊傷害加成</td></tr>
+      <tr><td>&nbsp;├ acc_rate</td><td>number</td><td>該等級命中率加成</td></tr>
+      <tr><td>&nbsp;├ firepower_rate</td><td>number</td><td>該等級火力提升 %</td></tr>
+      <tr><td>&nbsp;├ armor_rate</td><td>number</td><td>該等級護甲提升 %</td></tr>
+      <tr><td>&nbsp;├ crit_resist_rate</td><td>number</td><td>該等級被暴擊率降低 %</td></tr>
+      <tr><td>&nbsp;├ output_bonus</td><td>number</td><td>該等級機甲出力增加</td></tr>
+      <tr><td>&nbsp;├ dodge_rate</td><td>number</td><td>該等級回避率 %</td></tr>
+      <tr><td>&nbsp;├ durable_rate</td><td>number</td><td>該等級耐久值提升 %</td></tr>
+      <tr><td>&nbsp;└ dmg_resist_rate</td><td>number</td><td>該等級遭受傷害降低 %</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label blue">02 — Indexes</div>
+  <div class="section-title">相關複合索引</div>
+  <div class="data-table-wrap">
+    <table class="data-table blue-head">
+      <tr><th>欄位組合</th><th>用途</th></tr>
+      <tr><td>slot ASC, rarity DESC</td><td>依槽位篩選模組、依稀有度排序</td></tr>
+      <tr><td>boundMechId ASC, boundPart ASC</td><td>依綁定機甲查詢副模組</td></tr>
+      <tr><td>available ASC, slot ASC</td><td>模組圖鑑頁（僅顯示 available=true）</td></tr>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 · 技術文件 · Firebase 資料庫設計 — <a href="Firebase資料庫設計文件.html" style="color:var(--accent-cyan);text-decoration:none;">← 返回目錄</a>
+</footer>
+
+</body>
+</html>

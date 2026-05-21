@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>components — 元件資料 Schema — Firebase 資料庫設計 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../../index.html">技術文件</a>
+    <span>›</span>
+    <a href="Firebase資料庫設計文件.html">Firebase 資料庫設計</a>
+    <span>›</span>
+    <span class="current">components — 元件</span>
+  </div>
+</nav>
+
+<header class="hero blue">
+  <div class="hero-badge blue">◆ COLLECTION SCHEMA</div>
+  <h1 style="background:linear-gradient(135deg,#fff 0%,var(--accent-blue) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+    components — 元件資料
+    <span>MECHARASHI — FIRESTORE SCHEMA v1.0</span>
+  </h1>
+  <p class="hero-sub">觸元件（trigger）· 應元件（effect）· 觸發條件 · 效果類型</p>
+  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.0 — 2026-05-15</div>
+</header>
+
+<main class="container">
+
+<section class="section">
+  <div class="section-label blue">01 — Schema</div>
+  <div class="section-title">components Collection 欄位定義</div>
+  <div class="section-desc">每份 Document 均自動附帶 Firestore 系統欄位（_id、createdAt、updatedAt），以下僅列業務欄位。</div>
+
+  <div class="sub-h">🗃️ components — 元件資料</div>
+  <div class="data-table-wrap">
+    <table class="data-table blue-head">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>id</td><td>string</td><td>元件識別碼</td></tr>
+      <tr><td>name</td><td>string</td><td>元件名稱</td></tr>
+      <tr><td>slot</td><td>ComponentSlot</td><td>槽類型 Enum：trigger（觸元件）/ effect（應元件）</td></tr>
+      <tr><td>level</td><td>number</td><td>元件等級</td></tr>
+      <tr><td>probability</td><td>string</td><td>觸發概率類型："概率" / "必定"</td></tr>
+      <tr><td>description</td><td>string</td><td>完整效果描述</td></tr>
+      <tr><td>rarity</td><td>ItemRarity</td><td>稀有度 Enum</td></tr>
+      <tr><td colspan="3" style="color:var(--accent-blue);font-weight:700;">▎trigger 專用欄位（slot = TRIGGER）</td></tr>
+      <tr><td>conditionType</td><td>ConditionType</td><td>觸發條件類型 Enum：dualWield / singleWield / firstAttack / apCost / targetTorso / always</td></tr>
+      <tr><td>condition</td><td>string</td><td>觸發條件描述文字</td></tr>
+      <tr><td>conditionValue</td><td>number?</td><td>條件參數值（如 AP 消耗數）</td></tr>
+      <tr><td colspan="3" style="color:var(--accent-blue);font-weight:700;">▎effect 專用欄位（slot = EFFECT）</td></tr>
+      <tr><td>effectType</td><td>EffectType</td><td>效果類型 Enum：dmgBoost / bulletAdd / multiplierBoost / armorBreak / apDmgBoost / torsoDmgBoost</td></tr>
+      <tr><td>value</td><td>number</td><td>效果數值</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label blue">02 — Indexes</div>
+  <div class="section-title">相關複合索引</div>
+  <div class="data-table-wrap">
+    <table class="data-table blue-head">
+      <tr><th>欄位組合</th><th>用途</th></tr>
+      <tr><td>slot ASC, rarity DESC</td><td>依觸/應元件分類篩選，依稀有度排序</td></tr>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 · 技術文件 · Firebase 資料庫設計 — <a href="Firebase資料庫設計文件.html" style="color:var(--accent-cyan);text-decoration:none;">← 返回目錄</a>
+</footer>
+
+</body>
+</html>

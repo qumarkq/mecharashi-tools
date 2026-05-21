@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mechs — 機甲資料 Schema — Firebase 資料庫設計 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../../index.html">技術文件</a>
+    <span>›</span>
+    <a href="Firebase資料庫設計文件.html">Firebase 資料庫設計</a>
+    <span>›</span>
+    <span class="current">mechs — 機甲</span>
+  </div>
+</nav>
+
+<header class="hero blue">
+  <div class="hero-badge blue">◆ COLLECTION SCHEMA</div>
+  <h1 style="background:linear-gradient(135deg,#fff 0%,var(--accent-blue) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+    mechs — 機甲資料
+    <span>MECHARASHI — FIRESTORE SCHEMA v1.0</span>
+  </h1>
+  <p class="hero-sub">機甲完整資料 · 部件詳細結構 · 火力 / 裝甲 / 出力 · 模組引用</p>
+  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.0 — 2026-05-15</div>
+</header>
+
+<main class="container">
+
+<section class="section">
+  <div class="section-label blue">01 — Schema</div>
+  <div class="section-title">mechs Collection 欄位定義</div>
+  <div class="section-desc">每份 Document 均自動附帶 Firestore 系統欄位（_id、createdAt、updatedAt），以下僅列業務欄位。</div>
+
+  <div class="sub-h">🗃️ mechs — 機甲資料</div>
+  <div class="data-table-wrap">
+    <table class="data-table blue-head">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>id</td><td>string</td><td>唯一識別碼（如 "mech_都卜勒"）</td></tr>
+      <tr><td>name</td><td>string</td><td>機甲名稱</td></tr>
+      <tr><td>rarity</td><td>ItemRarity</td><td>稀有度 Enum</td></tr>
+      <tr><td>armorType</td><td>ArmorType</td><td>裝甲類型 Enum：輕型 / 中甲 / 重型</td></tr>
+      <tr><td>firepower</td><td>number</td><td>整體火力值（軀幹滿級）</td></tr>
+      <tr><td>armor</td><td>number</td><td>整體裝甲值</td></tr>
+      <tr><td>evasion</td><td>number</td><td>閃避值</td></tr>
+      <tr><td>mobility</td><td>number</td><td>移動力</td></tr>
+      <tr><td>weight</td><td>number</td><td>總重量</td></tr>
+      <tr><td>output</td><td>number</td><td>總出力</td></tr>
+      <tr><td>parts</td><td>object</td><td>部件詳細資料（見下方）</td></tr>
+      <tr><td>module4Id</td><td>string</td><td>副模組 ID（4模組位置）→ 引用 modules collection</td></tr>
+      <tr><td>module8Id</td><td>string</td><td>副模組 ID（8模組位置）→ 引用 modules collection</td></tr>
+      <tr><td>moduleFixedIds[]</td><td>string[]</td><td>固定副模組 ID 列表 → 引用 modules collection</td></tr>
+      <tr><td colspan="3" style="color:var(--accent-blue);font-weight:700;">▎parts.{position} 結構（torso / leftArm / rightArm / legs）</td></tr>
+      <tr><td>&nbsp;├ durable</td><td>number</td><td>耐久值</td></tr>
+      <tr><td>&nbsp;├ armor</td><td>number</td><td>護甲值</td></tr>
+      <tr><td>&nbsp;├ firepower</td><td>number</td><td>火力值</td></tr>
+      <tr><td>&nbsp;├ weight</td><td>number</td><td>部件重量</td></tr>
+      <tr><td>&nbsp;├ interface</td><td>string</td><td>接口類型（如 "Ⅱ型接口"）</td></tr>
+      <tr><td>&nbsp;├ hit</td><td>number?</td><td>命中值（僅左右臂）</td></tr>
+      <tr><td>&nbsp;├ dodge</td><td>number?</td><td>閃避值（僅腿部）</td></tr>
+      <tr><td>&nbsp;├ move</td><td>number?</td><td>移動力（僅腿部）</td></tr>
+      <tr><td>&nbsp;├ output</td><td>number?</td><td>出力（僅軀幹）</td></tr>
+      <tr><td>&nbsp;├ antiRiot</td><td>number?</td><td>抗暴（僅軀幹）</td></tr>
+      <tr><td>&nbsp;└ icon</td><td>string?</td><td>部件圖示路徑</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label blue">02 — Relations</div>
+  <div class="section-title">關聯說明</div>
+  <div class="info-block">
+    <strong>🔗 模組引用</strong>
+    mechs document 透過 <code>module4Id</code>、<code>module8Id</code>、<code>moduleFixedIds[]</code> 引用 modules collection 中的副模組文件（slot = BUILT_IN 的模組）。
+    查詢特定機甲的副模組時，可使用 modules collection 的複合索引 <code>boundMechId + boundPart</code> 反向查詢。
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 · 技術文件 · Firebase 資料庫設計 — <a href="Firebase資料庫設計文件.html" style="color:var(--accent-cyan);text-decoration:none;">← 返回目錄</a>
+</footer>
+
+</body>
+</html>

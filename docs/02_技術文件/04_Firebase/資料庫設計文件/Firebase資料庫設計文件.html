@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firebase 資料庫設計文件 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../../index.html">技術文件</a>
+    <span>›</span>
+    <span class="current">Firebase 資料庫設計</span>
+  </div>
+</nav>
+
+<header class="hero blue">
+  <div class="hero-badge blue">◆ DATABASE DESIGN</div>
+  <h1 style="background:linear-gradient(135deg,#fff 0%,var(--accent-blue) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+    Firebase 資料庫設計文件
+    <span>MECHARASHI — FIRESTORE SCHEMA v1.0</span>
+  </h1>
+  <p class="hero-sub">Firestore Collections · 型別枚舉 · 安全規則 · 索引策略 · 資料遷移計畫</p>
+  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.0 — 2026-05-15</div>
+</header>
+
+<main class="container">
+
+<!-- ═══ 1. 設計原則 ═══ -->
+<section class="section">
+  <div class="section-label blue">01 — Design Principles</div>
+  <div class="section-title">設計原則與架構說明</div>
+  <div class="section-desc">從靜態 JSON 檔案遷移至 Firebase Firestore，集中管理所有遊戲資料，解決複雜關聯性與維護困難的問題。</div>
+
+  <div class="card-grid">
+    <div class="card blue">
+      <div class="card-icon">🔗</div>
+      <h3>關聯管理</h3>
+      <p>模組 ↔ 機甲、技能 ↔ 機師、BUFF ↔ 技能等跨實體關聯，透過 Firestore Document ID 引用，取代 JSON 中的字串 ID 難以驗證的問題。</p>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">📐</div>
+      <h3>型別枚舉化</h3>
+      <p>模組槽位、職業、裝甲類型、稀有度等分類欄位，統一定義為 TypeScript Enum，前端與後端共用同一份定義，避免拼寫錯誤與不一致。</p>
+    </div>
+    <div class="card green">
+      <div class="card-icon">🛡️</div>
+      <h3>安全規則分層</h3>
+      <p>遊戲資料 Collections：所有人可讀、僅管理員可寫。用戶 Collection：僅本人可讀寫。Firebase Security Rules 強制執行。</p>
+    </div>
+    <div class="card orange">
+      <div class="card-icon">⚡</div>
+      <h3>查詢優化</h3>
+      <p>針對常用篩選場景（依職業篩機師、依槽位篩模組、依機甲篩副模組）預設複合索引，確保大資料量下的查詢效能。</p>
+    </div>
+    <div class="card cyan">
+      <div class="card-icon">🔄</div>
+      <h3>可擴充設計</h3>
+      <p>BUFF Collection 初始僅含名稱與描述，欄位設計為可向後兼容擴充。技能 Collection 預留 tags、relatedEntities 等泛化欄位。</p>
+    </div>
+    <div class="card yellow">
+      <div class="card-icon">📋</div>
+      <h3>Admin 管理介面</h3>
+      <p>遊戲資料改由網站管理後台（AdminPage）直接讀寫 Firestore，取代 Google Sheets + GitHub Actions 的間接流程。</p>
+    </div>
+  </div>
+
+  <div class="arch-diagram" style="margin-top:32px;">
+    <div style="text-align:center;margin-bottom:24px;font-size:13px;color:var(--text-dim);font-family:'Orbitron',sans-serif;letter-spacing:2px;">SYSTEM ARCHITECTURE</div>
+    <div class="arch-flow">
+      <div class="arch-node user"><strong>👤 玩家</strong><br>瀏覽 / 配裝 / 儲存</div>
+      <div class="arch-arrow">⟷</div>
+      <div class="arch-node frontend"><strong>🌐 Frontend</strong><br>React + TypeScript<br>GitHub Pages</div>
+      <div class="arch-arrow">⟷</div>
+      <div class="arch-node firestore"><strong>🔥 Firestore</strong><br>遊戲資料 + 用戶資料</div>
+    </div>
+    <br>
+    <div class="arch-flow">
+      <div class="arch-node admin"><strong>🛠️ 管理員</strong><br>後台管理介面</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node firestore"><strong>🔥 Firestore</strong><br>直接讀寫遊戲資料</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node data"><strong>🔐 Firebase Auth</strong><br>身分驗證 + 權限控管</div>
+    </div>
+  </div>
+
+  <div class="info-block">
+    <strong>💡 架構變更說明</strong>
+    舊架構：Google Sheets → GitHub Actions → 靜態 JSON → 前端讀取。<br>
+    新架構：管理後台 → Firestore → 前端即時讀取。<br>
+    優點：資料即時更新、無需 CI 流程、關聯驗證可在後台強制執行。
+  </div>
+</section>
+
+<!-- ═══ 2. 文件目錄 ═══ -->
+<section class="section">
+  <div class="section-label blue">02 — Document Index</div>
+  <div class="section-title">子文件目錄</div>
+  <div class="section-desc">各 Collection Schema 與設定文件已分頁整理，點選各卡片查看完整定義。</div>
+
+  <div class="card-grid">
+    <a href="enums.html" style="text-decoration:none;">
+      <div class="card purple">
+        <div class="card-icon">📐</div>
+        <h3>型別枚舉定義</h3>
+        <p>PilotClass · ItemRarity · WeaponRarity · ModuleSlot · BackpackType · ConditionType · EffectType 等全部 Enum 定義與 TypeScript 範例</p>
+      </div>
+    </a>
+    <a href="pilots.html" style="text-decoration:none;">
+      <div class="card blue">
+        <div class="card-icon">👤</div>
+        <h3>pilots — 機師</h3>
+        <p>機師六維能力 · AP · 天賦 / 技能 / 神經驅動（SkillEntry 嵌入結構）</p>
+      </div>
+    </a>
+    <a href="mechs.html" style="text-decoration:none;">
+      <div class="card blue">
+        <div class="card-icon">🤖</div>
+        <h3>mechs — 機甲</h3>
+        <p>部件詳細結構（torso / leftArm / rightArm / legs）· 火力 / 裝甲 / 出力 · 模組引用</p>
+      </div>
+    </a>
+    <a href="modules.html" style="text-decoration:none;">
+      <div class="card green">
+        <div class="card-icon">🔩</div>
+        <h3>modules — 模組</h3>
+        <p>4模 / 8模 / 通用 / 副模組 · 各等級效果數值（levels[]）· 綁定機甲關聯</p>
+      </div>
+    </a>
+    <a href="weapons.html" style="text-decoration:none;">
+      <div class="card orange">
+        <div class="card-icon">🔫</div>
+        <h3>weapons — 武器</h3>
+        <p>武器基礎數值 · 技能（SkillActivation）· 固定 / 浮動改裝方案 · 元件插槽</p>
+      </div>
+    </a>
+    <a href="backpacks.html" style="text-decoration:none;">
+      <div class="card cyan">
+        <div class="card-icon">🎒</div>
+        <h3>backpacks — 背包</h3>
+        <p>背包種類 · 機甲限制（AssemblableArmorType）· SS 附帶技能（mainSkill）— PLAN-009</p>
+      </div>
+    </a>
+    <a href="components.html" style="text-decoration:none;">
+      <div class="card yellow">
+        <div class="card-icon">⚙️</div>
+        <h3>components — 元件</h3>
+        <p>觸元件（trigger）· 應元件（effect）· 觸發條件（ConditionType）· 效果類型（EffectType）</p>
+      </div>
+    </a>
+    <a href="skills-buffs.html" style="text-decoration:none;">
+      <div class="card" style="border-color:rgba(236,72,153,0.4);">
+        <div class="card-icon">✨</div>
+        <h3>skills &amp; buffs — 技能與 BUFF</h3>
+        <p>共用技能庫 · BUFF 定義（初始版本，預留 effects[] 擴充欄位）· buffIds[] 跨實體引用</p>
+      </div>
+    </a>
+    <a href="research.html" style="text-decoration:none;">
+      <div class="card blue">
+        <div class="card-icon">🔬</div>
+        <h3>research — 科研</h3>
+        <p>pilotResearch（機師個別科研選項）· globalResearch（全域加成定義）</p>
+      </div>
+    </a>
+    <a href="users.html" style="text-decoration:none;">
+      <div class="card green">
+        <div class="card-icon">🔐</div>
+        <h3>users — 用戶資料</h3>
+        <p>users/{uid}/profile（設定 / 科研選擇）· users/{uid}/builds（配裝紀錄）· 僅本人可讀寫</p>
+      </div>
+    </a>
+    <a href="security-rules.html" style="text-decoration:none;">
+      <div class="card orange">
+        <div class="card-icon">🛡️</div>
+        <h3>安全規則 · 索引 · 遷移</h3>
+        <p>Firestore Security Rules · 全部複合索引（firestore.indexes.json）· JSON → Firestore 遷移 9 步驟</p>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ═══ 3. Collections 清單 ═══ -->
+<section class="section">
+  <div class="section-label blue">03 — Collections Overview</div>
+  <div class="section-title">Firestore Collections 清單</div>
+  <div class="section-desc">共 13 個 Collections，分為「遊戲資料」（管理員維護）與「用戶資料」（用戶私有）兩大類。</div>
+
+  <div class="collection-grid">
+    <div class="collection-card">
+      <div class="col-name"><a href="pilots.html" style="color:inherit;text-decoration:none;">pilots</a></div>
+      <span class="col-type game">GAME DATA</span>
+      <p>機師完整資料（六維、技能、天賦、神經驅動、AP）</p>
+    </div>
+    <div class="collection-card">
+      <div class="col-name"><a href="mechs.html" style="color:inherit;text-decoration:none;">mechs</a></div>
+      <span class="col-type game">GAME DATA</span>
+      <p>機甲完整資料（部件、火力、出力、模組引用）</p>
+    </div>
+    <div class="collection-card">
+      <div class="col-name"><a href="modules.html" style="color:inherit;text-decoration:none;">modules</a></div>
+      <span class="col-type game">GAME DATA</span>
+      <p>所有模組（4模/8模/通用/副模組，含各等級效果）</p>
+    </div>
+    <div class="collection-card">
+      <div class="col-name"><a href="weapons.html" style="color:inherit;text-decoration:none;">weapons</a></div>
+      <span class="col-type game">GAME DATA</span>
+      <p>武器資料（技能、改裝、元件插槽）</p>
+    </div>
+    <div class="collection-card">
+      <div class="col-name"><a href="backpacks.html" style="color:inherit;text-decoration:none;">backpacks</a></div>
+      <span class="col-type game">GAME DATA</span>
+      <p>背包裝備（技能效果、機甲類型限制）</p>
+    </div>
+    <div class="collection-card">
+      <div class="col-name"><a href="components.html" style="color:inherit;text-decoration:none;">components</a></div>
+      <span class="col-type game">GAME DATA</span>
+      <p>觸元件 + 應元件（等級、觸發條件、效果）</p>
+    </div>
+    <div class="collection-card">
+      <div class="col-name"><a href="skills-buffs.html" style="color:inherit;text-decoration:none;">skills</a></div>
+      <span class="col-type game">GAME DATA</span>
+      <p>技能庫（可跨實體引用的共用技能定義）</p>
+    </div>
+    <div class="collection-card" style="border-color: rgba(236,72,153,0.4);">
+      <div class="col-name" style="color:var(--accent-pink);"><a href="skills-buffs.html" style="color:inherit;text-decoration:none;">buffs</a></div>
+      <span class="col-type game" style="background:rgba(236,72,153,0.15);color:var(--accent-pink);border-color:var(--accent-pink);">GAME DATA · NEW</span>
+      <p>BUFF 定義（初始：名稱 + 描述，後續擴充效果欄位）</p>
+    </div>
+    <div class="collection-card">
+      <div class="col-name"><a href="research.html" style="color:inherit;text-decoration:none;">pilotResearch</a></div>
+      <span class="col-type game">GAME DATA</span>
+      <p>各機師個別科研選項（三種特質 × I/II/III 欄位）</p>
+    </div>
+    <div class="collection-card">
+      <div class="col-name"><a href="research.html" style="color:inherit;text-decoration:none;">globalResearch</a></div>
+      <span class="col-type game">GAME DATA</span>
+      <p>全域科研定義（機師/機甲/武器 三大類加成）</p>
+    </div>
+    <div class="collection-card">
+      <div class="col-name">enemies</div>
+      <span class="col-type game">GAME DATA</span>
+      <p>敵方機師+機甲（傷害模擬器用）</p>
+    </div>
+    <div class="collection-card">
+      <div class="col-name"><a href="users.html" style="color:inherit;text-decoration:none;">users/{uid}/profile</a></div>
+      <span class="col-type user">USER DATA</span>
+      <p>用戶設定（全域科研等級、機師科研選擇、角色）</p>
+    </div>
+    <div class="collection-card">
+      <div class="col-name"><a href="users.html" style="color:inherit;text-decoration:none;">users/{uid}/builds/{id}</a></div>
+      <span class="col-type user">USER DATA</span>
+      <p>用戶配裝紀錄（機師+機甲+武器+背包+模組+元件）</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 · 技術文件 · Firebase 資料庫設計 — <a href="../../index.html" style="color:var(--accent-cyan);text-decoration:none;">← 技術文件總覽</a>
+</footer>
+
+</body>
+</html>

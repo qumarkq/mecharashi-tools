@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>skills & buffs — 技能與 BUFF Schema — Firebase 資料庫設計 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../../index.html">技術文件</a>
+    <span>›</span>
+    <a href="Firebase資料庫設計文件.html">Firebase 資料庫設計</a>
+    <span>›</span>
+    <span class="current">skills & buffs — 技能與 BUFF</span>
+  </div>
+</nav>
+
+<header class="hero blue">
+  <div class="hero-badge blue">◆ COLLECTION SCHEMA</div>
+  <h1 style="background:linear-gradient(135deg,#fff 0%,var(--accent-blue) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+    skills &amp; buffs — 技能與 BUFF
+    <span>MECHARASHI — FIRESTORE SCHEMA v1.0</span>
+  </h1>
+  <p class="hero-sub">共用技能庫 · BUFF 定義（初始版本）· 跨實體引用設計</p>
+  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.0 — 2026-05-15</div>
+</header>
+
+<main class="container">
+
+<!-- skills -->
+<section class="section">
+  <div class="section-label blue">01 — skills</div>
+  <div class="section-title">skills Collection 欄位定義</div>
+
+  <div class="info-block">
+    <strong>📌 用途說明</strong>
+    機師的 talents / skills / neuralDrive 以嵌入方式存於 pilots 文件中（1:1 關係）。<br>
+    skills collection 存放「可跨實體引用」的共用技能定義，例如：多個武器共享的技能效果模板、或用於 BUFF 系統的觸發技能。<br>
+    初期可作為技能索引使用，後續依需求擴充引用關係。
+  </div>
+
+  <div class="sub-h">🗃️ skills — 技能庫</div>
+  <div class="data-table-wrap">
+    <table class="data-table blue-head">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>id</td><td>string</td><td>唯一識別碼（如 "skill_001"）</td></tr>
+      <tr><td>name</td><td>string</td><td>技能名稱</td></tr>
+      <tr><td>type</td><td>SkillType</td><td>技能類型 Enum：被動技能 / 主動技能</td></tr>
+      <tr><td>description</td><td>string</td><td>效果描述</td></tr>
+      <tr><td>icon</td><td>string?</td><td>圖示路徑</td></tr>
+      <tr><td>dmg / crit / critDmg / acc</td><td>number</td><td>可量化加成數值</td></tr>
+      <tr><td>tags[]</td><td>string[]</td><td>分類標籤（如 ["pilot", "talent"]、["weapon", "passive"]）</td></tr>
+      <tr><td>relatedEntityId</td><td>string?</td><td>關聯實體 ID（如機師 ID 或武器 ID）</td></tr>
+      <tr><td>buffIds[]</td><td>string[]?</td><td>此技能施加的 BUFF ID 列表 → 引用 buffs collection</td></tr>
+    </table>
+  </div>
+
+  <div class="sub-h" style="margin-top:24px;">複合索引</div>
+  <div class="data-table-wrap">
+    <table class="data-table blue-head">
+      <tr><th>欄位組合</th><th>用途</th></tr>
+      <tr><td>tags ARRAY_CONTAINS, type ASC</td><td>依標籤搜尋技能</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- buffs -->
+<section class="section">
+  <div class="section-label blue">02 — buffs</div>
+  <div class="section-title">buffs Collection 欄位定義</div>
+
+  <div class="changed-block">
+    <strong>🆕 v1.0 新增：BUFF Collection（初始版本）</strong>
+    初始版本僅定義 BUFF 名稱與描述，作為佔位設計。後續版本將擴充：持續時間、疊加規則、效果欄位（effects[]）、觸發來源等。
+    設計原則：任何技能、模組、武器皆可透過 buffIds[] 陣列引用此 Collection 的 BUFF 定義。
+  </div>
+
+  <div class="sub-h">🗃️ buffs — BUFF 定義</div>
+  <div class="data-table-wrap">
+    <table class="data-table blue-head">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>id</td><td>string</td><td>唯一識別碼（如 "buff_001_增傷"）</td></tr>
+      <tr><td>name</td><td>string</td><td>BUFF 名稱（如 "護甲強化"、"增傷Lv3"）</td></tr>
+      <tr><td>description</td><td>string</td><td>BUFF 效果文字描述</td></tr>
+      <tr><td>icon</td><td>string?</td><td>BUFF 圖示路徑（可留空）</td></tr>
+      <tr><td colspan="3" style="color:var(--accent-orange);font-weight:700;">▎預留欄位（後續版本擴充）</td></tr>
+      <tr><td>duration</td><td>number?</td><td>持續回合數（null = 永久）</td></tr>
+      <tr><td>maxStack</td><td>number?</td><td>最大疊加層數（1 = 不可疊加）</td></tr>
+      <tr><td>effects[]</td><td>array?</td><td>具體效果列表 { stat, value, condition } — 待設計</td></tr>
+      <tr><td>buffType</td><td>string?</td><td>BUFF 類型分類（增益 / 減益 / 控制 / 護盾）— 待枚舉</td></tr>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 · 技術文件 · Firebase 資料庫設計 — <a href="Firebase資料庫設計文件.html" style="color:var(--accent-cyan);text-decoration:none;">← 返回目錄</a>
+</footer>
+
+</body>
+</html>

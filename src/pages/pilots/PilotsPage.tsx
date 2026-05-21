@@ -1,0 +1,199 @@
+﻿import { useState, useMemo } from 'react'
+import { Link } from 'react-router-dom'
+import { assetUrl } from '../../utils/assets'
+import { usePilots, useWeapons } from '../../hooks/useFirestore'
+import { WeaponIcon } from '../../components/WeaponIcon'
+
+const CLASS_STYLES: Record<string, { text: string; border: string; bg: string }> = {
+  守護者: { text: 'text-accent-green', border: 'border-accent-green/40', bg: 'bg-accent-green/10' },
+  突擊手: { text: 'text-accent-orange', border: 'border-accent-orange/40', bg: 'bg-accent-orange/10' },
+  格鬥家: { text: 'text-accent-red', border: 'border-accent-red/40', bg: 'bg-accent-red/10' },
+  狙擊手: { text: 'text-accent-blue', border: 'border-accent-blue/40', bg: 'bg-accent-blue/10' },
+  戰術家: { text: 'text-accent-purple', border: 'border-accent-purple/40', bg: 'bg-accent-purple/10' },
+  機械師: { text: 'text-accent-cyan', border: 'border-accent-cyan/40', bg: 'bg-accent-cyan/10' },
+  調構師: { text: 'text-accent-yellow', border: 'border-accent-yellow/40', bg: 'bg-accent-yellow/10' },
+}
+
+const CLASSES = ['守護者', '突擊手', '格鬥家', '狙擊手', '戰術家', '機械師', '調構師']
+const LICENSES = ['重型', '中型', '輕型']
+
+export default function PilotsPage() {
+  const { data: pilots, loading } = usePilots()
+  const { data: weapons } = useWeapons()
+  const [search, setSearch] = useState('')
+  const [classFilter, setClassFilter] = useState('')
+  const [licenseFilter, setLicenseFilter] = useState('')
+
+  const exclusiveWeaponMap = useMemo(() => {
+    const map: Record<string, { name: string; icon?: string }> = {}
+    for (const w of weapons) {
+      if (w.isExclusive && w.exclusiveFor) map[w.exclusiveFor] = { name: w.name, icon: w.icon }
+    }
+    return map
+  }, [weapons])
+
+  const filtered = pilots.filter((p) => {
+    if (classFilter && p.class !== classFilter) return false
+    if (licenseFilter && p.license !== licenseFilter) return false
+    if (search) {
+      const q = search.toLowerCase()
+      return p.name.toLowerCase().includes(q) || p.faction.toLowerCase().includes(q)
+    }
+    return true
+  })
+
+  const filterBtn = (active: boolean) =>
+    `px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+      active
+        ? 'bg-accent-orange/15 text-accent-orange border-accent-orange/40'
+        : 'bg-bg-card text-text-secondary border-border hover:border-border-accent hover:text-text-primary'
+    }`
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-12">
+      {/* Header */}
+      <div className="mb-8">
+        <span className="text-xs text-accent-orange tracking-[3px] uppercase font-[Orbitron,sans-serif]">
+          Database
+        </span>
+        <h1 className="text-3xl font-bold mt-2">機師圖鑑</h1>
+        <p className="text-text-secondary mt-2">
+          查看所有機師的六維屬性、技能、天賦與神經驅動。共 {pilots.length} 位機師。
+        </p>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-bg-card border border-border rounded-xl p-4 mb-6 flex flex-col gap-3">
+        {/* Search */}
+        <input
+          type="text"
+          placeholder="搜尋機師名稱或勢力..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full bg-bg-dark border border-border rounded-lg px-4 py-2 text-sm text-text-primary placeholder-text-dim outline-none focus:border-border-accent"
+        />
+
+        {/* Class Filter */}
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-xs text-text-dim mr-1">職業</span>
+          <button className={filterBtn(!classFilter)} onClick={() => setClassFilter('')}>全部</button>
+          {CLASSES.map((c) => {
+            const s = CLASS_STYLES[c]
+            const active = classFilter === c
+            return (
+              <button
+                key={c}
+                onClick={() => setClassFilter(active ? '' : c)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                  active && s
+                    ? `${s.bg} ${s.text} ${s.border}`
+                    : 'bg-bg-card text-text-secondary border-border hover:border-border-accent hover:text-text-primary'
+                }`}
+              >
+                {c}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* License Filter */}
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-xs text-text-dim mr-1">駕照</span>
+          <button className={filterBtn(!licenseFilter)} onClick={() => setLicenseFilter('')}>全部</button>
+          {LICENSES.map((l) => (
+            <button
+              key={l}
+              onClick={() => setLicenseFilter(licenseFilter === l ? '' : l)}
+              className={filterBtn(licenseFilter === l)}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Count */}
+      {!loading && (
+        <p className="text-xs text-text-dim mb-4">
+          顯示 {filtered.length} / {pilots.length} 位機師
+        </p>
+      )}
+
+      {/* Grid */}
+      {loading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="bg-bg-card border border-border rounded-xl h-64 animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {filtered.map((pilot) => {
+            const s = CLASS_STYLES[pilot.class]
+            return (
+              <Link
+                key={pilot.id}
+                to={`/pilots/${pilot.id}`}
+                className="group block bg-bg-card border border-border rounded-xl overflow-hidden no-underline transition-all hover:bg-bg-card-hover hover:border-border-accent hover:-translate-y-0.5"
+              >
+                {/* Portrait */}
+                <div className="relative aspect-[3/4] bg-bg-dark overflow-hidden">
+                  <img
+                    src={assetUrl(pilot.portrait)}
+                    alt={pilot.name}
+                    className="w-full h-full object-cover object-top transition-transform group-hover:scale-105"
+                    onError={(e) => {
+                      ;(e.target as HTMLImageElement).style.display = 'none'
+                    }}
+                  />
+                  {/* Class badge */}
+                  {s && (
+                    <span
+                      className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[13px] font-bold border ${s.bg} ${s.text} ${s.border}`}
+                    >
+                      {pilot.class}
+                    </span>
+                  )}
+                  {/* License badge */}
+                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded text-[13px] font-bold bg-black/50 text-text-secondary border border-border">
+                    {pilot.license}
+                  </span>
+                </div>
+
+                {/* Info */}
+                <div className="p-3 flex gap-2">
+                  {/* Left: pilot info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-text-primary truncate">{pilot.name}</p>
+                    <p className="text-[12px] text-text-dim truncate mt-0.5">{pilot.faction}</p>
+                    <p className="text-[11px] text-text-dim mt-1">{pilot.masterLevel}</p>
+                  </div>
+                  {/* Right: exclusive weapon */}
+                  {exclusiveWeaponMap[pilot.id] && (
+                    <div className="flex-shrink-0 flex flex-col items-center gap-1 w-14">
+                      <WeaponIcon
+                        icon={exclusiveWeaponMap[pilot.id].icon}
+                        name={exclusiveWeaponMap[pilot.id].name}
+                        size="sm"
+                        isExclusive
+                      />
+                      <p className="hidden sm:block text-[10px] text-accent-yellow text-center leading-tight line-clamp-2">
+                        {exclusiveWeaponMap[pilot.id].name}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </Link>
+            )
+          })}
+        </div>
+      )}
+
+      {!loading && filtered.length === 0 && (
+        <div className="bg-bg-card border border-border rounded-xl p-12 text-center text-text-dim">
+          沒有符合條件的機師
+        </div>
+      )}
+    </div>
+  )
+}

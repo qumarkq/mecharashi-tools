@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>research — 科研資料 Schema — Firebase 資料庫設計 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../../../_shared/style.css">
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../../01_規劃書/鋼嵐工具站_規劃書.html">📋 規劃書</a>
+    <span>›</span>
+    <a href="../../index.html">技術文件</a>
+    <span>›</span>
+    <a href="Firebase資料庫設計文件.html">Firebase 資料庫設計</a>
+    <span>›</span>
+    <span class="current">research — 科研</span>
+  </div>
+</nav>
+
+<header class="hero blue">
+  <div class="hero-badge blue">◆ COLLECTION SCHEMA</div>
+  <h1 style="background:linear-gradient(135deg,#fff 0%,var(--accent-blue) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+    research — 科研資料
+    <span>MECHARASHI — FIRESTORE SCHEMA v1.0</span>
+  </h1>
+  <p class="hero-sub">pilotResearch（機師個別科研）· globalResearch（全域科研）</p>
+  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.0 — 2026-05-15</div>
+</header>
+
+<main class="container">
+
+<!-- pilotResearch -->
+<section class="section">
+  <div class="section-label blue">01 — pilotResearch</div>
+  <div class="section-title">pilotResearch Collection 欄位定義</div>
+  <div class="section-desc">各機師個別科研選項，每位機師一份 Document，欄位對應三種特質 × I/II/III 等級的可選加成。</div>
+
+  <div class="sub-h">🗃️ pilotResearch — 機師個別科研</div>
+  <div class="data-table-wrap">
+    <table class="data-table blue-head">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>pilotId</td><td>string</td><td>對應機師 ID → 引用 pilots collection</td></tr>
+      <tr><td>pilotTraits[]</td><td>array</td><td>機師特質選項 { slot: 1|2|3, options: SkillEntry[] }</td></tr>
+      <tr><td>mechTraits[]</td><td>array</td><td>機甲特質選項（同結構）</td></tr>
+      <tr><td>weaponTraits[]</td><td>array</td><td>武裝特質選項（同結構）</td></tr>
+      <tr><td>exclusionRules[]</td><td>array</td><td>互斥規則 { slotA, optionA, slotB, optionB }</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- globalResearch -->
+<section class="section">
+  <div class="section-label blue">02 — globalResearch</div>
+  <div class="section-title">globalResearch Collection 說明</div>
+  <div class="section-desc">全域科研定義，涵蓋機師 / 機甲 / 武器 三大類加成。</div>
+
+  <div class="info-block">
+    <strong>📌 globalResearch Schema — 待補充</strong>
+    此 Collection 存放全域科研各等級的數值加成定義（機師類、機甲類、武器類）。<br>
+    玩家在 users/{uid}/profile 中儲存自己的科研等級選擇，由前端對照此 Collection 計算實際加成效果。<br>
+    Schema 詳細欄位待遊戲資料整理後補充。
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 · 技術文件 · Firebase 資料庫設計 — <a href="Firebase資料庫設計文件.html" style="color:var(--accent-cyan);text-decoration:none;">← 返回目錄</a>
+</footer>
+
+</body>
+</html>

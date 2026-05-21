@@ -163,6 +163,33 @@ export const MechRestriction = {
 } as const;
 export type MechRestriction = typeof MechRestriction[keyof typeof MechRestriction];
 
+// ─── 背包 ────────────────────────────────────────────────────────────────────
+
+// 背包種類（API: BackpackMainType）
+export const BackpackType = {
+  HEAL:             'Heal',            // 修理
+  AMMO:             'Ammo',            // 彈藥
+  INTERFERENCE:     'Interference',    // 誘導
+  INVISIBLE:        'Invisible',       // 隱形
+  BACKUP_EQUIPMENT: 'BackupEquipment', // 武器擴充
+  MOVE_POINT_ADD:   'MovePointAdd',    // 移動
+  FLOW:             'Flow',            // 飛行
+  RADAR:            'Radar',           // 雷達
+  EMP:              'EMP',             // 干擾背包
+  ENHANCE:          'Enhance',         // 強化背包
+  POWERADD:         'PowerAdd',        // 出力背包
+} as const;
+export type BackpackType = typeof BackpackType[keyof typeof BackpackType];
+
+// 背包可裝備機甲類型（正向邏輯：指定哪些機甲可裝備，與 MechRestriction 反向）
+// API: AssemblableAirmenType - "Light" / "Medium" / "Heavy" / 空白或多值 → All
+export const AssemblableArmorType = {
+  LIGHT:  'Light',  // 僅限輕型機甲
+  MEDIUM: 'Medium', // 僅限中型機甲
+  HEAVY:  'Heavy',  // 僅限重型機甲
+} as const;
+export type AssemblableArmorType = typeof AssemblableArmorType[keyof typeof AssemblableArmorType];
+
 // ─── 技能 / BUFF ──────────────────────────────────────────────────────────────
 
 export const SkillType = {

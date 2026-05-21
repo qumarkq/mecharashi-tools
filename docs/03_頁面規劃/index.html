@@ -163,6 +163,41 @@
 </section>
 
 <section class="section">
+  <div class="section-label purple">程式結構</div>
+  <div class="section-title">src/pages 資料夾結構</div>
+  <div class="section-desc">依功能域分組，每個子目錄對應一個業務領域，list 與 detail 頁面放置於同一資料夾。</div>
+
+  <div class="code-block" style="background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:1.25rem 1.5rem;font-family:'JetBrains Mono',monospace;font-size:0.85rem;line-height:1.8;color:#e6edf3;overflow-x:auto;">
+<pre style="margin:0;">src/pages/
+├── home/
+│   └── HomePage.tsx
+├── pilots/
+│   ├── PilotsPage.tsx
+│   └── PilotDetailPage.tsx
+├── mechs/
+│   ├── MechsPage.tsx
+│   └── MechDetailPage.tsx
+├── weapons/
+│   ├── WeaponsPage.tsx
+│   └── WeaponDetailPage.tsx       ← lazy-loaded
+├── backpacks/
+│   └── BackpacksPage.tsx
+├── modules/
+│   └── ModulesPage.tsx
+├── simulator/
+│   ├── SimulatorPage.tsx
+│   └── ResearchPage.tsx
+├── guides/
+│   └── GuidesPage.tsx
+├── news/
+│   └── NewsPage.tsx
+└── user/
+    ├── ProfilePage.tsx
+    └── AdminPage.tsx</pre>
+  </div>
+</section>
+
+<section class="section">
   <div class="section-label purple">設計規範</div>
   <div class="section-title">全站設計原則</div>
 
