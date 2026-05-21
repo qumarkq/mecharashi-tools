@@ -663,8 +663,8 @@ function ComponentsStep({
   onToggleEffect: (id: string) => void
   onNext: () => void
 }) {
-  const triggers = components.filter((c): c is TriggerComponent => c.slot === 'trigger')
-  const effects = components.filter((c): c is EffectComponent => c.slot === 'effect')
+  const triggers = components.filter((c): c is TriggerComponent => c.componentType === 'Condition')
+  const effects = components.filter((c): c is EffectComponent => c.componentType === 'Function')
   const triggerSlots = weapon?.triggerSlots ?? 0
   const effectSlots = weapon?.effectSlots ?? 0
 
@@ -693,7 +693,7 @@ function ComponentsStep({
               >
                 <div className="text-sm font-medium">{t.name}</div>
                 <div className="text-[14px] text-text-dim">
-                  Lv.{t.level} · {t.probability} · {t.condition}
+                  Lv.{t.probabilityLevel} · {t.condition}
                 </div>
               </button>
             )
@@ -719,7 +719,7 @@ function ComponentsStep({
               >
                 <div className="text-sm font-medium">{e.name}</div>
                 <div className="text-[14px] text-text-dim">
-                  Lv.{e.level} · {e.probability} · {e.description}
+                  Lv.{e.probabilityLevel} · {e.description}
                 </div>
               </button>
             )
@@ -781,8 +781,8 @@ function ResultStep({
       setSaving(false)
     }
   }
-  const triggerComps = data.components.filter((c): c is TriggerComponent => state.triggerComponentIds.includes(c.id) && c.slot === 'trigger')
-  const effectComps = data.components.filter((c): c is EffectComponent => state.effectComponentIds.includes(c.id) && c.slot === 'effect')
+  const triggerComps = data.components.filter((c): c is TriggerComponent => state.triggerComponentIds.includes(c.id) && c.componentType === 'Condition')
+  const effectComps = data.components.filter((c): c is EffectComponent => state.effectComponentIds.includes(c.id) && c.componentType === 'Function')
 
   return (
     <div>
