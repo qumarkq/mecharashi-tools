@@ -459,7 +459,7 @@ export interface Backpack {
 
 // ─── 元件（v1.3 更新）────────────────────────────────────────────────────────
 
-interface ComponentBase {
+export interface ComponentBase {
   id: string
   name: string
   moduleSubtype: number        // 1–11，對應 ModuleSubtype enum

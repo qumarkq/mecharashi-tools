@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useMemo } from 'react'
-import type { Module, Mech, ConditionalEffect, ModuleLevel, UserProfile, Pilot, PilotSkill, SkillEffect, SkillCondition, Weapon, WeaponSkill, Component, ConditionComponent, FunctionComponent } from '../../types'
+import type { Module, Mech, ConditionalEffect, ModuleLevel, UserProfile, Pilot, PilotSkill, SkillEffect, SkillCondition, Weapon, WeaponSkill, Component, ComponentBase, ConditionComponent, FunctionComponent } from '../../types'
 import { formatWeaponReq } from '../../types'
 import { ModuleRarity, MechPartPosition, ModuleSlot, ModuleSource, ModuleDataSource, ConditionalTrigger, PilotClass, MechLicense, ItemRarity, SkillType, WeaponType, WeaponKind, WeaponEquipSlot, RangeType, WeaponRarity, MechRestriction, SkillActivation, ComponentType, ModuleSubtype, ConditionType, EffectType, ComponentsWType } from '../../types/enums'
 import { getModules, getMechs, updateModule, updateMech, getPilots, updatePilot, getWeapons, updateWeapon, getComponents, updateComponent } from '../../lib/firestoreApi'
@@ -393,7 +393,7 @@ function ComponentEditPanel({
 
   useEffect(() => { setForm({ ...comp }) }, [comp])
 
-  function updateBase<K extends keyof (ConditionComponent & FunctionComponent)>(key: K, value: (ConditionComponent & FunctionComponent)[K]) {
+  function updateBase<K extends keyof ComponentBase>(key: K, value: ComponentBase[K]) {
     setForm((f) => ({ ...f, [key]: value }))
   }
 
