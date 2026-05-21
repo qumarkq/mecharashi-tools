@@ -23,8 +23,8 @@
 <header class="hero yellow">
   <div class="hero-badge yellow">◆ Data Model</div>
   <h1>components<span>元件資料 · COMPONENT DATA</span></h1>
-  <p class="hero-sub">觸元件（觸發條件）+ 應元件（觸發後效果）</p>
-  <div class="version-badge" style="background:var(--accent-yellow);color:#000;">UPDATED v1.2</div>
+  <p class="hero-sub">觸元件（Condition）+ 應元件（Function）</p>
+  <div class="version-badge" style="background:var(--accent-yellow);color:#000;">UPDATED v1.5</div>
 </header>
 
 <main class="container">
@@ -32,7 +32,7 @@
 <section class="section">
   <div class="section-label" style="color:var(--accent-yellow);">設計說明</div>
   <div class="section-title">觸元件 / 應元件 系統</div>
-  <div class="section-desc">元件分為「觸元件」（觸發條件）和「應元件」（觸發後效果），插入武器的對應插槽中。</div>
+  <div class="section-desc">元件分為「觸元件」（Condition）和「應元件」（Function），對應 WIKI mQuery 的 ModuleType 欄位，插入武器的對應插槽中。</div>
 
   <div class="info-block">
     <strong>⚡ 模擬器計算範圍</strong>
@@ -44,16 +44,19 @@
 
 <section class="section">
   <div class="section-label" style="color:var(--accent-yellow);">Schema — 觸元件</div>
-  <div class="section-title">觸元件欄位（slot: "trigger"）</div>
+  <div class="section-title">觸元件欄位（componentType: "Condition"）</div>
 
   <div class="data-table-wrap">
     <table class="data-table">
       <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
       <tr><td>id</td><td>string</td><td>唯一識別碼</td></tr>
       <tr><td>name</td><td>string</td><td>元件名稱（如 "觸元件-共力"）</td></tr>
-      <tr><td>slot</td><td>"trigger"</td><td>固定值，表示觸元件</td></tr>
-      <tr><td>level</td><td>number</td><td>元件等級（如 Lv.4）</td></tr>
-      <tr><td>probability</td><td>string</td><td>觸發概率類型："概率" / "必定"</td></tr>
+      <tr><td>componentType</td><td>"Condition"</td><td>固定值，對應 WIKI ModuleType</td></tr>
+      <tr><td>moduleSubtype</td><td>ModuleSubtype (Enum)</td><td>
+        1=命中相關；2=攻擊方式；3=受擊相關；4=耐久相關；5=AP相關；<br>
+        6=戰中效果；7=戰後效果；8=攻擊結果；9=距離相關；10=特殊效果；11=移動相關
+      </td></tr>
+      <tr><td>probabilityLevel</td><td>number</td><td>元件等級（對應 WIKI ProbabilityLevel 欄位）</td></tr>
       <tr><td>condition</td><td>string</td><td>觸發條件描述（如 "同時使用兩把武器攻擊時"）</td></tr>
       <tr><td>conditionType</td><td>ConditionType (Enum)</td><td>
         dualWield = 同時使用兩把武器<br>
@@ -63,24 +66,38 @@
         targetTorso = 攻擊軀幹<br>
         always = 每次攻擊
       </td></tr>
-      <tr><td>conditionValue</td><td>number?</td><td>條件參數（apCost 類型填 AP 數值）</td></tr>
+      <tr><td>allowedWeaponTypes</td><td>WeaponType[]</td><td>允許裝備的武器種類（預設全給，管理者手動刪除不符合的）</td></tr>
       <tr><td>rarity</td><td>Rarity (Enum)</td><td>稀有度</td></tr>
+      <tr><td>icon</td><td>string</td><td>技能圖示 key（如 <code>"Icon_skill_passive_5223"</code>），由 API IconPath 欄位取得</td></tr>
+      <tr><td>iconLocal</td><td>string</td><td>本機技能圖示路徑（如 <code>"/images/components/Icon_skill_passive_5223.png"</code>）</td></tr>
+      <tr><td>componentsWType</td><td>ComponentsWType (Enum)</td><td>W 類型標記：W = W型元件（僅限 WeaponEquipSlot 為 DUAL_HAND / BACK 的武器可裝備，傷害計算機用）；Normal = 一般元件</td></tr>
     </table>
+  </div>
+
+  <div class="info-block">
+    <strong>🖼 元件圖示雙層結構</strong><br>
+    元件圖示由兩層圖片疊合組成：<br>
+    ① <strong>框架圖</strong>（<code>statetype_Condition.png</code> 或 <code>statetype_Function.png</code>）— 靜態資源，依 componentType 決定，存放於 <code>public/images/components/</code><br>
+    ② <strong>技能圖示</strong>（<code>icon</code> 欄位，如 <code>Icon_skill_passive_5223.png</code>）— 由擷取腳本自動下載，亦存放於 <code>public/images/components/</code><br>
+    顯示時將技能圖示疊加於框架圖上即可。
   </div>
 </section>
 
 <section class="section">
   <div class="section-label" style="color:var(--accent-yellow);">Schema — 應元件</div>
-  <div class="section-title">應元件欄位（slot: "effect"）</div>
+  <div class="section-title">應元件欄位（componentType: "Function"）</div>
 
   <div class="data-table-wrap">
     <table class="data-table">
       <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
       <tr><td>id</td><td>string</td><td>唯一識別碼</td></tr>
       <tr><td>name</td><td>string</td><td>元件名稱（如 "應元件-強擊"）</td></tr>
-      <tr><td>slot</td><td>"effect"</td><td>固定值，表示應元件</td></tr>
-      <tr><td>level</td><td>number</td><td>元件等級（如 Lv.5）</td></tr>
-      <tr><td>probability</td><td>string</td><td>觸發概率類型："概率" / "必定"</td></tr>
+      <tr><td>componentType</td><td>"Function"</td><td>固定值，對應 WIKI ModuleType</td></tr>
+      <tr><td>moduleSubtype</td><td>ModuleSubtype (Enum)</td><td>
+        1=命中相關；2=攻擊方式；3=受擊相關；4=耐久相關；5=AP相關；<br>
+        6=戰中效果；7=戰後效果；8=攻擊結果；9=距離相關；10=特殊效果；11=移動相關
+      </td></tr>
+      <tr><td>probabilityLevel</td><td>number</td><td>元件等級（對應 WIKI ProbabilityLevel 欄位）</td></tr>
       <tr><td>effectType</td><td>EffectType (Enum)</td><td>
         dmgBoost = 增傷（傷害提升%）<br>
         bulletAdd = 增加子彈（發射子彈數+1）<br>
@@ -89,9 +106,34 @@
         apDmgBoost = 每消耗N點AP增傷<br>
         torsoDmgBoost = 對軀幹增傷
       </td></tr>
-      <tr><td>value</td><td>number</td><td>效果數值（20 = 20%，1 = +1 子彈）</td></tr>
       <tr><td>description</td><td>string</td><td>完整效果描述文字</td></tr>
+      <tr><td>allowedWeaponTypes</td><td>WeaponType[]</td><td>允許裝備的武器種類（預設全給，管理者手動刪除不符合的）</td></tr>
       <tr><td>rarity</td><td>Rarity (Enum)</td><td>稀有度（金/紫/藍）</td></tr>
+      <tr><td>icon</td><td>string</td><td>技能圖示 key（如 <code>"Icon_skill_passive_5223"</code>），由 API IconPath 欄位取得</td></tr>
+      <tr><td>iconLocal</td><td>string</td><td>本機技能圖示路徑（如 <code>"/images/components/Icon_skill_passive_5223.png"</code>）</td></tr>
+      <tr><td>componentsWType</td><td>ComponentsWType (Enum)</td><td>W 類型標記：W = W型元件（僅限 WeaponEquipSlot 為 DUAL_HAND / BACK 的武器可裝備，傷害計算機用）；Normal = 一般元件</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label" style="color:var(--accent-yellow);">Enum — ModuleSubtype</div>
+  <div class="section-title">元件子類型（對應 WIKI ModuleSubtype 欄位）</div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>值</th><th>Key</th><th>說明</th></tr>
+      <tr><td>1</td><td>HIT_RELATED</td><td>命中相關</td></tr>
+      <tr><td>2</td><td>ATTACK_METHOD</td><td>攻擊方式</td></tr>
+      <tr><td>3</td><td>HIT_RECEIVED</td><td>受擊相關</td></tr>
+      <tr><td>4</td><td>DURABILITY</td><td>耐久相關</td></tr>
+      <tr><td>5</td><td>AP_RELATED</td><td>AP相關</td></tr>
+      <tr><td>6</td><td>BATTLE_EFFECT</td><td>戰中效果</td></tr>
+      <tr><td>7</td><td>POST_BATTLE</td><td>戰後效果</td></tr>
+      <tr><td>8</td><td>ATTACK_RESULT</td><td>攻擊結果</td></tr>
+      <tr><td>9</td><td>RANGE_RELATED</td><td>距離相關</td></tr>
+      <tr><td>10</td><td>SPECIAL_EFFECT</td><td>特殊效果</td></tr>
+      <tr><td>11</td><td>MOVEMENT_RELATED</td><td>移動相關</td></tr>
     </table>
   </div>
 </section>
