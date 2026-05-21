@@ -234,11 +234,28 @@ export type BuffType = typeof BuffType[keyof typeof BuffType];
 
 // ─── 元件 ────────────────────────────────────────────────────────────────────
 
-export const ComponentSlot = {
-  TRIGGER: 'trigger',
-  EFFECT:  'effect',
+// 對應 WIKI mQuery ModuleType
+export const ComponentType = {
+  CONDITION: 'Condition', // 觸元件
+  FUNCTION:  'Function',  // 應元件
 } as const;
-export type ComponentSlot = typeof ComponentSlot[keyof typeof ComponentSlot];
+export type ComponentType = typeof ComponentType[keyof typeof ComponentType];
+
+// 對應 WIKI mQuery ModuleSubtype（數字 1–11）
+export const ModuleSubtype = {
+  HIT_RELATED:      1,  // 命中相關
+  ATTACK_METHOD:    2,  // 攻擊方式
+  HIT_RECEIVED:     3,  // 受擊相關
+  DURABILITY:       4,  // 耐久相關
+  AP_RELATED:       5,  // AP相關
+  BATTLE_EFFECT:    6,  // 戰中效果
+  POST_BATTLE:      7,  // 戰後效果
+  ATTACK_RESULT:    8,  // 攻擊結果
+  RANGE_RELATED:    9,  // 距離相關
+  SPECIAL_EFFECT:   10, // 特殊效果
+  MOVEMENT_RELATED: 11, // 移動相關
+} as const;
+export type ModuleSubtype = typeof ModuleSubtype[keyof typeof ModuleSubtype];
 
 export const ConditionType = {
   DUAL_WIELD:   'dualWield',
@@ -259,6 +276,13 @@ export const EffectType = {
   TORSO_DMG:    'torsoDmgBoost',
 } as const;
 export type EffectType = typeof EffectType[keyof typeof EffectType];
+
+// W type：僅 WeaponEquipSlot 為 DUAL_HAND / BACK 的武器可裝備（傷害計算機用）
+export const ComponentsWType = {
+  W:      'W',
+  NORMAL: 'Normal',
+} as const;
+export type ComponentsWType = typeof ComponentsWType[keyof typeof ComponentsWType];
 
 // ─── 資料維護 / 用戶權限 ──────────────────────────────────────────────────────
 
