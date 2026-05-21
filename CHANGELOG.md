@@ -38,6 +38,7 @@
 
 ### 🐛 修復
 
+- 修正因discriminant 導致的build失敗 (`0d98878`)
 - **admin**: 修正武器表單 attack 欄位型別不符導致 build 失敗 (`05dc704`)
 - 修正build因Weapon 的資料型別調整失敗的bug (`f863548`)
 - **admin**: 移除 AdminPage 未使用的 WeaponRequirement import (`6cf5528`)
@@ -57,6 +58,7 @@
 
 ### 📚 文件
 
+- 更新enum文件 (`4bf813f`)
 - 更新開發進度文件 (`be2d378`)
 - 新增手機排版計畫書 (`9373aa1`)
 
