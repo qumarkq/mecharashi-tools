@@ -350,10 +350,10 @@ function ExclusiveWeaponPanel({ weapon, loading, talentNames }: { weapon: Weapon
 
 const ND_ORDER = ['α', 'β', 'γ1', 'γ2']
 const ND_POSITION_CLASS: Record<string, string> = {
-  'α':  'row-start-1 col-start-1',
-  'β':  'row-start-2 col-start-1',
-  'γ1': 'row-start-1 col-start-2',
-  'γ2': 'row-start-2 col-start-2',
+  'α':  'sm:row-start-1 sm:col-start-1',
+  'β':  'sm:row-start-2 sm:col-start-1',
+  'γ1': 'sm:row-start-1 sm:col-start-2',
+  'γ2': 'sm:row-start-2 sm:col-start-2',
 }
 
 function NdLevelContent({ level }: { level: NdLevel }) {
@@ -768,7 +768,7 @@ export default function PilotDetailPage() {
                   </div>
                 </div>
               )}
-              <div className="grid grid-cols-2 grid-rows-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-rows-2 gap-3">
                 {ND_ORDER.map((zoneName) => {
                   const nd = (pilot.neuralDrive ?? []).find((d) => d.name === zoneName)
                   return (

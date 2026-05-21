@@ -260,18 +260,18 @@ export default function ModulesPage() {
 
       {/* Filters */}
       <div className="bg-bg-card border border-border rounded-xl p-4 mb-6 flex flex-col gap-3" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            placeholder="搜尋模組..."
-            className="flex-1 bg-bg-dark border border-border rounded-lg px-3 py-1.5 text-sm text-text-primary placeholder:text-text-dim focus:outline-none focus:border-border-accent"
-          />
+        <input
+          type="text"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          placeholder="搜尋模組..."
+          className="w-full bg-bg-dark border border-border rounded-lg px-3 py-1.5 text-sm text-text-primary placeholder:text-text-dim focus:outline-none focus:border-border-accent"
+        />
+        <div className="flex flex-wrap gap-x-4 gap-y-1.5 items-center">
           {(['name', 'desc'] as const).map((scope) => {
             const checked = scope === 'name' ? searchByName : searchByDesc
             const setter = scope === 'name' ? setSearchByName : setSearchByDesc
-            const label  = scope === 'name' ? '名稱' : '能力'
+            const label  = scope === 'name' ? '搜名稱' : '搜能力'
             return (
               <label key={scope} className="flex items-center gap-1.5 cursor-pointer select-none">
                 <input
@@ -284,6 +284,15 @@ export default function ModulesPage() {
               </label>
             )
           })}
+          <label className="flex items-center gap-1.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={showBuiltIn}
+              onChange={(e) => setShowBuiltIn(e.target.checked)}
+              className="accent-accent-orange w-3.5 h-3.5"
+            />
+            <span className="text-xs text-text-secondary">顯示副模組</span>
+          </label>
         </div>
         <div className="flex flex-wrap gap-2 items-center">
           <span className="text-xs text-text-dim mr-1">模組類型</span>
@@ -297,17 +306,6 @@ export default function ModulesPage() {
               {SLOT_LABELS[slot]}
             </button>
           ))}
-        </div>
-        <div className="flex flex-wrap gap-2 items-center">
-          <label className="flex items-center gap-1.5 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={showBuiltIn}
-              onChange={(e) => setShowBuiltIn(e.target.checked)}
-              className="accent-accent-orange w-3.5 h-3.5"
-            />
-            <span className="text-xs text-text-secondary">顯示副模組</span>
-          </label>
         </div>
         <div className="flex flex-wrap gap-2 items-center">
           <span className="text-xs text-text-dim mr-1">稀有度</span>
