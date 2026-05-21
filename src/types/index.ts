@@ -457,46 +457,38 @@ export interface Backpack {
   }
 }
 
-// ─── 元件（v1.2 更新）────────────────────────────────────────────────────────
+// ─── 元件（v1.3 更新）────────────────────────────────────────────────────────
 
-export interface TriggerComponent {
+interface ComponentBase {
   id: string
   name: string
-  slot: 'trigger'
-  level: number
-  probability: '概率' | '必定'
-  condition: string
-  conditionType:
-    | 'dualWield'
-    | 'singleWield'
-    | 'firstAttack'
-    | 'apCost'
-    | 'targetTorso'
-    | 'always'
-  conditionValue: number | null
-  rarity: string
-}
-
-export interface EffectComponent {
-  id: string
-  name: string
-  slot: 'effect'
-  level: number
-  probability: '概率' | '必定'
-  /** 效果類型（僅收錄傷害模擬器需要的 6 類）*/
-  effectType:
-    | 'dmgBoost'
-    | 'bulletAdd'
-    | 'multiplierBoost'
-    | 'armorBreak'
-    | 'apDmgBoost'
-    | 'torsoDmgBoost'
-  value: number
+  moduleSubtype: number        // 1–11，對應 ModuleSubtype enum
+  probabilityLevel: number     // 對應 WIKI ProbabilityLevel
   description: string
-  rarity: string
+  allowedWeaponTypes: string[] // WeaponType[]，預設全給
+  rarity: string               // ItemRarity
+  icon?: string                // 技能圖示 key（如 "Icon_skill_passive_5223"）
+  iconLocal?: string           // 本機路徑（"/images/components/..."）
+  componentsWType: 'W' | 'Normal'
 }
 
-export type Component = TriggerComponent | EffectComponent
+export interface ConditionComponent extends ComponentBase {
+  componentType: 'Condition'
+  conditionType: 'dualWield' | 'singleWield' | 'firstAttack' | 'apCost' | 'targetTorso' | 'always'
+  condition: string            // 觸發條件描述文字
+}
+
+export interface FunctionComponent extends ComponentBase {
+  componentType: 'Function'
+  effectType: 'dmgBoost' | 'bulletAdd' | 'multiplierBoost' | 'armorBreak' | 'apDmgBoost' | 'torsoDmgBoost'
+}
+
+export type Component = ConditionComponent | FunctionComponent
+
+/** @deprecated 舊命名，保留型別別名避免一次性重構負擔 */
+export type TriggerComponent = ConditionComponent
+/** @deprecated 舊命名，保留型別別名避免一次性重構負擔 */
+export type EffectComponent = FunctionComponent
 
 // ─── 機師個別科研（v1.1 新增）────────────────────────────────────────────────
 
