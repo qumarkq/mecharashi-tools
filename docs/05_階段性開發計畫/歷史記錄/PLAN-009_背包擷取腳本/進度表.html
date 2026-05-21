@@ -66,7 +66,7 @@
     <span>›</span>
     <a href="../../index.html">階段性開發計畫</a>
     <span>›</span>
-    <a href="../index.html">執行中</a>
+    <a href="../index.html">歷史記錄</a>
     <span>›</span>
     <span class="current">PLAN-009 進度表</span>
   </div>
@@ -164,7 +164,7 @@
         <div class="task-detail task-file">scripts/scrape-backpacks.js</div>
         <div class="task-detail">驗證 SSSR 背包解析正確（拯救者背包 60701106 為測試案例）；驗證 non-SSSR 無 mainSkill 欄位</div>
       </div>
-      <span class="status pending">Pending</span>
+      <span class="status done">✓ Done</span>
     </div>
   </div>
 
@@ -173,28 +173,28 @@
     <div class="task-group-header">
       <div class="task-group-title">Phase 3 — 資料匯入與管理員補填</div>
       <div class="task-group-meta">Firestore backpacks collection</div>
-      <span class="status pending">Pending</span>
+      <span class="status done">✓ Done</span>
     </div>
     <div class="task-row">
       <div>
         <div class="task-name">全量執行腳本寫入 Firestore</div>
         <div class="task-detail">node scripts/scrape-backpacks.js（互動確認）</div>
       </div>
-      <span class="status pending">Pending</span>
+      <span class="status done">Done</span>
     </div>
     <div class="task-row">
       <div>
         <div class="task-name">管理員補填非 SS 背包 mainSkill 手動欄位</div>
         <div class="task-detail">dmg / crit / critDmg / acc / specialEffects（非 SS 背包無 API 資料，需人工填入）</div>
       </div>
-      <span class="status admin">Admin</span>
+      <span class="status done">Done</span>
     </div>
     <div class="task-row">
       <div>
         <div class="task-name">驗證 assemblableArmorType 填值正確性</div>
         <div class="task-detail">確認各背包的機甲類型限制正確，特別是原本 mechRestriction 為 null 的背包</div>
       </div>
-      <span class="status admin">Admin</span>
+      <span class="status done">Done</span>
     </div>
   </div>
 </section>
