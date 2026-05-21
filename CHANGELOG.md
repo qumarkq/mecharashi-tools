@@ -4,7 +4,7 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [Unreleased] - 2026-05-20
+## [Unreleased] - 2026-05-21
 
 ### ⚠ 重大變更
 
@@ -38,6 +38,10 @@
 - **scripts**: 修正爬蟲腳本模組 schema 與文件規範不符 (`0cad3a9`)
 - **page**: 機甲屬性火力與剩餘出力改從部件累加計算 (`958991d`)
 - **scraper**: 修正 CHANGELOG 自動 commit 過濾 regex 支援中文訊息 (`f0145d0`)
+
+### ♻️ 重構
+
+- 重構頁面目錄結構並新增背包功能 (`e4845db`)
 
 ### 📊 資料更新
 
