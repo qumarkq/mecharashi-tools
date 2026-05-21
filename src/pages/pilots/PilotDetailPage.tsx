@@ -1,6 +1,8 @@
 ﻿import { useState, useRef, useLayoutEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, Link } from 'react-router-dom'
+import { BottomSheet } from '../../components/BottomSheet'
+import { useIsMobile } from '../../hooks/useIsMobile'
 import type { PilotStats, NeuralDrive, Weapon } from '../../types'
 import { formatWeaponReq } from '../../types'
 type NdLevel = NeuralDrive['levels'][number]
@@ -180,6 +182,60 @@ const WEAPON_RARITY_CLS: Record<string, string> = {
   A:   'text-text-secondary bg-bg-card border-border',
 }
 
+function WeaponDetailContent({ weapon }: { weapon: Weapon }) {
+  const rangeStr = weapon.rangeType === 'ring'
+    ? `${weapon.maxRange}+`
+    : `${weapon.minRange}-${weapon.maxRange}`
+  const rarityCls = WEAPON_RARITY_CLS[weapon.rarity] ?? 'text-text-dim border-border'
+
+  return (
+    <div className="bg-bg-card border border-border-accent rounded-xl overflow-hidden text-xs">
+      <div className="px-4 py-3 border-b border-border bg-accent-yellow/5">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="font-bold text-sm text-text-primary">{weapon.name}</span>
+          <span className={`text-[13px] px-1.5 py-0.5 rounded border font-bold ${rarityCls}`}>
+            {weapon.rarity}
+          </span>
+        </div>
+        <p className="text-text-dim">{weapon.type} · {weapon.kind} · 射程 {rangeStr}</p>
+      </div>
+      <div className="px-4 py-3 grid grid-cols-2 gap-x-6 gap-y-1 border-b border-border">
+        {[
+          { label: '攻擊力', value: weapon.attack },
+          { label: '精度',   value: weapon.accuracy },
+          { label: '暴擊值', value: weapon.critValue },
+          { label: '重量',   value: weapon.weight },
+          { label: '彈藥量', value: weapon.ammoCount },
+          { label: '連擊數', value: weapon.hitCount },
+          { label: '觸發槽', value: weapon.triggerSlots },
+          { label: '效果槽', value: weapon.effectSlots },
+        ].map(({ label, value }) => (
+          <div key={label} className="flex justify-between">
+            <span className="text-text-dim">{label}</span>
+            <span className="text-text-primary font-medium font-[JetBrains_Mono,monospace]">{value}</span>
+          </div>
+        ))}
+      </div>
+      {weapon.skills.length > 0 && (
+        <div className="px-4 py-3 space-y-2.5">
+          <div className="text-[13px] text-text-dim tracking-widest uppercase">武器技能</div>
+          {weapon.skills.map((sk, i) => (
+            <div key={i}>
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="font-bold text-text-primary">{sk.name}</span>
+                <span className="text-[13px] text-text-dim bg-bg-dark border border-border px-1.5 py-0.5 rounded">
+                  {ACTIVATION_LABEL[sk.activation] ?? sk.activation}
+                </span>
+              </div>
+              <p className="text-text-secondary leading-relaxed">{highlightNumbers(sk.description)}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function WeaponDetailTooltip({ weapon, x, anchorTop }: { weapon: Weapon; x: number; anchorTop: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const [top, setTop] = useState(anchorTop)
@@ -190,57 +246,9 @@ function WeaponDetailTooltip({ weapon, x, anchorTop }: { weapon: Weapon; x: numb
     setTop(Math.max(8, Math.min(anchorTop, window.innerHeight - h - 8)))
   }, [anchorTop, weapon])
 
-  const rangeStr = weapon.rangeType === 'ring'
-    ? `${weapon.maxRange}+`
-    : `${weapon.minRange}-${weapon.maxRange}`
-  const rarityCls = WEAPON_RARITY_CLS[weapon.rarity] ?? 'text-text-dim border-border'
-
   return createPortal(
-    <div ref={ref} className="fixed z-50 pointer-events-none" style={{ left: x, top }}>
-      <div className="w-80 bg-bg-card border border-border-accent rounded-xl shadow-2xl overflow-hidden text-xs">
-        <div className="px-4 py-3 border-b border-border bg-accent-yellow/5">
-          <div className="flex items-center gap-2 mb-0.5">
-            <span className="font-bold text-sm text-text-primary">{weapon.name}</span>
-            <span className={`text-[13px] px-1.5 py-0.5 rounded border font-bold ${rarityCls}`}>
-              {weapon.rarity}
-            </span>
-          </div>
-          <p className="text-text-dim">{weapon.type} · {weapon.kind} · 射程 {rangeStr}</p>
-        </div>
-        <div className="px-4 py-3 grid grid-cols-2 gap-x-6 gap-y-1 border-b border-border">
-          {[
-            { label: '攻擊力', value: weapon.attack },
-            { label: '精度',   value: weapon.accuracy },
-            { label: '暴擊值', value: weapon.critValue },
-            { label: '重量',   value: weapon.weight },
-            { label: '彈藥量', value: weapon.ammoCount },
-            { label: '連擊數', value: weapon.hitCount },
-            { label: '觸發槽', value: weapon.triggerSlots },
-            { label: '效果槽', value: weapon.effectSlots },
-          ].map(({ label, value }) => (
-            <div key={label} className="flex justify-between">
-              <span className="text-text-dim">{label}</span>
-              <span className="text-text-primary font-medium font-[JetBrains_Mono,monospace]">{value}</span>
-            </div>
-          ))}
-        </div>
-        {weapon.skills.length > 0 && (
-          <div className="px-4 py-3 space-y-2.5">
-            <div className="text-[13px] text-text-dim tracking-widest uppercase">武器技能</div>
-            {weapon.skills.map((sk, i) => (
-              <div key={i}>
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="font-bold text-text-primary">{sk.name}</span>
-                  <span className="text-[13px] text-text-dim bg-bg-dark border border-border px-1.5 py-0.5 rounded">
-                    {ACTIVATION_LABEL[sk.activation] ?? sk.activation}
-                  </span>
-                </div>
-                <p className="text-text-secondary leading-relaxed">{highlightNumbers(sk.description)}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+    <div ref={ref} className="fixed z-50 pointer-events-none w-80" style={{ left: x, top }}>
+      <WeaponDetailContent weapon={weapon} />
     </div>,
     document.body
   )
@@ -248,10 +256,12 @@ function WeaponDetailTooltip({ weapon, x, anchorTop }: { weapon: Weapon; x: numb
 
 function ExclusiveWeaponPanel({ weapon, loading, talentNames }: { weapon: Weapon | null; loading: boolean; talentNames: string[] }) {
   const cardRef = useRef<HTMLDivElement>(null)
+  const isMobile = useIsMobile()
   const [tooltipPos, setTooltipPos] = useState<{ x: number; anchorTop: number } | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   const handleMouseEnter = () => {
-    if (!cardRef.current) return
+    if (isMobile || !cardRef.current) return
     const rect = cardRef.current.getBoundingClientRect()
     const ttW = 320
     const x = rect.left - ttW - 12 < 8 ? rect.right + 12 : rect.left - ttW - 12
@@ -278,14 +288,18 @@ function ExclusiveWeaponPanel({ weapon, loading, talentNames }: { weapon: Weapon
 
   return (
     <>
-      {tooltipPos && (
+      {tooltipPos && !isMobile && (
         <WeaponDetailTooltip weapon={weapon} x={tooltipPos.x} anchorTop={tooltipPos.anchorTop} />
       )}
+      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
+        <WeaponDetailContent weapon={weapon} />
+      </BottomSheet>
       <div
         ref={cardRef}
         className="bg-bg-dark border border-border rounded-xl overflow-hidden text-sm cursor-default hover:border-border-accent transition-colors"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={() => setTooltipPos(null)}
+        onClick={() => { if (isMobile) setSheetOpen(true) }}
       >
         {/* Header: icon + name + rarity */}
         <div className="px-3 py-3 border-b border-border bg-accent-yellow/5">
@@ -325,7 +339,7 @@ function ExclusiveWeaponPanel({ weapon, loading, talentNames }: { weapon: Weapon
         )}
 
         <div className={`px-3 py-2 ${enhancingSkills.length > 0 ? 'border-t border-border' : ''}`}>
-          <p className="text-[13px] text-text-dim text-center">◈ 懸停查看詳細數值</p>
+          <p className="text-[13px] text-text-dim text-center">{isMobile ? '◈ 點選查看詳細數值' : '◈ 懸停查看詳細數值'}</p>
         </div>
       </div>
     </>
@@ -342,6 +356,21 @@ const ND_POSITION_CLASS: Record<string, string> = {
   'γ2': 'row-start-2 col-start-2',
 }
 
+function NdLevelContent({ level }: { level: NdLevel }) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <span className="text-[13px] px-1.5 py-0.5 rounded border text-accent-purple bg-accent-purple/10 border-accent-purple/30 font-bold flex-shrink-0">
+          Lv.{level.level}
+        </span>
+        <span className="text-sm font-bold">{level.skillName}</span>
+      </div>
+      <p className="text-[13px] text-text-dim">芯片總計 ≥{level.minSum}</p>
+      <p className="text-xs text-text-secondary leading-relaxed">{highlightNumbers(level.effect)}</p>
+    </div>
+  )
+}
+
 function NdLevelTooltipPortal({ level, x, anchorTop }: { level: NdLevel; x: number; anchorTop: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const [top, setTop] = useState(anchorTop)
@@ -353,29 +382,23 @@ function NdLevelTooltipPortal({ level, x, anchorTop }: { level: NdLevel; x: numb
   }, [anchorTop, level])
 
   return createPortal(
-    <div ref={ref} className="fixed z-50 pointer-events-none" style={{ left: x, top }}>
-      <div className="w-72 bg-bg-card border border-border-accent rounded-xl p-4 shadow-2xl">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-[13px] px-1.5 py-0.5 rounded border text-accent-purple bg-accent-purple/10 border-accent-purple/30 font-bold flex-shrink-0">
-            Lv.{level.level}
-          </span>
-          <span className="text-sm font-bold truncate">{level.skillName}</span>
-        </div>
-        <p className="text-[13px] text-text-dim mb-2">芯片總計 ≥{level.minSum}</p>
-        <p className="text-xs text-text-secondary leading-relaxed">{highlightNumbers(level.effect)}</p>
+    <div ref={ref} className="fixed z-50 pointer-events-none w-72" style={{ left: x, top }}>
+      <div className="bg-bg-card border border-border-accent rounded-xl p-4 shadow-2xl">
+        <NdLevelContent level={level} />
       </div>
     </div>,
     document.body
   )
 }
 
-function NeuralDriveZoneCard({ nd, zoneName, className, expanded, onLevelHover, onLevelLeave }: {
+function NeuralDriveZoneCard({ nd, zoneName, className, expanded, onLevelHover, onLevelLeave, onLevelClick }: {
   nd: NeuralDrive | undefined
   zoneName: string
   className?: string
   expanded: boolean
   onLevelHover?: (level: NdLevel, el: HTMLElement) => void
   onLevelLeave?: () => void
+  onLevelClick?: (level: NdLevel) => void
 }) {
   if (!nd) {
     return (
@@ -408,6 +431,7 @@ function NeuralDriveZoneCard({ nd, zoneName, className, expanded, onLevelHover, 
               className="flex flex-col items-center gap-1 w-16 rounded-lg p-1.5 hover:bg-bg-card cursor-default transition-colors"
               onMouseEnter={(e) => onLevelHover?.(lv, e.currentTarget)}
               onMouseLeave={onLevelLeave}
+              onClick={() => onLevelClick?.(lv)}
             >
               <SkillIcon iconLocal={lv.iconLocal} name={lv.skillName} />
               <div className="text-center w-full">
@@ -471,9 +495,11 @@ export default function PilotDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { data: pilot, loading } = usePilot(id)
   const { data: exclusiveWeapon, loading: exclusiveWeaponLoading } = usePilotExclusiveWeapon(id)
+  const isMobile = useIsMobile()
   const [activeSkillTab, setActiveSkillTab] = useState<'技能' | '天賦' | '神經驅動'>('天賦')
   const [ndExpanded, setNdExpanded] = useState(false)
   const [ndHoverState, setNdHoverState] = useState<{ level: NdLevel; x: number; anchorTop: number } | null>(null)
+  const [ndSheetLevel, setNdSheetLevel] = useState<NdLevel | null>(null)
 
   const talentEnhancementMap = useMemo(() => {
     const map = new Map<string, string>()
@@ -516,12 +542,14 @@ export default function PilotDetailPage() {
   const regularSkills = pilot.skills.filter(sk => getUnitType(sk) !== '6')
 
   const handleNdLevelHover = (level: NdLevel, el: HTMLElement) => {
+    if (isMobile) return
     const rect = el.getBoundingClientRect()
     const tooltipW = 288
     const x = rect.right + 8 + tooltipW > window.innerWidth ? rect.left - tooltipW - 8 : rect.right + 8
     setNdHoverState({ level, x, anchorTop: rect.top })
   }
-  const handleNdLevelLeave = () => setNdHoverState(null)
+  const handleNdLevelLeave = () => { if (!isMobile) setNdHoverState(null) }
+  const handleNdLevelClick = (level: NdLevel) => { if (isMobile) setNdSheetLevel(level) }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
@@ -699,13 +727,16 @@ export default function PilotDetailPage() {
 
           {activeSkillTab === '神經驅動' && (
             <div className="space-y-4">
-              {ndHoverState && !ndExpanded && (
+              {ndHoverState && !ndExpanded && !isMobile && (
                 <NdLevelTooltipPortal
                   level={ndHoverState.level}
                   x={ndHoverState.x}
                   anchorTop={ndHoverState.anchorTop}
                 />
               )}
+              <BottomSheet open={!!ndSheetLevel && !ndExpanded} onClose={() => setNdSheetLevel(null)}>
+                {ndSheetLevel && <NdLevelContent level={ndSheetLevel} />}
+              </BottomSheet>
               <div className="flex justify-end">
                 <button
                   onClick={() => setNdExpanded(prev => !prev)}
@@ -749,6 +780,7 @@ export default function PilotDetailPage() {
                       expanded={ndExpanded}
                       onLevelHover={handleNdLevelHover}
                       onLevelLeave={handleNdLevelLeave}
+                      onLevelClick={handleNdLevelClick}
                     />
                   )
                 })}

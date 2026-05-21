@@ -1,6 +1,8 @@
 import { useState, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useBackpacks } from '../../hooks/useFirestore'
+import { BottomSheet } from '../../components/BottomSheet'
+import { useIsMobile } from '../../hooks/useIsMobile'
 import {
   BACKPACK_TYPE_CONFIG,
   ASSEMBLABLE_ARMOR_CONFIG,
@@ -49,7 +51,7 @@ function SkillIcon({ icon, name }: { icon?: string; name: string }) {
   )
 }
 
-function BackpackTooltip({ bp }: { bp: Backpack }) {
+function BackpackTooltipContent({ bp }: { bp: Backpack }) {
   const armorLabel =
     bp.assemblableArmorType.length === 0
       ? '無限制'
@@ -58,7 +60,7 @@ function BackpackTooltip({ bp }: { bp: Backpack }) {
           .join('、')
 
   return (
-    <div className="w-80 max-h-[min(90vh,_600px)] flex flex-col bg-bg-card border border-border-accent rounded-xl p-4 shadow-2xl">
+    <>
       {/* Header */}
       <div className="flex items-start gap-3 mb-3 flex-shrink-0">
         <BackpackIcon icon={bp.icon} name={bp.name} rarity={bp.rarity} size="lg" />
@@ -73,7 +75,7 @@ function BackpackTooltip({ bp }: { bp: Backpack }) {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-2">
+      <div className="space-y-2">
         {/* Stats */}
         <div className="bg-bg-dark rounded-lg p-2.5 grid grid-cols-2 gap-x-3 gap-y-1">
           <div className="flex items-center gap-1.5">
@@ -147,6 +149,16 @@ function BackpackTooltip({ bp }: { bp: Backpack }) {
           </div>
         )}
       </div>
+    </>
+  )
+}
+
+function BackpackTooltip({ bp }: { bp: Backpack }) {
+  return (
+    <div className="w-80 max-h-[min(90vh,_600px)] flex flex-col bg-bg-card border border-border-accent rounded-xl p-4 shadow-2xl">
+      <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+        <BackpackTooltipContent bp={bp} />
+      </div>
     </div>
   )
 }
@@ -183,7 +195,9 @@ export default function BackpacksPage() {
   const [typeFilters, setTypeFilters]     = useState<Set<string>>(new Set())
   const [armorFilter, setArmorFilter]     = useState<string | null>(null)
 
+  const isMobile = useIsMobile()
   const [hoverTooltip, setHoverTooltip] = useState<TooltipState | null>(null)
+  const [sheetBp, setSheetBp] = useState<Backpack | null>(null)
 
   const toggleSet = (setter: React.Dispatch<React.SetStateAction<Set<string>>>, value: string) => {
     setter((prev) => {
@@ -248,7 +262,7 @@ export default function BackpacksPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
 
-      {activeBp && activeTooltip && (
+      {activeBp && activeTooltip && !isMobile && (
         <TooltipPortal
           key={activeTooltip.bpId}
           bp={activeBp}
@@ -256,6 +270,10 @@ export default function BackpacksPage() {
           anchorTop={activeTooltip.anchorTop}
         />
       )}
+
+      <BottomSheet open={!!sheetBp} onClose={() => setSheetBp(null)}>
+        {sheetBp && <BackpackTooltipContent bp={sheetBp} />}
+      </BottomSheet>
 
       {/* Header */}
       <div className="mb-8">
@@ -342,8 +360,9 @@ export default function BackpacksPage() {
             <div
               key={bp.id}
               className="bg-bg-card border border-border rounded-xl p-3 cursor-default transition-all select-none hover:border-border-accent hover:bg-bg-card-hover"
-              onMouseEnter={(e) => setHoverTooltip({ bpId: bp.id, ...computePos(e.currentTarget) })}
-              onMouseLeave={() => setHoverTooltip(null)}
+              onMouseEnter={(e) => { if (!isMobile) setHoverTooltip({ bpId: bp.id, ...computePos(e.currentTarget) }) }}
+              onMouseLeave={() => { if (!isMobile) setHoverTooltip(null) }}
+              onClick={() => { if (isMobile) setSheetBp(bp) }}
             >
               {/* Top row */}
               <div className="flex items-start gap-2 mb-2">

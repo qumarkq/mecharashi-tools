@@ -1,6 +1,8 @@
 ﻿import { useState, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
+import { BottomSheet } from '../../components/BottomSheet'
+import { useIsMobile } from '../../hooks/useIsMobile'
 import { useWeapons, usePilotNameMap } from '../../hooks/useFirestore'
 import { WeaponIcon } from '../../components/WeaponIcon'
 import { WeaponRarityBadge } from '../../components/WeaponRarityBadge'
@@ -59,7 +61,7 @@ function formatRangeType(rangeType: string): string {
   return '菱形'
 }
 
-function WeaponTooltip({ weapon, pilotNameMap }: {
+function WeaponTooltipContent({ weapon, pilotNameMap }: {
   weapon: Weapon
   pilotNameMap: Record<string, string>
 }) {
@@ -81,9 +83,9 @@ function WeaponTooltip({ weapon, pilotNameMap }: {
   ]
 
   return (
-    <div className="w-80 max-h-[min(90vh,_640px)] flex flex-col bg-bg-card border border-border-accent rounded-xl p-4 shadow-2xl">
+    <>
       {/* Header */}
-      <div className="flex items-start gap-3 mb-3 flex-shrink-0">
+      <div className="flex items-start gap-3 mb-3">
         <WeaponIcon icon={weapon.icon} name={weapon.name} size="lg" isExclusive={weapon.isExclusive} />
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-1">
@@ -102,7 +104,7 @@ function WeaponTooltip({ weapon, pilotNameMap }: {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-2">
+      <div className="space-y-2">
         {/* Stats grid */}
         <div className="bg-bg-dark rounded-lg p-2.5 grid grid-cols-2 gap-x-3 gap-y-1">
           {stats.map(({ label, value, noRed }) => (
@@ -199,7 +201,16 @@ function WeaponTooltip({ weapon, pilotNameMap }: {
           </div>
         )}
       </div>
+    </>
+  )
+}
 
+function WeaponTooltip({ weapon, pilotNameMap }: { weapon: Weapon; pilotNameMap: Record<string, string> }) {
+  return (
+    <div className="w-80 max-h-[min(90vh,_640px)] flex flex-col bg-bg-card border border-border-accent rounded-xl p-4 shadow-2xl">
+      <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+        <WeaponTooltipContent weapon={weapon} pilotNameMap={pilotNameMap} />
+      </div>
     </div>
   )
 }
@@ -247,7 +258,9 @@ export default function WeaponsPage() {
   const [kindFilters, setKindFilters]         = useState<Set<string>>(new Set())
   const [equipSlotFilter, setEquipSlotFilter] = useState<string | null>(null)
 
+  const isMobile = useIsMobile()
   const [hoverTooltip, setHoverTooltip] = useState<TooltipState | null>(null)
+  const [sheetWeapon, setSheetWeapon] = useState<Weapon | null>(null)
 
   const navigate = useNavigate()
 
@@ -284,10 +297,12 @@ export default function WeaponsPage() {
   }
 
   const handleMouseEnter = (weaponId: string, cardEl: HTMLDivElement) => {
+    if (isMobile) return
     setHoverTooltip({ weaponId, ...computePos(cardEl) })
   }
 
   const handleMouseLeave = () => {
+    if (isMobile) return
     setHoverTooltip(null)
   }
 
@@ -306,7 +321,7 @@ export default function WeaponsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
 
-      {activeWeapon && activeTooltip && (
+      {activeWeapon && activeTooltip && !isMobile && (
         <TooltipPortal
           key={activeTooltip.weaponId}
           weapon={activeWeapon}
@@ -315,6 +330,21 @@ export default function WeaponsPage() {
           anchorTop={activeTooltip.anchorTop}
         />
       )}
+
+      <BottomSheet open={!!sheetWeapon} onClose={() => setSheetWeapon(null)}>
+        {sheetWeapon && (
+          <>
+            <WeaponTooltipContent weapon={sheetWeapon} pilotNameMap={pilotNameMap} />
+            <Link
+              to={`/weapons/${sheetWeapon.id}`}
+              className="mt-4 block text-center text-sm text-accent-orange hover:underline"
+              onClick={() => setSheetWeapon(null)}
+            >
+              查看完整詳情 →
+            </Link>
+          </>
+        )}
+      </BottomSheet>
 
       {/* Header */}
       <div className="mb-8">
@@ -423,7 +453,7 @@ export default function WeaponsPage() {
                 className="bg-bg-card border border-border rounded-xl p-3 cursor-pointer transition-all select-none hover:border-border-accent hover:bg-bg-card-hover"
                 onMouseEnter={(e) => handleMouseEnter(w.id, e.currentTarget)}
                 onMouseLeave={handleMouseLeave}
-                onClick={() => navigate(`/weapons/${w.id}`)}
+                onClick={() => { if (isMobile) setSheetWeapon(w); else navigate(`/weapons/${w.id}`) }}
               >
                 {/* Top row: icon + name/rarity */}
                 <div className="flex items-start gap-2 mb-2">

@@ -5,6 +5,8 @@ import { useModules, useMechNameMap } from '../../hooks/useFirestore'
 import { ModuleSlot, ModuleRarity, MechPartPosition } from '../../types/enums'
 import type { Module } from '../../types'
 import { STAT_LABELS, highlightNumbers } from '../../utils/moduleStats'
+import { BottomSheet } from '../../components/BottomSheet'
+import { useIsMobile } from '../../hooks/useIsMobile'
 
 const SLOT_LABELS: Record<string, string> = {
   [ModuleSlot.SLOT_4]:    '特性模組',
@@ -34,13 +36,56 @@ const CATALOG_SLOTS = [ModuleSlot.SLOT_4, ModuleSlot.SLOT_8, ModuleSlot.UNIVERSA
 
 
 
-function LevelTooltip({ mod, pinned }: { mod: Module; pinned: boolean }) {
+function LevelTooltipRows({ mod }: { mod: Module }) {
   const levels = mod.levels ?? []
-  if (levels.length === 0) return null
-
   const activeStats = STAT_LABELS.filter(({ key }) =>
     levels.some((lv) => ((lv[key] as number | undefined) ?? 0) > 0)
   )
+  return (
+    <>
+      {levels.map((lv) => (
+        <div key={lv.level} className="bg-bg-dark rounded-lg p-2.5">
+          <div className="flex items-start gap-2">
+            <span className="text-[13px] px-1.5 py-0.5 rounded border text-accent-orange bg-accent-orange/10 border-accent-orange/30 font-bold flex-shrink-0">
+              Lv.{lv.level}
+            </span>
+            {lv.description && (
+              <span className="text-[14px] text-text-secondary leading-tight">{highlightNumbers(lv.description)}</span>
+            )}
+          </div>
+          {activeStats.length > 0 && (
+            <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 pl-1">
+              {activeStats.map(({ key, label, color, suffix, prefix }) => {
+                const val = (lv[key] as number | undefined) ?? 0
+                if (!val) return null
+                return (
+                  <span key={key} className={`text-[14px] ${color}`}>
+                    {label}{prefix ?? '+'}{val}{suffix}
+                  </span>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      ))}
+    </>
+  )
+}
+
+function LevelTooltip({ mod, pinned, mobile = false }: { mod: Module; pinned: boolean; mobile?: boolean }) {
+  if ((mod.levels?.length ?? 0) === 0) return null
+
+  if (mobile) {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm font-bold text-accent-orange">{mod.name}</span>
+          <span className="text-[13px] text-text-dim">各等級效果</span>
+        </div>
+        <LevelTooltipRows mod={mod} />
+      </div>
+    )
+  }
 
   return (
     <div className="w-72 max-h-[min(90vh,_600px)] flex flex-col bg-bg-card border border-border-accent rounded-xl p-4 shadow-2xl">
@@ -49,31 +94,7 @@ function LevelTooltip({ mod, pinned }: { mod: Module; pinned: boolean }) {
         <span className="text-[13px] text-text-dim">各等級效果{pinned ? ' · 📌' : ''}</span>
       </div>
       <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-2">
-        {levels.map((lv) => (
-          <div key={lv.level} className="bg-bg-dark rounded-lg p-2.5">
-            <div className="flex items-start gap-2">
-              <span className="text-[13px] px-1.5 py-0.5 rounded border text-accent-orange bg-accent-orange/10 border-accent-orange/30 font-bold flex-shrink-0">
-                Lv.{lv.level}
-              </span>
-              {lv.description && (
-                <span className="text-[14px] text-text-secondary leading-tight">{highlightNumbers(lv.description)}</span>
-              )}
-            </div>
-            {activeStats.length > 0 && (
-              <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 pl-1">
-                {activeStats.map(({ key, label, color, suffix, prefix }) => {
-                  const val = (lv[key] as number | undefined) ?? 0
-                  if (!val) return null
-                  return (
-                    <span key={key} className={`text-[14px] ${color}`}>
-                      {label}{prefix ?? '+'}{val}{suffix}
-                    </span>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        ))}
+        <LevelTooltipRows mod={mod} />
       </div>
       {!pinned && (
         <p className="text-[13px] text-text-dim mt-2 text-center flex-shrink-0">點擊模組固定此視窗</p>
@@ -124,8 +145,10 @@ export default function ModulesPage() {
   const [rarityFilter, setRarityFilter] = useState<string | null>(null)
   const [showBuiltIn, setShowBuiltIn] = useState(false)
 
+  const isMobile = useIsMobile()
   const [hoverTooltip, setHoverTooltip] = useState<TooltipState | null>(null)
   const [pinnedTooltip, setPinnedTooltip] = useState<TooltipState | null>(null)
+  const [sheetMod, setSheetMod] = useState<Module | null>(null)
 
   // Catalog-eligible count (slot exclusion only, ignoring user filters)
   const catalogCount = modules.filter(
@@ -163,13 +186,14 @@ export default function ModulesPage() {
   }
 
   const handleMouseEnter = (modId: string, cardEl: HTMLDivElement) => {
-    if (pinnedTooltip) return
+    if (isMobile || pinnedTooltip) return
     const mod = modules.find((m) => m.id === modId)
     if (!mod?.levels?.length) return
     setHoverTooltip({ modId, ...computePos(cardEl) })
   }
 
   const handleMouseLeave = () => {
+    if (isMobile) return
     if (!pinnedTooltip) setHoverTooltip(null)
   }
 
@@ -177,7 +201,11 @@ export default function ModulesPage() {
     e.stopPropagation()
     const mod = modules.find((m) => m.id === modId)
     if (!mod?.levels?.length) {
-      setPinnedTooltip(null)
+      if (!isMobile) setPinnedTooltip(null)
+      return
+    }
+    if (isMobile) {
+      setSheetMod(mod)
       return
     }
     if (pinnedTooltip?.modId === modId) {
@@ -206,7 +234,7 @@ export default function ModulesPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-12" onClick={handleContainerClick}>
 
-      {activeMod && activeTooltip && (
+      {activeMod && activeTooltip && !isMobile && (
         <TooltipPortal
           key={activeTooltip.modId}
           mod={activeMod}
@@ -215,6 +243,10 @@ export default function ModulesPage() {
           anchorTop={activeTooltip.anchorTop}
         />
       )}
+
+      <BottomSheet open={!!sheetMod} onClose={() => setSheetMod(null)}>
+        {sheetMod && <LevelTooltip mod={sheetMod} pinned={false} mobile />}
+      </BottomSheet>
 
       <div className="mb-8">
         <span className="text-xs text-accent-orange tracking-[3px] uppercase font-[Orbitron,sans-serif]">
