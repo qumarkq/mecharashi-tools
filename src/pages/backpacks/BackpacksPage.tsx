@@ -51,6 +51,19 @@ function SkillIcon({ icon, name }: { icon?: string; name: string }) {
   )
 }
 
+function HighlightedText({ text, className }: { text: string; className?: string }) {
+  const parts = text.split(/([\+\-]?\d+(?:\.\d+)?%?)/g)
+  return (
+    <>
+      {parts.map((part, i) =>
+        /^[\+\-]?\d+(?:\.\d+)?%?$/.test(part) && /\d/.test(part)
+          ? <Num key={i} className={className}>{part}</Num>
+          : <span key={i}>{part}</span>
+      )}
+    </>
+  )
+}
+
 function BackpackTooltipContent({ bp }: { bp: Backpack }) {
   const armorLabel =
     bp.assemblableArmorType.length === 0
@@ -107,7 +120,7 @@ function BackpackTooltipContent({ bp }: { bp: Backpack }) {
             </div>
             <div className="p-2.5 space-y-2">
               <p className="text-[13px] text-text-secondary leading-relaxed">
-                {bp.mainSkill.description}
+                <HighlightedText text={bp.mainSkill.description} className="text-[13px]" />
               </p>
               {(bp.mainSkill.dmg || bp.mainSkill.crit || bp.mainSkill.critDmg || bp.mainSkill.acc) && (
                 <div className="flex flex-wrap gap-x-3 gap-y-0.5">
