@@ -12,7 +12,7 @@ service cloud.firestore {
     function isAdmin() {
       return isAuthenticated() &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)/profile/main)
-          .data.role == 'ADMIN';
+          .data.role in ['ADMIN', 'OWNER'];
     }
 
     // ── 遊戲資料（所有人可讀，管理員可寫）────────────────────────────────────
