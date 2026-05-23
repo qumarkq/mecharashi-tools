@@ -208,7 +208,7 @@ function WeaponTooltipContent({ weapon, pilotNameMap }: {
 function WeaponTooltip({ weapon, pilotNameMap }: { weapon: Weapon; pilotNameMap: Record<string, string> }) {
   return (
     <div className="w-80 max-h-[min(90vh,_640px)] flex flex-col bg-bg-card border border-border-accent rounded-xl p-4 shadow-2xl">
-      <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+      <div className="flex-1 min-h-0 overflow-y-auto p-1">
         <WeaponTooltipContent weapon={weapon} pilotNameMap={pilotNameMap} />
       </div>
     </div>
@@ -289,11 +289,14 @@ export default function WeaponsPage() {
 
   const computePos = (cardEl: HTMLDivElement): { x: number; anchorTop: number } => {
     const rect = cardEl.getBoundingClientRect()
-    const tooltipW = 328
-    const x = rect.right + 8 + tooltipW > window.innerWidth
-      ? rect.left - tooltipW - 8
-      : rect.right + 8
-    return { x, anchorTop: rect.top }
+    const tooltipW = 320
+    const margin = 8
+    const rightX = rect.right + margin
+    const leftX = rect.left - tooltipW - margin
+    const x = rightX + tooltipW > window.innerWidth - margin
+      ? Math.max(margin, leftX)
+      : rightX
+    return { x: Math.max(margin, Math.min(x, window.innerWidth - tooltipW - margin)), anchorTop: rect.top }
   }
 
   const handleMouseEnter = (weaponId: string, cardEl: HTMLDivElement) => {

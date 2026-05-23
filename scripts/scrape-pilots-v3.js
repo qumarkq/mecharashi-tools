@@ -18,6 +18,7 @@
  *   node scripts/scrape-pilots-v3.js --force                   ← 強制重抓（忽略已有資料）
  *   node scripts/scrape-pilots-v3.js --limit=3                 ← 只跑前 N 個
  *   node scripts/scrape-pilots-v3.js --all                     ← 含 SR/R 級別
+ *   node scripts/scrape-pilots-v3.js --quality=SR              ← 指定品質（SSR/SR/R）
  *   node scripts/scrape-pilots-v3.js --debug                   ← 輸出 debug 資訊
  *   node scripts/scrape-pilots-v3.js --patch                   ← 補丁模式：重抓並合併差異欄位（保護 effects/buffIds）
  *   node scripts/scrape-pilots-v3.js --patch --dump-json       ← 只產生暫存比對 JSON，不寫 Firestore
@@ -53,6 +54,7 @@ const ALL_QUALITY      = args.includes('--all');
 const DEBUG            = args.includes('--debug');
 const AUTO             = args.includes('--auto');    // 略過確認，直接寫入 Firestore
 const PATCH_MODE       = args.includes('--patch');   // 補丁模式：重抓並合併差異欄位
+const QUALITY_FILTER   = (args.find(a => a.startsWith('--quality=')) || '').split('=')[1]?.toUpperCase() || '';
 const DUMP_JSON        = args.includes('--dump-json'); // 只輸出暫存 JSON，不寫 Firestore
 // --fetch-portraits 模式依賴本地 JSON，已停用（改用 --force 重新擷取）
 // const FETCH_PORTRAITS  = args.includes('--fetch-portraits');
@@ -87,6 +89,7 @@ function initFirebase() {
     const serviceAccount = JSON.parse(fs.readFileSync(absCredPath, 'utf-8'));
     admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
     db = admin.firestore();
+    db.settings({ ignoreUndefinedProperties: true });
     return true;
   } catch (err) {
     console.log(`  ⚠ Firebase 初始化失敗: ${err.message}`);
@@ -136,7 +139,20 @@ async function promptConfirm(question) {
 const _s2t = OpenCC.Converter({ from: 'cn', to: 'tw' });
 const _t2s = OpenCC.Converter({ from: 'tw', to: 'cn' });
 
-function s2t(text) { return text ? _s2t(text) : text; }
+// OpenCC 轉換後的自訂修正（處理 OpenCC 轉錯的詞）
+const TW_FIXES = [
+  ['回覆', '回復'],  // 回复 → OpenCC 轉成 回覆，修正為 回復
+  ['裡貝', '里貝'],  // 里贝 → OpenCC 轉成 裡貝，修正為 里貝
+];
+
+function applyTwFixes(text) {
+  for (const [wrong, correct] of TW_FIXES) {
+    text = text.replaceAll(wrong, correct);
+  }
+  return text;
+}
+
+function s2t(text) { return text ? applyTwFixes(_s2t(text)) : text; }
 function t2s(text) { return text ? _t2s(text) : text; }
 
 // --pilot 繁體輸入 → 簡體比對
@@ -456,7 +472,10 @@ function buildPilotJson(detail, index) {
     id,
     name:        nameTW,
     fullName:    s2t(detail.RealName || detail.PilotName),
-    rarity:      detail.quality === 'SSR' ? 'S' : detail.quality,
+    rarity:      detail.quality === 'SSR' ? 'S' :
+                 detail.quality === 'SR'  ? 'A' :
+                 detail.quality === 'R'   ? 'B' :
+                 detail.quality === 'UR'  ? 'EX' : detail.quality,
     class:       PROFESSION_MAP[detail.Profession] || s2t(detail.Occupation || detail.Profession || ''),
     faction:     s2t(detail.Camp || ''),
     license:     DRIVE_MAP[detail.AllowedMechaDriveList_DriveAllowedList] || s2t(detail.AllowedMechaDriveList_DriveAllowedList || ''),
@@ -657,6 +676,9 @@ async function runPatchMode() {
     if (targets.length === 0) {
       targets = allPilots.filter(p => (p.PilotName || '').includes(SINGLE_PILOT_CN));
     }
+  } else if (QUALITY_FILTER) {
+    targets = allPilots.filter(p => p.quality === QUALITY_FILTER);
+    console.log(`  → ${QUALITY_FILTER} 品質: ${targets.length} 個`);
   } else if (ALL_QUALITY) {
     targets = allPilots;
   } else {
@@ -773,6 +795,7 @@ async function main() {
   console.log('╚══════════════════════════════════════════════╝');
   console.log(`  圖片: ${DOWNLOAD_IMG ? '✓' : '✗'}  強制: ${FORCE ? '✓' : '✗'}  全品質: ${ALL_QUALITY ? '✓' : '✗'}  Debug: ${DEBUG ? '✓' : '✗'}  自動: ${AUTO ? '✓' : '✗'}`);
   if (SINGLE_PILOT_RAW) console.log(`  指定機師: ${SINGLE_PILOT_RAW}（簡體: ${SINGLE_PILOT_CN}）`);
+  if (QUALITY_FILTER)   console.log(`  指定品質: ${QUALITY_FILTER}`);
   if (isFinite(LIMIT))  console.log(`  數量限制: ${LIMIT}`);
   console.log('');
 
@@ -818,6 +841,9 @@ async function main() {
       console.log('  ' + ssrPilots.map(p => s2t(p.PilotName)).join('、'));
       process.exit(1);
     }
+  } else if (QUALITY_FILTER) {
+    targets = allPilots.filter(p => p.quality === QUALITY_FILTER);
+    console.log(`  → ${QUALITY_FILTER} 品質: ${targets.length} 個`);
   } else if (ALL_QUALITY) {
     targets = allPilots;
   } else {
