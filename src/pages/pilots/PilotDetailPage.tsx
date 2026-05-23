@@ -819,6 +819,18 @@ export default function PilotDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Pilot Lore */}
+      {pilot.lore && (
+        <div className="mt-6 bg-bg-card border border-border rounded-xl overflow-hidden">
+          <div className="px-5 py-3 border-b border-border bg-accent-orange/5">
+            <span className="text-xs text-accent-orange tracking-[3px] uppercase font-[Orbitron,sans-serif]">
+              機師故事
+            </span>
+          </div>
+          <p className="px-5 py-5 text-sm text-text-secondary leading-loose whitespace-pre-line">{pilot.lore}</p>
+        </div>
+      )}
     </div>
   )
 }
