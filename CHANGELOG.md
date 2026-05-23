@@ -4,7 +4,7 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [Unreleased] - 2026-05-21
+## [Unreleased] - 2026-05-23
 
 ### ⚠ 重大變更
 
@@ -12,6 +12,7 @@
 
 ### ✨ 新功能
 
+- 優化機師detail頁面，新增專武二階段資訊 (`9ec55ff`)
 - 因應元件欄位調整，更新types ts (`c16ca37`)
 - 因應元件功能，調整列舉 (`8856bfc`)
 - 管理者解面新增元件管理 (`bebd7f6`)
@@ -58,6 +59,7 @@
 
 ### 📚 文件
 
+- 更新文件 (`c977a59`)
 - 更新enum文件 (`4bf813f`)
 - 更新開發進度文件 (`be2d378`)
 - 新增手機排版計畫書 (`9373aa1`)
