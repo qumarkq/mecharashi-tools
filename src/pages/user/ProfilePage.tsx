@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { getUserBuilds, deleteBuild } from '../../lib/userApi'
 import type { UserBuild } from '../../types'
@@ -11,6 +11,7 @@ type Tab = 'profile' | 'builds'
 
 export default function ProfilePage() {
   const { user, userProfile, loading, signOut, openAuthModal, refreshProfile } = useAuth()
+  const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('profile')
   const [pickerOpen, setPickerOpen] = useState(false)
   const [builds, setBuilds] = useState<UserBuild[]>([])
@@ -174,6 +175,7 @@ export default function ProfilePage() {
                   build={build}
                   deleting={deletingId === build.id}
                   onDelete={() => handleDelete(build.id)}
+                  onLoad={() => navigate('/simulator', { state: { build } })}
                 />
               ))}
             </div>
@@ -200,46 +202,59 @@ function BuildCard({
   build,
   deleting,
   onDelete,
+  onLoad,
 }: {
   build: UserBuild
   deleting: boolean
   onDelete: () => void
+  onLoad: () => void
 }) {
   const date = build.updatedAt
     ? new Date(build.updatedAt).toLocaleDateString('zh-TW', { year: 'numeric', month: 'short', day: 'numeric' })
     : '—'
+
+  const pilotName = build.pilotId?.replace(/^pilot_\d+_/, '') ?? null
+  const mechName = build.mechId?.replace(/^mech_/, '') ?? null
 
   return (
     <div className="bg-bg-card border border-border rounded-xl p-4 flex items-start gap-4 hover:border-border-accent transition-colors">
       <div className="flex-1 min-w-0">
         <div className="font-bold text-base truncate">{build.buildName || '未命名配裝'}</div>
         <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
-          {build.pilotId && (
-            <span className="text-[14px] text-text-dim">
-              機師: <span className="text-text-secondary">{build.pilotId.replace(/^pilot_\d+_/, '')}</span>
+          {pilotName && (
+            <span className="text-[13px] text-text-dim">
+              機師: <span className="text-text-secondary">{pilotName}</span>
             </span>
           )}
-          {build.mechId && (
-            <span className="text-[14px] text-text-dim">
-              機甲: <span className="text-text-secondary">{build.mechId.replace(/^mech_/, '')}</span>
+          {mechName && (
+            <span className="text-[13px] text-text-dim">
+              機甲: <span className="text-text-secondary">{mechName}</span>
             </span>
           )}
           {build.weaponId && (
-            <span className="text-[14px] text-text-dim">
+            <span className="text-[13px] text-text-dim">
               武器: <span className="text-text-secondary">{build.weaponId}</span>
             </span>
           )}
         </div>
-        <div className="text-[14px] text-text-dim mt-1.5">更新：{date}</div>
+        <div className="text-[13px] text-text-dim mt-1.5">更新：{date}</div>
       </div>
-      <button
-        onClick={onDelete}
-        disabled={deleting}
-        className="shrink-0 p-2 text-text-dim hover:text-accent-red transition-colors cursor-pointer disabled:opacity-40"
-        title="刪除配裝"
-      >
-        {deleting ? '...' : '🗑️'}
-      </button>
+      <div className="shrink-0 flex flex-col gap-1 items-end">
+        <button
+          onClick={onLoad}
+          className="px-3 py-1.5 text-xs font-medium bg-accent-orange/10 text-accent-orange border border-accent-orange/30 rounded-lg hover:bg-accent-orange/20 transition-colors cursor-pointer"
+        >
+          載入配裝
+        </button>
+        <button
+          onClick={onDelete}
+          disabled={deleting}
+          className="p-1.5 text-text-dim hover:text-accent-red transition-colors cursor-pointer disabled:opacity-40"
+          title="刪除配裝"
+        >
+          {deleting ? '...' : '🗑️'}
+        </button>
+      </div>
     </div>
   )
 }

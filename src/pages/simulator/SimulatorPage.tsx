@@ -1,5 +1,5 @@
 ﻿import { useState, useRef, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import html2canvas from 'html2canvas'
 import type {
   Pilot,
@@ -13,6 +13,7 @@ import type {
   EffectComponent,
   FloatingModSelection,
   Build,
+  UserBuild,
 } from '../../types'
 import { useAllGameData, type AllGameData } from '../../hooks/useFirestore'
 
@@ -114,11 +115,33 @@ function SelectionCard({
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
+function buildToSimState(build: UserBuild): SimState {
+  return {
+    pilotId: build.pilotId || null,
+    mechId: build.mechId || null,
+    weaponId: build.weaponId || null,
+    backpackId: build.backpackId || null,
+    researchSelections: Object.fromEntries(
+      Object.entries(build.pilotResearch ?? {}).map(([k, v]) => [k, String(v)])
+    ),
+    weaponFloatingMods: build.weaponFloatingMod ?? [],
+    triggerComponentIds: build.triggerComponents ?? [],
+    effectComponentIds: build.effectComponents ?? [],
+  }
+}
+
 export default function SimulatorPage() {
   const { data, loading } = useAllGameData()
   const { user } = useAuth()
-  const [step, setStep] = useState<Step>('pilot')
-  const [state, setState] = useState<SimState>(INITIAL_STATE)
+  const location = useLocation()
+
+  const incomingBuild = (location.state as { build?: UserBuild } | null)?.build
+  const [step, setStep] = useState<Step>(
+    incomingBuild?.pilotId && incomingBuild?.mechId && incomingBuild?.weaponId ? 'result' : 'pilot'
+  )
+  const [state, setState] = useState<SimState>(
+    incomingBuild ? buildToSimState(incomingBuild) : INITIAL_STATE
+  )
   const [exporting, setExporting] = useState(false)
   const exportRef = useRef<HTMLDivElement>(null)
 
