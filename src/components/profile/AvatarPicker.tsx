@@ -27,6 +27,12 @@ export default function AvatarPicker({ isOpen, uid, currentPilotId, googlePhotoU
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
 
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setDragging(false)
+    handleFileChange(e.dataTransfer.files[0] ?? null)
+  }, [])
+
   if (!isOpen) return null
 
   function handleFileChange(selected: File | null) {
@@ -41,12 +47,6 @@ export default function AvatarPicker({ isOpen, uid, currentPilotId, googlePhotoU
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     handleFileChange(e.target.files?.[0] ?? null)
   }
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setDragging(false)
-    handleFileChange(e.dataTransfer.files[0] ?? null)
-  }, [])
 
   async function handleUpload() {
     if (!file || sizeError) return

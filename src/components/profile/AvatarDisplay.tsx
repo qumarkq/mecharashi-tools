@@ -2,7 +2,7 @@ import { usePilot } from '../../hooks/useFirestore'
 import { assetUrl } from '../../utils/assets'
 import type { UserProfile } from '../../types'
 
-type AvatarProfile = Pick<UserProfile, 'displayName' | 'avatarType' | 'avatarUrl' | 'avatarPilotId' | 'photoURL'>
+type AvatarProfile = Pick<UserProfile, 'displayName' | 'gameNickname' | 'avatarType' | 'avatarUrl' | 'avatarPilotId' | 'photoURL'>
 
 const SIZE: Record<string, string> = {
   sm: 'w-8 h-8 text-sm',
@@ -37,23 +37,14 @@ export default function AvatarDisplay({ profile, size = 'md', className = '' }: 
 
   const sizeClass = SIZE[size] ?? SIZE.md
   const base = `${sizeClass} rounded-full object-cover shrink-0 ${className}`
+  const displayLabel = profile.gameNickname || profile.displayName
 
+  // 優先順序：用戶自選頭像（上傳/機師）> 第三方登入頭像 > 縮寫
   if (profile.avatarType === 'upload' && profile.avatarUrl) {
     return (
       <img
         src={profile.avatarUrl}
-        alt={profile.displayName}
-        className={`${base} border-2 border-border`}
-        draggable={false}
-      />
-    )
-  }
-
-  if (profile.avatarType === 'google' && profile.photoURL) {
-    return (
-      <img
-        src={profile.photoURL}
-        alt={profile.displayName}
+        alt={displayLabel}
         className={`${base} border-2 border-border`}
         draggable={false}
       />
@@ -71,8 +62,19 @@ export default function AvatarDisplay({ profile, size = 'md', className = '' }: 
     )
   }
 
-  const color = nameColor(profile.displayName)
-  const initial = (profile.displayName?.[0] ?? '?').toUpperCase()
+  if (profile.photoURL && (profile.avatarType === 'google' || !profile.avatarType)) {
+    return (
+      <img
+        src={profile.photoURL}
+        alt={displayLabel}
+        className={`${base} border-2 border-border`}
+        draggable={false}
+      />
+    )
+  }
+
+  const color = nameColor(displayLabel)
+  const initial = (displayLabel?.[0] ?? '?').toUpperCase()
 
   return (
     <div className={`${base} flex items-center justify-center font-bold border-2 ${color.bg} ${color.text} ${color.border}`}>
