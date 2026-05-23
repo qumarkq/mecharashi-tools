@@ -234,6 +234,25 @@ export function usePilotExclusiveWeapon(pilotId: string | undefined): HookResult
   return { data, loading, error }
 }
 
+export function usePilotExclusiveWeapons(pilotId: string | undefined): HookResult<Weapon[]> {
+  const [data, setData] = useState<Weapon[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    if (!pilotId) { setLoading(false); return }
+    setLoading(true)
+    getWeapons()
+      .then((weapons) => {
+        setData(weapons.filter((w) => w.isExclusive && w.exclusiveFor === pilotId))
+      })
+      .catch((e: unknown) => setError(e instanceof Error ? e : new Error(String(e))))
+      .finally(() => setLoading(false))
+  }, [pilotId])
+
+  return { data, loading, error }
+}
+
 // ── 背包 ──────────────────────────────────────────────────────────────────────
 
 export function useBackpacks(): HookResult<Backpack[]> {

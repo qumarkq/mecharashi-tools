@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useLayoutEffect, useMemo } from 'react'
+﻿import { useState, useRef, useLayoutEffect, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, Link } from 'react-router-dom'
 import { BottomSheet } from '../../components/BottomSheet'
@@ -7,7 +7,7 @@ import type { PilotStats, NeuralDrive, Weapon } from '../../types'
 import { formatWeaponReq } from '../../types'
 type NdLevel = NeuralDrive['levels'][number]
 import { assetUrl } from '../../utils/assets'
-import { usePilot, usePilotExclusiveWeapon } from '../../hooks/useFirestore'
+import { usePilot, usePilotExclusiveWeapons } from '../../hooks/useFirestore'
 import { WeaponIcon } from '../../components/WeaponIcon'
 import { DiffHighlight } from '../../components/DiffHighlight'
 import { highlightNumbers } from '../../utils/moduleStats'
@@ -254,7 +254,10 @@ function WeaponDetailTooltip({ weapon, x, anchorTop }: { weapon: Weapon; x: numb
   )
 }
 
-function ExclusiveWeaponPanel({ weapon, loading, talentNames }: { weapon: Weapon | null; loading: boolean; talentNames: string[] }) {
+function ExclusiveWeaponPanel({ weapon, loading, talentNames, stageCount = 1, stageIdx = 0, onStageChange }: {
+  weapon: Weapon | null; loading: boolean; talentNames: string[]
+  stageCount?: number; stageIdx?: number; onStageChange?: (i: number) => void
+}) {
   const cardRef = useRef<HTMLDivElement>(null)
   const isMobile = useIsMobile()
   const [tooltipPos, setTooltipPos] = useState<{ x: number; anchorTop: number } | null>(null)
@@ -294,6 +297,23 @@ function ExclusiveWeaponPanel({ weapon, loading, talentNames }: { weapon: Weapon
       <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
         <WeaponDetailContent weapon={weapon} />
       </BottomSheet>
+      {stageCount > 1 && onStageChange && (
+        <div className="flex gap-1 mb-2">
+          {Array.from({ length: stageCount }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => onStageChange(i)}
+              className={`flex-1 text-xs px-2 py-1 rounded-lg border transition-colors cursor-pointer ${
+                stageIdx === i
+                  ? 'text-accent-yellow bg-accent-yellow/10 border-accent-yellow/40 font-bold'
+                  : 'text-text-secondary bg-bg-dark border-border hover:text-text-primary hover:border-border-accent'
+              }`}
+            >
+              階段 {['I', 'II', 'III', 'IV'][i]}
+            </button>
+          ))}
+        </div>
+      )}
       <div
         ref={cardRef}
         className="bg-bg-dark border border-border rounded-xl overflow-hidden text-sm cursor-default hover:border-border-accent transition-colors"
@@ -494,9 +514,12 @@ const CLASS_STYLES: Record<string, string> = {
 export default function PilotDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { data: pilot, loading } = usePilot(id)
-  const { data: exclusiveWeapon, loading: exclusiveWeaponLoading } = usePilotExclusiveWeapon(id)
+  const { data: exclusiveWeapons, loading: exclusiveWeaponLoading } = usePilotExclusiveWeapons(id)
+  const [exclusiveWeaponIdx, setExclusiveWeaponIdx] = useState(0)
+  const exclusiveWeapon = exclusiveWeapons[exclusiveWeaponIdx] ?? null
   const isMobile = useIsMobile()
   const [activeSkillTab, setActiveSkillTab] = useState<'技能' | '天賦' | '神經驅動'>('天賦')
+  useEffect(() => { setExclusiveWeaponIdx(0) }, [id])
   const [ndExpanded, setNdExpanded] = useState(false)
   const [ndHoverState, setNdHoverState] = useState<{ level: NdLevel; x: number; anchorTop: number } | null>(null)
   const [ndSheetLevel, setNdSheetLevel] = useState<NdLevel | null>(null)
@@ -688,7 +711,14 @@ export default function PilotDetailPage() {
               ))}
             </div>
             <div className="w-full lg:w-72 lg:flex-shrink-0">
-              <ExclusiveWeaponPanel weapon={exclusiveWeapon} loading={exclusiveWeaponLoading} talentNames={pilot.talents.map(t => t.name)} />
+              <ExclusiveWeaponPanel
+                weapon={exclusiveWeapon}
+                loading={exclusiveWeaponLoading}
+                talentNames={pilot.talents.map(t => t.name)}
+                stageCount={exclusiveWeapons.length}
+                stageIdx={exclusiveWeaponIdx}
+                onStageChange={setExclusiveWeaponIdx}
+              />
             </div>
             </div>
           )}
