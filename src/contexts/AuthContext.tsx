@@ -7,6 +7,7 @@ import {
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendEmailVerification,
   updateProfile,
 } from 'firebase/auth'
 import { auth } from '../lib/firebase'
@@ -75,12 +76,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await updateProfile(credential.user, { displayName })
     // onAuthStateChanged 可能在 updateProfile 前已跑，用 patch 確保 displayName 正確
     await patchUserProfile(credential.user.uid, { displayName })
-    const profile = await getUserProfile(credential.user.uid)
-    setUserProfile(profile)
+    await sendEmailVerification(credential.user)
+    // 寄出驗證信後登出，使用者必須點擊連結驗證後才能正式登入
+    await fbSignOut(auth)
   }
 
   const signInWithEmail = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password)
+    const credential = await signInWithEmailAndPassword(auth, email, password)
+    if (!credential.user.emailVerified) {
+      await sendEmailVerification(credential.user)
+      await fbSignOut(auth)
+      throw Object.assign(new Error('auth/email-not-verified'), { code: 'auth/email-not-verified' })
+    }
   }
 
   const openAuthModal = () => setModalOpen(true)

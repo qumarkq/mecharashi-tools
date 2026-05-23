@@ -50,7 +50,7 @@ export async function getAllUsers(): Promise<UserProfile[]> {
   return snap.docs.map((d) => d.data() as UserProfile)
 }
 
-export async function updateUserRole(uid: string, role: 'USER' | 'ADMIN'): Promise<void> {
+export async function updateUserRole(uid: string, role: 'USER' | 'ADMIN' | 'OWNER'): Promise<void> {
   await setDoc(profileDoc(uid), { role, updatedAt: new Date().toISOString() }, { merge: true })
 }
 

@@ -178,7 +178,7 @@ export default function Layout() {
           >
             👤 個人中心
           </NavLink>
-          {userProfile?.role === 'ADMIN' && (
+          {(userProfile?.role === 'ADMIN' || userProfile?.role === 'OWNER') && (
             <>
               <span className="text-border">|</span>
               <NavLink

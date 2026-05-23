@@ -27,7 +27,7 @@
     <span>MECHARASHI — ENUMS v1.1</span>
   </h1>
   <p class="hero-sub">所有分類欄位的 TypeScript const enum 完整定義 · Firestore 儲存 enum 字串值</p>
-  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.1 — 2026-05-22</div>
+  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.2 — 2026-05-23</div>
 </header>
 
 <main class="container">
@@ -316,9 +316,11 @@
       <div class="enum-item"><span class="enum-key">MANUAL</span><span class="enum-val">手動維護</span></div>
     </div>
     <div class="enum-card">
-      <div class="enum-name">UserRole — 用戶權限</div>
-      <div class="enum-item"><span class="enum-key">USER</span><span class="enum-val">一般用戶</span></div>
-      <div class="enum-item"><span class="enum-key">ADMIN</span><span class="enum-val">管理員（可寫遊戲資料）</span></div>
+      <div class="enum-name">UserRole — 用戶角色</div>
+      <div class="enum-item"><span class="enum-key">GUEST</span><span class="enum-val">訪客（未登入，不儲存於 Firestore）</span></div>
+      <div class="enum-item"><span class="enum-key">USER</span><span class="enum-val">一般註冊用戶</span></div>
+      <div class="enum-item"><span class="enum-key">ADMIN</span><span class="enum-val">管理者（可寫遊戲資料）</span></div>
+      <div class="enum-item"><span class="enum-key">OWNER</span><span class="enum-val">網站擁有者（最高權限，僅透過腳本設定）</span></div>
     </div>
   </div>
 </section>

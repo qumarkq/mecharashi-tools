@@ -3474,8 +3474,8 @@ function UserAdmin({ currentUid }: { currentUid: string }) {
       .finally(() => setUsersLoading(false))
   }, [])
 
-  async function handleToggleRole(uid: string, current: 'USER' | 'ADMIN') {
-    if (uid === currentUid) return
+  async function handleToggleRole(uid: string, current: 'USER' | 'ADMIN' | 'OWNER') {
+    if (uid === currentUid || current === 'OWNER') return
     const next: 'USER' | 'ADMIN' = current === 'ADMIN' ? 'USER' : 'ADMIN'
     setUpdatingUid(uid)
     try {
@@ -3519,14 +3519,16 @@ function UserAdmin({ currentUid }: { currentUid: string }) {
             <div className="flex items-center gap-2 shrink-0">
               <span
                 className={`text-[14px] px-2 py-0.5 rounded border font-medium ${
-                  u.role === 'ADMIN'
+                  u.role === 'OWNER'
+                    ? 'text-amber-400 bg-amber-400/10 border-amber-400/30'
+                    : u.role === 'ADMIN'
                     ? 'text-accent-orange bg-accent-orange/10 border-accent-orange/30'
                     : 'text-text-dim bg-bg-card border-border'
                 }`}
               >
                 {u.role}
               </span>
-              {u.uid !== currentUid && (
+              {u.uid !== currentUid && u.role !== 'OWNER' && (
                 <button
                   onClick={() => handleToggleRole(u.uid, u.role)}
                   disabled={updatingUid === u.uid}
@@ -3613,7 +3615,7 @@ export default function AdminPage() {
     )
   }
 
-  if (!user || userProfile?.role !== 'ADMIN') {
+  if (!user || (userProfile?.role !== 'ADMIN' && userProfile?.role !== 'OWNER')) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="bg-bg-card border border-border rounded-xl p-10 text-center">

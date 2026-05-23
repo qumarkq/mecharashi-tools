@@ -565,7 +565,7 @@ export interface UserProfile {
   displayName: string
   email: string
   photoURL?: string
-  role: 'USER' | 'ADMIN'
+  role: 'USER' | 'ADMIN' | 'OWNER'
   researchLevels: UserResearchLevels
   createdAt: string
   updatedAt: string

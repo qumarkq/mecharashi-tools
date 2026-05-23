@@ -17,6 +17,7 @@ function parseFirebaseError(e: unknown): string {
     case 'auth/wrong-password': return '密碼錯誤'
     case 'auth/invalid-credential': return 'Email 或密碼錯誤'
     case 'auth/too-many-requests': return '嘗試次數過多，請稍後再試'
+    case 'auth/email-not-verified': return 'Email 尚未驗證，已重新寄送驗證信，請查收後再登入'
     default: return e.message
   }
 }
@@ -31,6 +32,8 @@ export default function AuthModal({ isOpen, onClose }: Props) {
   const [displayName, setDisplayName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [verifyPending, setVerifyPending] = useState(false)
+  const [pendingEmail, setPendingEmail] = useState('')
 
   if (!isOpen) return null
 
@@ -40,6 +43,8 @@ export default function AuthModal({ isOpen, onClose }: Props) {
     setConfirmPassword('')
     setDisplayName('')
     setError(null)
+    setVerifyPending(false)
+    setPendingEmail('')
   }
 
   function switchTab(t: 'google' | 'email') {
@@ -76,11 +81,13 @@ export default function AuthModal({ isOpen, onClose }: Props) {
     try {
       if (mode === 'register') {
         await signUpWithEmail(email, password, displayName.trim())
+        setPendingEmail(email)
+        setVerifyPending(true)
       } else {
         await signInWithEmail(email, password)
+        resetForm()
+        onClose()
       }
-      resetForm()
-      onClose()
     } catch (e) {
       setError(parseFirebaseError(e))
     } finally {
@@ -108,127 +115,148 @@ export default function AuthModal({ isOpen, onClose }: Props) {
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-5">
-          <button
-            onClick={() => switchTab('google')}
-            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === 'google'
-                ? 'bg-accent-orange text-black'
-                : 'bg-bg-dark border border-border text-text-secondary hover:text-text-primary'
-            }`}
-          >
-            Google
-          </button>
-          <button
-            onClick={() => switchTab('email')}
-            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === 'email'
-                ? 'bg-accent-orange text-black'
-                : 'bg-bg-dark border border-border text-text-secondary hover:text-text-primary'
-            }`}
-          >
-            Email
-          </button>
-        </div>
-
-        {/* Google */}
-        {tab === 'google' && (
-          <div>
-            <p className="text-xs text-text-dim mb-4 text-center">使用 Google 帳號快速登入</p>
+        {/* 驗證信已寄出畫面 */}
+        {verifyPending && (
+          <div className="text-center py-4">
+            <div className="text-3xl mb-3">📬</div>
+            <p className="text-sm font-medium text-text-primary mb-2">驗證信已寄出</p>
+            <p className="text-xs text-text-dim mb-1">請前往信箱查收</p>
+            <p className="text-xs text-accent-orange font-medium mb-5 break-all">{pendingEmail}</p>
+            <p className="text-xs text-text-dim mb-5">點擊信中連結啟用帳號後，回到此頁用 Email 登入即可。</p>
             <button
-              onClick={handleGoogle}
-              disabled={submitting}
-              className="w-full py-3 bg-white text-gray-800 rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+              onClick={() => { resetForm(); switchTab('email'); switchMode('login') }}
+              className="w-full py-2.5 bg-accent-orange text-black font-bold rounded-lg hover:opacity-90 transition-opacity text-sm"
             >
-              <span className="font-bold text-base leading-none" style={{ fontFamily: 'sans-serif' }}>G</span>
-              使用 Google 帳號登入
+              前往登入
             </button>
-            {error && <p className="text-xs text-accent-red mt-3">{error}</p>}
           </div>
         )}
 
-        {/* Email */}
-        {tab === 'email' && (
-          <div>
-            {/* Login / Register toggle */}
-            <div className="flex gap-1 mb-4 border-b border-border pb-3">
+        {!verifyPending && (
+          <>
+            {/* Tabs */}
+            <div className="flex gap-2 mb-5">
               <button
-                onClick={() => switchMode('login')}
-                className={`px-3 py-1 rounded-md text-xs transition-colors ${
-                  mode === 'login'
-                    ? 'text-accent-orange bg-accent-orange/10 font-medium'
-                    : 'text-text-dim hover:text-text-secondary'
+                onClick={() => switchTab('google')}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  tab === 'google'
+                    ? 'bg-accent-orange text-black'
+                    : 'bg-bg-dark border border-border text-text-secondary hover:text-text-primary'
                 }`}
               >
-                已有帳號，直接登入
+                Google
               </button>
               <button
-                onClick={() => switchMode('register')}
-                className={`px-3 py-1 rounded-md text-xs transition-colors ${
-                  mode === 'register'
-                    ? 'text-accent-orange bg-accent-orange/10 font-medium'
-                    : 'text-text-dim hover:text-text-secondary'
+                onClick={() => switchTab('email')}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  tab === 'email'
+                    ? 'bg-accent-orange text-black'
+                    : 'bg-bg-dark border border-border text-text-secondary hover:text-text-primary'
                 }`}
               >
-                建立新帳號
+                Email
               </button>
             </div>
 
-            <form onSubmit={handleEmailSubmit} className="space-y-3">
-              {mode === 'register' && (
-                <input
-                  type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="顯示名稱"
-                  required
-                  autoComplete="nickname"
-                  className="w-full px-3 py-2 rounded-lg bg-bg-dark border border-border text-text-primary text-sm focus:outline-none focus:border-accent-orange placeholder:text-text-dim"
-                />
-              )}
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
-                required
-                autoComplete="email"
-                className="w-full px-3 py-2 rounded-lg bg-bg-dark border border-border text-text-primary text-sm focus:outline-none focus:border-accent-orange placeholder:text-text-dim"
-              />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="密碼（至少 6 個字元）"
-                required
-                minLength={6}
-                autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-                className="w-full px-3 py-2 rounded-lg bg-bg-dark border border-border text-text-primary text-sm focus:outline-none focus:border-accent-orange placeholder:text-text-dim"
-              />
-              {mode === 'register' && (
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="確認密碼"
-                  required
-                  autoComplete="new-password"
-                  className="w-full px-3 py-2 rounded-lg bg-bg-dark border border-border text-text-primary text-sm focus:outline-none focus:border-accent-orange placeholder:text-text-dim"
-                />
-              )}
+            {/* Google */}
+            {tab === 'google' && (
+              <div>
+                <p className="text-xs text-text-dim mb-4 text-center">使用 Google 帳號快速登入</p>
+                <button
+                  onClick={handleGoogle}
+                  disabled={submitting}
+                  className="w-full py-3 bg-white text-gray-800 rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+                >
+                  <span className="font-bold text-base leading-none" style={{ fontFamily: 'sans-serif' }}>G</span>
+                  使用 Google 帳號登入
+                </button>
+                {error && <p className="text-xs text-accent-red mt-3">{error}</p>}
+              </div>
+            )}
 
-              {error && <p className="text-xs text-accent-red">{error}</p>}
+            {/* Email */}
+            {tab === 'email' && (
+              <div>
+                {/* Login / Register toggle */}
+                <div className="flex gap-1 mb-4 border-b border-border pb-3">
+                  <button
+                    onClick={() => switchMode('login')}
+                    className={`px-3 py-1 rounded-md text-xs transition-colors ${
+                      mode === 'login'
+                        ? 'text-accent-orange bg-accent-orange/10 font-medium'
+                        : 'text-text-dim hover:text-text-secondary'
+                    }`}
+                  >
+                    已有帳號，直接登入
+                  </button>
+                  <button
+                    onClick={() => switchMode('register')}
+                    className={`px-3 py-1 rounded-md text-xs transition-colors ${
+                      mode === 'register'
+                        ? 'text-accent-orange bg-accent-orange/10 font-medium'
+                        : 'text-text-dim hover:text-text-secondary'
+                    }`}
+                  >
+                    建立新帳號
+                  </button>
+                </div>
 
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full py-2.5 bg-accent-orange text-black font-bold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm"
-              >
-                {submitting ? '處理中...' : mode === 'register' ? '建立帳號' : '登入'}
-              </button>
-            </form>
-          </div>
+                <form onSubmit={handleEmailSubmit} className="space-y-3">
+                  {mode === 'register' && (
+                    <input
+                      type="text"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      placeholder="顯示名稱"
+                      required
+                      autoComplete="nickname"
+                      className="w-full px-3 py-2 rounded-lg bg-bg-dark border border-border text-text-primary text-sm focus:outline-none focus:border-accent-orange placeholder:text-text-dim"
+                    />
+                  )}
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email"
+                    required
+                    autoComplete="email"
+                    className="w-full px-3 py-2 rounded-lg bg-bg-dark border border-border text-text-primary text-sm focus:outline-none focus:border-accent-orange placeholder:text-text-dim"
+                  />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="密碼（至少 6 個字元）"
+                    required
+                    minLength={6}
+                    autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                    className="w-full px-3 py-2 rounded-lg bg-bg-dark border border-border text-text-primary text-sm focus:outline-none focus:border-accent-orange placeholder:text-text-dim"
+                  />
+                  {mode === 'register' && (
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="確認密碼"
+                      required
+                      autoComplete="new-password"
+                      className="w-full px-3 py-2 rounded-lg bg-bg-dark border border-border text-text-primary text-sm focus:outline-none focus:border-accent-orange placeholder:text-text-dim"
+                    />
+                  )}
+
+                  {error && <p className="text-xs text-accent-red">{error}</p>}
+
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full py-2.5 bg-accent-orange text-black font-bold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm"
+                  >
+                    {submitting ? '處理中...' : mode === 'register' ? '建立帳號' : '登入'}
+                  </button>
+                </form>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
