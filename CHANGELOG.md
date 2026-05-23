@@ -40,6 +40,7 @@
 
 ### 🐛 修復
 
+- 修正用戶控制異常 (`78356c6`)
 - 修正因discriminant 導致的build失敗 (`0d98878`)
 - **admin**: 修正武器表單 attack 欄位型別不符導致 build 失敗 (`05dc704`)
 - 修正build因Weapon 的資料型別調整失敗的bug (`f863548`)
