@@ -27,7 +27,7 @@
     <span>MECHARASHI — FIRESTORE SCHEMA v1.0</span>
   </h1>
   <p class="hero-sub">用戶設定檔（profile）· 配裝紀錄（builds）· 僅本人可讀寫</p>
-  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.1 — 2026-05-23</div>
+  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.2 — 2026-05-24</div>
 </header>
 
 <main class="container">
@@ -61,6 +61,12 @@
       <tr><td>globalResearch</td><td>object</td><td>玩家的全域科研等級設定</td></tr>
       <tr><td>pilotResearchSelections</td><td>object</td><td>各機師的個別科研選擇（{ pilotId: { slot1: optionIdx, ... } }）</td></tr>
       <tr><td>createdAt</td><td>timestamp</td><td>帳號建立時間</td></tr>
+      <tr><td>avatarType</td><td>'upload' | 'pilot' | 'google' | null</td><td>頭像來源模式；null = 首字母預設頭像</td></tr>
+      <tr><td>avatarUrl</td><td>string | null</td><td>上傳頭像的 Storage 公開 URL（avatarType='upload' 時有值）</td></tr>
+      <tr><td>avatarPilotId</td><td>string | null</td><td>選取機師的 pilotId（avatarType='pilot' 時有值）</td></tr>
+      <tr><td>gameNickname</td><td>string | null</td><td>遊戲內暱稱（選填，最長 30 字）</td></tr>
+      <tr><td>gameServer</td><td>GameServer | null</td><td>遊戲伺服器（選填，enum）：獵豹物流 / 灰燼之子 / 破曉世紀</td></tr>
+      <tr><td>guild</td><td>string | null</td><td>遊戲公會名稱（選填，最長 30 字）</td></tr>
     </table>
   </div>
 </section>

@@ -569,6 +569,13 @@ export interface UserProfile {
   researchLevels: UserResearchLevels
   createdAt: string
   updatedAt: string
+  // PLAN-011 個人檔案管理
+  avatarType?: 'upload' | 'pilot' | 'google' | null
+  avatarUrl?: string | null
+  avatarPilotId?: string | null
+  gameNickname?: string | null
+  gameServer?: import('./enums').GameServer | null
+  guild?: string | null
 }
 
 // ─── 配裝（Firestore userBuilds / 本地快取）───────────────────────────────────

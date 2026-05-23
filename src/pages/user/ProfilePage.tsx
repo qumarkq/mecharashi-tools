@@ -1,23 +1,30 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { getUserBuilds, deleteBuild } from '../../lib/userApi'
 import type { UserBuild } from '../../types'
+import AvatarDisplay from '../../components/profile/AvatarDisplay'
+import AvatarPicker from '../../components/profile/AvatarPicker'
+import ProfileEditForm from '../../components/profile/ProfileEditForm'
+
+type Tab = 'profile' | 'builds'
 
 export default function ProfilePage() {
-  const { user, loading, signOut, openAuthModal } = useAuth()
+  const { user, userProfile, loading, signOut, openAuthModal, refreshProfile } = useAuth()
+  const [tab, setTab] = useState<Tab>('profile')
+  const [pickerOpen, setPickerOpen] = useState(false)
   const [builds, setBuilds] = useState<UserBuild[]>([])
   const [buildsLoading, setBuildsLoading] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!user) return
+    if (!user || tab !== 'builds') return
     setBuildsLoading(true)
     getUserBuilds(user.uid)
       .then(setBuilds)
       .catch(console.error)
       .finally(() => setBuildsLoading(false))
-  }, [user])
+  }, [user, tab])
 
   const handleDelete = async (buildId: string) => {
     if (!user || !confirm('確定要刪除此配裝？')) return
@@ -64,76 +71,127 @@ export default function ProfilePage() {
     )
   }
 
+  // Google 用戶判斷：Firebase Auth 的 photoURL 存在（第三方登入）
+  const googlePhotoUrl = user.photoURL ?? null
+
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <div className="mb-8">
+    <div className="max-w-2xl mx-auto px-4 py-12">
+      <div className="mb-6">
         <span className="text-xs text-accent-orange tracking-[3px] uppercase font-[Orbitron,sans-serif]">User</span>
         <h1 className="text-3xl font-bold mt-2">個人中心</h1>
       </div>
 
-      {/* User info card */}
-      <div className="bg-bg-card border border-border rounded-xl p-6 mb-6 flex items-center gap-5">
-        {user.photoURL ? (
-          <img src={user.photoURL} alt="" className="w-16 h-16 rounded-full object-cover border-2 border-accent-orange/30" />
-        ) : (
-          <div className="w-16 h-16 rounded-full bg-accent-orange/20 border-2 border-accent-orange/30 flex items-center justify-center text-2xl font-bold text-accent-orange">
-            {(user.displayName?.[0] ?? user.email?.[0] ?? '?').toUpperCase()}
-          </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <div className="text-lg font-bold truncate">{user.displayName ?? '用戶'}</div>
-          <div className="text-sm text-text-dim truncate">{user.email}</div>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2">
+      {/* Tab bar */}
+      <div className="flex gap-2 mb-6 border-b border-border">
+        {([['profile', '個人資料'], ['builds', '我的配裝']] as const).map(([key, label]) => (
           <button
-            onClick={signOut}
-            className="px-4 py-2 text-sm bg-bg-dark text-text-dim border border-border rounded-lg hover:text-text-primary hover:border-border-accent transition-colors cursor-pointer"
+            key={key}
+            onClick={() => setTab(key)}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer border-b-2 -mb-px ${
+              tab === key
+                ? 'border-accent-orange text-accent-orange'
+                : 'border-transparent text-text-secondary hover:text-text-primary'
+            }`}
           >
-            登出
+            {label}
           </button>
-        </div>
+        ))}
       </div>
 
-      {/* Builds list */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">我的配裝紀錄</h2>
-          <Link
-            to="/simulator"
-            className="text-sm text-accent-orange no-underline hover:text-accent-orange/80 transition-colors"
-          >
-            + 新增配裝
-          </Link>
-        </div>
-
-        {buildsLoading ? (
-          <div className="bg-bg-card border border-border rounded-xl p-8 text-center text-text-dim">
-            載入配裝中...
+      {/* ── 個人資料 Tab ── */}
+      {tab === 'profile' && userProfile && (
+        <div className="flex flex-col gap-6">
+          {/* Avatar section */}
+          <div className="bg-bg-card border border-border rounded-xl p-6 flex flex-col items-center gap-4">
+            <AvatarDisplay profile={userProfile} size="lg" />
+            <button
+              onClick={() => setPickerOpen(true)}
+              className="px-4 py-2 text-sm bg-bg-dark border border-border rounded-lg text-text-secondary hover:text-text-primary hover:border-border-accent transition-colors cursor-pointer"
+            >
+              更換頭像
+            </button>
+            {/* Email 唯讀 */}
+            <div className="text-xs text-text-dim">{user.email}</div>
           </div>
-        ) : builds.length === 0 ? (
-          <div className="bg-bg-card border border-border rounded-xl p-8 text-center">
-            <div className="text-3xl mb-3">📋</div>
-            <p className="text-text-dim text-sm">尚無儲存的配裝</p>
+
+          {/* 登出按鈕 */}
+          <div className="flex justify-end">
+            <button
+              onClick={signOut}
+              className="px-4 py-2 text-sm bg-bg-dark text-text-dim border border-border rounded-lg hover:text-text-primary hover:border-border-accent transition-colors cursor-pointer"
+            >
+              登出
+            </button>
+          </div>
+
+          {/* Profile form */}
+          <div className="bg-bg-card border border-border rounded-xl p-6">
+            <h2 className="text-sm font-bold text-text-secondary mb-4 uppercase tracking-[2px] font-[Orbitron,sans-serif]">
+              個人資料
+            </h2>
+            <ProfileEditForm
+              profile={userProfile}
+              uid={user.uid}
+              onSaved={refreshProfile}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ── 我的配裝 Tab ── */}
+      {tab === 'builds' && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold">我的配裝紀錄</h2>
             <Link
               to="/simulator"
-              className="inline-block mt-4 px-4 py-2 text-sm bg-accent-orange/10 text-accent-orange border border-accent-orange/30 rounded-lg hover:bg-accent-orange/20 transition-colors no-underline"
+              className="text-sm text-accent-orange no-underline hover:text-accent-orange/80 transition-colors"
             >
-              前往配裝模擬器
+              + 新增配裝
             </Link>
           </div>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {builds.map((build) => (
-              <BuildCard
-                key={build.id}
-                build={build}
-                deleting={deletingId === build.id}
-                onDelete={() => handleDelete(build.id)}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+
+          {buildsLoading ? (
+            <div className="bg-bg-card border border-border rounded-xl p-8 text-center text-text-dim">
+              載入配裝中...
+            </div>
+          ) : builds.length === 0 ? (
+            <div className="bg-bg-card border border-border rounded-xl p-8 text-center">
+              <div className="text-3xl mb-3">📋</div>
+              <p className="text-text-dim text-sm">尚無儲存的配裝</p>
+              <Link
+                to="/simulator"
+                className="inline-block mt-4 px-4 py-2 text-sm bg-accent-orange/10 text-accent-orange border border-accent-orange/30 rounded-lg hover:bg-accent-orange/20 transition-colors no-underline"
+              >
+                前往配裝模擬器
+              </Link>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {builds.map((build) => (
+                <BuildCard
+                  key={build.id}
+                  build={build}
+                  deleting={deletingId === build.id}
+                  onDelete={() => handleDelete(build.id)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Avatar Picker Modal */}
+      {userProfile && (
+        <AvatarPicker
+          isOpen={pickerOpen}
+          uid={user.uid}
+          currentPilotId={userProfile.avatarPilotId}
+          googlePhotoUrl={googlePhotoUrl}
+          onSuccess={refreshProfile}
+          onClose={() => setPickerOpen(false)}
+        />
+      )}
     </div>
   )
 }

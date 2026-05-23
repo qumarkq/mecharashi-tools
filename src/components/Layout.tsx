@@ -1,6 +1,7 @@
 import { Outlet, Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import AvatarDisplay from './profile/AvatarDisplay'
 
 type FontSize = 'sm' | 'md' | 'lg'
 const FONT_SIZE_MAP: Record<FontSize, string> = { sm: '17px', md: '19px', lg: '21px' }
@@ -56,7 +57,7 @@ export default function Layout() {
     navigate('/')
   }
 
-  const initial = user?.displayName?.[0] ?? user?.email?.[0] ?? '?'
+  const initial = (user?.displayName?.[0] ?? user?.email?.[0] ?? '?').toUpperCase()
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -124,10 +125,10 @@ export default function Layout() {
                   }
                   title={user.displayName ?? user.email ?? '個人中心'}
                 >
-                  {user.photoURL ? (
-                    <img src={user.photoURL} alt="" className="w-8 h-8 rounded-full object-cover" />
+                  {userProfile ? (
+                    <AvatarDisplay profile={userProfile} size="sm" />
                   ) : (
-                    initial.toUpperCase()
+                    initial
                   )}
                 </NavLink>
                 <button

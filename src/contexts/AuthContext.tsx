@@ -24,6 +24,7 @@ interface AuthContextValue {
   signUpWithEmail: (email: string, password: string, displayName: string) => Promise<void>
   signInWithEmail: (email: string, password: string) => Promise<void>
   openAuthModal: () => void
+  refreshProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -92,9 +93,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const openAuthModal = () => setModalOpen(true)
 
+  const refreshProfile = async () => {
+    if (!user) return
+    const profile = await getUserProfile(user.uid)
+    setUserProfile(profile)
+  }
+
   return (
     <AuthContext.Provider
-      value={{ user, userProfile, loading, signIn, signOut, signUpWithEmail, signInWithEmail, openAuthModal }}
+      value={{ user, userProfile, loading, signIn, signOut, signUpWithEmail, signInWithEmail, openAuthModal, refreshProfile }}
     >
       {children}
       <AuthModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />

@@ -26,8 +26,8 @@
     安全規則 · 索引 · 遷移計畫
     <span>MECHARASHI — FIRESTORE OPERATIONS v1.0</span>
   </h1>
-  <p class="hero-sub">Firestore Security Rules · 複合索引策略 · JSON → Firestore 資料遷移步驟</p>
-  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.0 — 2026-05-15</div>
+  <p class="hero-sub">Firestore Security Rules · Firebase Storage Rules · 複合索引策略 · JSON → Firestore 資料遷移步驟</p>
+  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.1 — 2026-05-24</div>
 </header>
 
 <main class="container">
@@ -122,9 +122,45 @@ service cloud.firestore {
   </div>
 </section>
 
+<!-- ═══ Firebase Storage 安全規則 ═══ -->
+<section class="section">
+  <div class="section-label blue">02 — Storage Rules</div>
+  <div class="section-title">Firebase Storage 安全規則</div>
+  <div class="section-desc">用戶頭像圖片的存取控制。頭像公開可讀，僅本人能上傳自己的頭像目錄。</div>
+
+  <div class="code-block"><span class="label">storage.rules</span>rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    <span class="comment">// ── 用戶頭像（公開讀，本人限寫）───────────────</span>
+    match /avatars/{uid}/{allPaths=**} {
+      <span class="comment">// 頭像圖片公開可讀（無需登入即可顯示）</span>
+      allow read: if true;
+
+      <span class="comment">// 只有本人可寫入，限制 2MB + 圖片格式</span>
+      allow write: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size &lt; 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+  }
+}</div>
+
+  <div class="note-block">
+    <strong>設計說明</strong>
+    <ul style="padding-left:18px;line-height:2.2;">
+      <li><strong>公開讀取</strong>：頭像需在所有頁面（含未登入狀態）顯示，因此 <code>allow read: if true</code>。</li>
+      <li><strong>2MB 限制</strong>：前端上傳前已壓縮為 WebP（quality 0.85），此處作為後端的雙重防護。</li>
+      <li><strong>image/* 格式限制</strong>：防止非圖片檔案（exe、腳本等）偽裝為頭像上傳。</li>
+      <li><strong>路徑設計</strong>：<code>avatars/{uid}/avatar.webp</code> — 每次上傳覆蓋同一個檔案，避免孤立舊檔累積費用。</li>
+    </ul>
+  </div>
+</section>
+
 <!-- ═══ 索引策略 ═══ -->
 <section class="section">
-  <div class="section-label blue">02 — Indexing</div>
+  <div class="section-label blue">03 — Indexing</div>
   <div class="section-title">複合索引策略</div>
   <div class="section-desc">Firestore 單欄位自動建立索引；以下為需手動設定的複合索引（firestore.indexes.json）。</div>
 
@@ -168,7 +204,7 @@ service cloud.firestore {
 
 <!-- ═══ 資料遷移計畫 ═══ -->
 <section class="section">
-  <div class="section-label blue">03 — Migration Plan</div>
+  <div class="section-label blue">04 — Migration Plan</div>
   <div class="section-title">資料遷移計畫：JSON → Firestore</div>
   <div class="section-desc">Phase 4（Firebase 資料庫建置）的具體執行步驟。</div>
 

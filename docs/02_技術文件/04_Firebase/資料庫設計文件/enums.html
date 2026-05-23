@@ -24,10 +24,10 @@
   <div class="hero-badge blue">◆ TYPE ENUMS</div>
   <h1 style="background:linear-gradient(135deg,#fff 0%,var(--accent-blue) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
     型別枚舉定義
-    <span>MECHARASHI — ENUMS v1.1</span>
+    <span>MECHARASHI — ENUMS v1.2</span>
   </h1>
   <p class="hero-sub">所有分類欄位的 TypeScript const enum 完整定義 · Firestore 儲存 enum 字串值</p>
-  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.2 — 2026-05-23</div>
+  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.3 — 2026-05-24</div>
 </header>
 
 <main class="container">
@@ -322,6 +322,12 @@
       <div class="enum-item"><span class="enum-key">ADMIN</span><span class="enum-val">管理者（可寫遊戲資料）</span></div>
       <div class="enum-item"><span class="enum-key">OWNER</span><span class="enum-val">網站擁有者（最高權限，僅透過腳本設定）</span></div>
     </div>
+    <div class="enum-card">
+      <div class="enum-name">GameServer — 遊戲伺服器</div>
+      <div class="enum-item"><span class="enum-key">LEOPARD_LOGISTICS</span><span class="enum-val">獵豹物流</span></div>
+      <div class="enum-item"><span class="enum-key">ASHES_OF_FIRE</span><span class="enum-val">灰燼之子</span></div>
+      <div class="enum-item"><span class="enum-key">DAWN_CENTURY</span><span class="enum-val">破曉世紀</span></div>
+    </div>
   </div>
 </section>
 
@@ -356,6 +362,13 @@
   B:  <span class="string">'B'</span>,
 } <span class="keyword">as const</span>;
 <span class="keyword">export type</span> <span class="type">ItemRarity</span> = <span class="keyword">typeof</span> ItemRarity[<span class="keyword">keyof typeof</span> ItemRarity];
+
+<span class="keyword">export const</span> <span class="type">GameServer</span> = {
+  LEOPARD_LOGISTICS: <span class="string">'獵豹物流'</span>,
+  ASHES_OF_FIRE:     <span class="string">'灰燼之子'</span>,
+  DAWN_CENTURY:      <span class="string">'破曉世紀'</span>,
+} <span class="keyword">as const</span>;
+<span class="keyword">export type</span> <span class="type">GameServer</span> = <span class="keyword">typeof</span> GameServer[<span class="keyword">keyof typeof</span> GameServer];
 
 <span class="comment">// ... 其餘 enum 依同樣模式定義</span></div>
 </section>

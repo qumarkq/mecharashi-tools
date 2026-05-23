@@ -300,6 +300,13 @@ export const UserRole = {
 } as const;
 export type UserRole = typeof UserRole[keyof typeof UserRole];
 
+export const GameServer = {
+  LEOPARD_LOGISTICS: '獵豹物流',
+  ASHES_OF_FIRE:     '灰燼之子',
+  DAWN_CENTURY:      '破曉世紀',
+} as const;
+export type GameServer = typeof GameServer[keyof typeof GameServer];
+
 // ─── 科研分類常數（與 Firestore globalResearch 結構同步） ──────────────────────
 
 /** 可於科研頁設定的機師職業列表 */
