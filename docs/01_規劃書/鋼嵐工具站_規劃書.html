@@ -17,7 +17,7 @@
   <p class="hero-sub">
     傷害模擬器 · 配裝計算器 · 角色資料庫 · 攻略百科
   </p>
-  <div class="version-badge">V2.1 — Phase 1~3 ✅ · Phase 4/7 進行中 · PLAN 系列持續推進</div>
+  <div class="version-badge">V2.2 — Phase 1/2/4/5 ✅ · Phase 3/7 進行中 · PLAN-012 元件圖鑑新增</div>
 </header>
 
 <main class="container">
@@ -217,13 +217,14 @@
       </div>
     </div>
     <div class="timeline-item">
-      <div class="timeline-phase">Phase 3 ✅</div>
-      <div class="timeline-title">模組圖鑑 + 配裝模擬器基礎 + 匯出分享圖</div>
+      <div class="timeline-phase">Phase 3 🚧</div>
+      <div class="timeline-title">模組圖鑑 + 配裝模擬器基礎 + 匯出分享圖 + 元件圖鑑</div>
       <div class="timeline-tasks">
         <span class="timeline-task">模組圖鑑</span>
         <span class="timeline-task">配裝選擇 UI</span>
         <span class="timeline-task">自動篩選</span>
         <span class="timeline-task">匯出分享圖</span>
+        <span class="timeline-task">元件圖鑑（PLAN-012）</span>
       </div>
     </div>
     <div class="timeline-item">
@@ -286,29 +287,36 @@
   <div class="section-title">接下來的工作</div>
 
   <div class="card-grid">
-    <div class="card purple">
+    <div class="card yellow">
       <div class="card-icon">1️⃣</div>
+      <h3>完成 PLAN-012 · 元件圖鑑</h3>
+      <p>建立 /components 頁面，展示觸元件 / 應元件清單，Firestore 資料與型別均已就緒，估計 2–3 天完成。
+        <a href="../05_階段性開發計畫/執行中/PLAN-012_元件圖鑑/計畫書.html" style="color:var(--accent-cyan);">→ PLAN-012 計畫書</a>
+      </p>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">2️⃣</div>
       <h3>完成 PLAN-001 · 技能 / Buff 架構重構</h3>
       <p>完成 SkillEffect / SkillCondition / GameBuff 型別設計，為 Phase 4 buffs Collection 初始化鋪路。
         <a href="../05_階段性開發計畫/執行中/PLAN-001_技能Buff架構重構/計畫書.html" style="color:var(--accent-cyan);">→ PLAN-001 計畫書</a>
       </p>
     </div>
     <div class="card orange">
-      <div class="card-icon">2️⃣</div>
+      <div class="card-icon">3️⃣</div>
       <h3>完成 PLAN-003 / PLAN-004 剩餘任務</h3>
       <p>武器資料模型優化（3 項待完成）、技能資料抽離至獨立 Collections，提升資料一致性。
         <a href="../05_階段性開發計畫/執行中/PLAN-003_武器資料模型優化/進度表.html" style="color:var(--accent-cyan);">→ PLAN-003 進度表</a>
       </p>
     </div>
     <div class="card blue">
-      <div class="card-icon">3️⃣</div>
+      <div class="card-icon">4️⃣</div>
       <h3>Phase 6 — 內容系統 + 管理後台擴充</h3>
       <p>攻略頁面（Markdown 渲染）、改版資訊時間軸、管理後台 Firestore 遊戲資料直接編輯。
         <a href="../04_進度表/開發進度表.html" style="color:var(--accent-cyan);">→ 開發進度表 Phase 6</a>
       </p>
     </div>
     <div class="card red">
-      <div class="card-icon">4️⃣</div>
+      <div class="card-icon">5️⃣</div>
       <h3>Phase 8 — 傷害計算系統</h3>
       <p>傷害公式引擎、武器技能生效判斷、改裝效果計算、A/B 組合對比。依賴 PLAN-001 架構完成。
         <a href="../02_技術文件/03_遊戲機制/傷害公式.html" style="color:var(--accent-cyan);">→ 傷害公式文件</a>
@@ -320,7 +328,7 @@
 </main>
 
 <footer class="footer">
-  鋼嵐工具站 專案規劃書 v2.0 — Firebase Firestore 全面接管 / 型別枚舉化 / 8 Phase 開發時程<br>
+  鋼嵐工具站 專案規劃書 v2.2 — Firebase Firestore 全面接管 / 型別枚舉化 / 8 Phase 開發時程 / PLAN-012 元件圖鑑<br>
   <a href="../02_技術文件/index.html" style="color:var(--accent-cyan);text-decoration:none;">技術文件</a>
   ｜ <a href="../03_頁面規劃/index.html" style="color:var(--accent-cyan);text-decoration:none;">頁面規劃</a>
   ｜ <a href="../04_進度表/開發進度表.html" style="color:var(--accent-cyan);text-decoration:none;">開發進度表</a>

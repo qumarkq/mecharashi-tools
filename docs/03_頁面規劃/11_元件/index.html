@@ -47,7 +47,7 @@
   <div class="sub-h" style="margin-top:24px;">篩選功能</div>
   <div class="tech-row">
     <span class="tech-tag primary">元件類型切換（觸元件 / 應元件 / 全部）</span>
-    <span class="tech-tag secondary">依稀有度（EX / S / A，對應 API quality SSR/SR/R）</span>
+    <span class="tech-tag secondary">依稀有度（EX / S / A / B，對應 API quality SSR/SR/R/N；標籤配色：EX=橙、S=金、A=紫、B=藍）</span>
     <span class="tech-tag tertiary">W 類型（W型 / 一般，傷害計算機相關）</span>
     <span class="tech-tag">觸發條件類型（觸元件用：雙持 / 單持 / 首次攻擊 / AP消耗 / 攻擊軀幹 / 每次攻擊）</span>
     <span class="tech-tag">效果類型（應元件用：增傷 / 增彈 / 增倍率 / 破甲 / AP增傷 / 軀幹增傷）</span>
@@ -73,10 +73,13 @@
       <div class="card-icon">🖼️</div>
       <h3>元件圖示雙層結構</h3>
       <p>
-        圖示由兩層圖片疊合：<br>
-        ① <strong>框架圖</strong>（<code>statetype_Condition.png</code> / <code>statetype_Function.png</code>）— 靜態，依 componentType 決定<br>
-        ② <strong>技能圖示</strong>（<code>icon</code> 欄位，如 <code>Icon_skill_passive_5223.png</code>）— 由擷取腳本下載<br>
-        顯示時將技能圖示疊加於框架圖之上。
+        圖示由兩層圖片疊合（CSS <code>position: relative/absolute</code>）：<br>
+        ① <strong>框架圖（底層）</strong>：路徑優先取 <code>outerFrameLocal</code> 欄位（由 patch 腳本寫入），若空則自動推算 <code>/images/components/OuterFrame/statetype_{componentType}{_W}.png</code>。共四種：
+        <code>statetype_Condition.png</code>、<code>statetype_Condition_W.png</code>、<code>statetype_Function.png</code>、<code>statetype_Function_W.png</code>，依 <strong>componentType × componentsWType</strong> 決定。
+        框架圖佔容器 <strong>80%</strong>，置中顯示。<br>
+        ② <strong>技能圖示（上層）</strong>：取 <code>iconLocal</code> 欄位（擷取腳本下載後的本地路徑，如 <code>/images/components/Icon_skill_passive_5223.png</code>）。
+        圖示佔容器 <strong>48%</strong>，以 <code>translate(-51%, -52%) rotate(16deg)</code> 略微偏移並旋轉以貼合框架設計。<br>
+        技能圖示不存在時（<code>onError</code>）隱藏；框架圖固定存在，不需 fallback。
       </p>
     </div>
     <div class="card blue">
@@ -168,11 +171,13 @@
   <div class="section-title">實作注意事項</div>
 
   <div class="note-block">
-    <strong>元件圖示渲染</strong><br>
-    · 框架圖路徑：<code>public/images/components/statetype_Condition.png</code>（觸元件）/ <code>statetype_Function.png</code>（應元件）<br>
-    · 技能圖示路徑：<code>public/images/components/{icon}.png</code>（<code>icon</code> 欄位，如 <code>Icon_skill_passive_5223</code>）<br>
-    · 以 CSS relative + absolute 疊合兩層，框架圖為底層，技能圖示為上層<br>
-    · 圖示不存在時（onError）隱藏，避免破圖
+    <strong>元件圖示渲染（對應 AdminPage.tsx ComponentAdmin 實作）</strong><br>
+    · 外框圖路徑：優先讀取 <code>comp.outerFrameLocal</code>（由 <code>patch-component-outerframe.mjs</code> 寫入）；若空白則自動推算：<br>
+    &emsp;<code>/images/components/OuterFrame/statetype_{componentType}{_W}.png</code><br>
+    &emsp;四種變體：<code>statetype_Condition.png</code> / <code>statetype_Condition_W.png</code> / <code>statetype_Function.png</code> / <code>statetype_Function_W.png</code><br>
+    · 技能圖示路徑：取 <code>comp.iconLocal</code>（完整本地路徑，如 <code>/images/components/Icon_skill_passive_5223.png</code>）。<code>icon</code> 欄位僅為 key，不直接用於 &lt;img src&gt;<br>
+    · CSS 疊合：容器 <code>position: relative</code>；外框圖 <code>absolute</code>，<code>width/height: 80%</code>，<code>translate(-50%, -50%)</code> 置中；技能圖示 <code>absolute</code>，<code>width/height: 48%</code>，<code>translate(-51%, -52%) rotate(16deg)</code>（略微偏移旋轉以貼合框架外形）<br>
+    · 圖示不存在時（<code>onError</code>）設 <code>display:none</code>，避免破圖；外框圖固定存在，不需 fallback
   </div>
 
   <div class="note-block" style="margin-top:12px;">

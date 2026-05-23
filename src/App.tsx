@@ -16,6 +16,7 @@ import NewsPage from './pages/news/NewsPage'
 import GuidesPage from './pages/guides/GuidesPage'
 import ProfilePage from './pages/user/ProfilePage'
 import AdminPage from './pages/user/AdminPage'
+import ComponentsPage from './pages/components/ComponentsPage'
 
 const WeaponDetailPage = lazy(() => import('./pages/weapons/WeaponDetailPage'))
 
@@ -34,6 +35,7 @@ function App() {
             <Route path="weapons/:id" element={<Suspense fallback={null}><WeaponDetailPage /></Suspense>} />
             <Route path="backpacks" element={<BackpacksPage />} />
             <Route path="modules" element={<ModulesPage />} />
+            <Route path="components" element={<ComponentsPage />} />
             <Route path="simulator" element={<SimulatorPage />} />
             <Route path="research" element={<ResearchPage />} />
             <Route path="news" element={<NewsPage />} />

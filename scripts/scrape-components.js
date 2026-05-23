@@ -38,6 +38,7 @@
  *   node scripts/scrape-components.js                          ← 全量更新（互動確認）
  *   node scripts/scrape-components.js --no-images              ← 只更新文字，不下載圖示
  *   node scripts/scrape-components.js --force                  ← 強制重抓（含已有圖片）
+ *   node scripts/scrape-components.js --new-only               ← 只新增不存在的元件（不更新已有資料）
  *   node scripts/scrape-components.js --auto                   ← 略過確認，直接寫入 Firestore
  *   node scripts/scrape-components.js --debug                  ← 輸出完整原始欄位
  *   node scripts/scrape-components.js --type=Function          ← 只處理應元件
@@ -71,6 +72,7 @@ const DOWNLOAD_IMG = !args.includes('--no-images');
 const FORCE        = args.includes('--force');
 const DEBUG        = args.includes('--debug');
 const AUTO         = args.includes('--auto');
+const NEW_ONLY     = args.includes('--new-only');  // 只寫入 Firestore 不存在的元件
 const LIMIT        = (() => {
   const l = args.find(a => a.startsWith('--limit='));
   return l ? parseInt(l.split('=')[1]) : Infinity;
@@ -496,6 +498,7 @@ async function main() {
       console.log(`  [${i + 1}/${list.length}] ⚠ ${nameTW || apiId} detail 失敗（略過 detail）: ${err.message}`);
     }
 
+    const isNew = !prev;
     const comp = buildComponentJson(item, detail, i, prev);
 
     // 標記需人工確認的推斷結果
@@ -533,7 +536,7 @@ async function main() {
 
     // 清除腳本內部工作欄位
     const { _iconUrl, ...cleanComp } = comp;
-    results.push(cleanComp);
+    results.push({ ...cleanComp, _isNew: isNew });
   }
 
   console.log('');
@@ -543,6 +546,11 @@ async function main() {
   const conditionCount = results.filter(c => c.componentType === 'Condition').length;
   const functionCount  = results.filter(c => c.componentType === 'Function').length;
   console.log(`   觸元件 (Condition): ${conditionCount} 筆 / 應元件 (Function): ${functionCount} 筆`);
+  if (NEW_ONLY) {
+    const newCount      = results.filter(c => c._isNew).length;
+    const existingCount = results.length - newCount;
+    console.log(`   新增: ${newCount} 筆 / 已存在(略過): ${existingCount} 筆`);
+  }
   if (reviewCount > 0) {
     console.log(`   ⚠ conditionType/effectType 為預設值，建議人工確認: ${reviewCount} 筆`);
   }
@@ -552,10 +560,16 @@ async function main() {
 
   // ── DRY RUN：預覽資料後結束 ──
   if (DRY_RUN) {
+    const previewList = NEW_ONLY ? results.filter(c => c._isNew) : results;
     console.log('');
     console.log('═══════════════════ DRY RUN 預覽 ═══════════════════');
-    results.forEach(c => {
-      console.log(`\n── ${c.name} (${c.id})`);
+    if (NEW_ONLY) {
+      const existingCount = results.length - previewList.length;
+      console.log(`🆕 新增元件: ${previewList.length} 筆 / 已存在略過: ${existingCount} 筆`);
+    }
+    previewList.forEach(c => {
+      const newTag = c._isNew ? ' [NEW]' : '';
+      console.log(`\n── ${c.name} (${c.id})${newTag}`);
       console.log(`   componentType: ${c.componentType}  moduleSubtype: ${c.moduleSubtype}  rarity: ${c.rarity}`);
       console.log(`   probabilityLevel: ${c.probabilityLevel}`);
       if (c.componentType === 'Condition') {
@@ -575,25 +589,33 @@ async function main() {
     return;
   }
 
+  // ── NEW_ONLY：過濾掉已存在的元件 ──
+  let writeList = results.map(({ _isNew, ...c }) => c);
+  if (NEW_ONLY) {
+    const beforeCount = writeList.length;
+    writeList = results.filter(c => c._isNew).map(({ _isNew, ...c }) => c);
+    console.log(`🆕 新增元件: ${writeList.length} 筆 / 已存在略過: ${beforeCount - writeList.length} 筆`);
+  }
+
   // ── 確認後寫入 Firestore ──
-  if (results.length === 0) {
-    console.log('⚠ 無可寫入資料。');
+  if (writeList.length === 0) {
+    console.log('⚠ 無可寫入資料（所有元件已存在 Firestore）。');
     return;
   }
 
   console.log('');
-  const confirmed = await promptConfirm(`將 ${results.length} 筆元件寫入 Firestore components 集合？ [y/N] `);
+  const confirmed = await promptConfirm(`將 ${writeList.length} 筆元件寫入 Firestore components 集合？ [y/N] `);
   if (!confirmed) { console.log('已取消。'); process.exit(0); }
 
   process.stdout.write('🔥 寫入 Firestore...');
-  const written = await batchWrite('components', results);
+  const written = await batchWrite('components', writeList);
   console.log(` ${written} 筆完成`);
   console.log('');
   console.log('✅ 完成！');
 
   if (reviewCount > 0) {
     console.log(`⚠ ${reviewCount} 筆元件的 conditionType/effectType 為自動推斷預設值，建議人工確認：`);
-    results
+    writeList
       .filter(c =>
         (c.componentType === 'Condition' && c.conditionType === 'always') ||
         (c.componentType === 'Function'  && c.effectType === 'dmgBoost')

@@ -468,7 +468,8 @@ export interface ComponentBase {
   allowedWeaponTypes: string[] // WeaponType[]，預設全給
   rarity: string               // ItemRarity
   icon?: string                // 技能圖示 key（如 "Icon_skill_passive_5223"）
-  iconLocal?: string           // 本機路徑（"/images/components/..."）
+  iconLocal?: string           // 技能圖示本機路徑（"/images/components/..."）
+  outerFrameLocal?: string     // 外框圖本機路徑（"/images/components/OuterFrame/..."）
   componentsWType: 'W' | 'Normal'
 }
 

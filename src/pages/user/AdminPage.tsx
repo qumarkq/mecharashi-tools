@@ -5,6 +5,7 @@ import { ModuleRarity, MechPartPosition, ModuleSlot, ModuleSource, ModuleDataSou
 import { getModules, getMechs, updateModule, updateMech, getPilots, updatePilot, getWeapons, updateWeapon, getComponents, updateComponent } from '../../lib/firestoreApi'
 import { getAllUsers, updateUserRole } from '../../lib/userApi'
 import { useAuth } from '../../contexts/AuthContext'
+import { assetUrl } from '../../utils/assets'
 
 // ── 顯示常數 ───────────────────────────────────────────────────────────────────
 
@@ -323,16 +324,18 @@ function ComponentAdmin({
               {/* 圖示雙層 */}
               <div className="relative w-9 h-9 shrink-0">
                 <img
-                  src={`/images/components/statetype_${comp.componentType}.png`}
+                  src={assetUrl(comp.outerFrameLocal ?? `/images/components/OuterFrame/statetype_${comp.componentType}${comp.componentsWType === ComponentsWType.W ? '_W' : ''}.png`)}
                   alt=""
-                  className="absolute inset-0 w-full h-full object-contain"
+                  className="absolute object-contain"
+                  style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80%', height: '80%' }}
                   onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
                 />
                 {comp.iconLocal && (
                   <img
-                    src={comp.iconLocal}
+                    src={assetUrl(comp.iconLocal)}
                     alt=""
-                    className="absolute inset-0 w-full h-full object-contain"
+                    className="absolute object-contain"
+                    style={{ top: '50%', left: '50%', transform: 'translate(-51%, -52%) rotate(16deg)', width: '48%', height: '48%' }}
                     onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
                   />
                 )}
@@ -373,6 +376,72 @@ function ComponentAdmin({
           onCancel={() => setEditing(null)}
         />
       )}
+    </div>
+  )
+}
+
+// ─── 元件圖示預覽（可診斷載入狀態）─────────────────────────────────────────────
+function ComponentIconPreview({
+  outerFrameSrc,
+  iconSrc,
+  hasOuterFrameLocal,
+}: {
+  outerFrameSrc: string
+  iconSrc?: string
+  hasOuterFrameLocal: boolean
+}) {
+  const [frameStatus, setFrameStatus] = useState<'loading' | 'ok' | 'error'>('loading')
+  const [iconStatus, setIconStatus] = useState<'loading' | 'ok' | 'error'>('loading')
+
+  useEffect(() => { setFrameStatus('loading') }, [outerFrameSrc])
+  useEffect(() => { setIconStatus('loading') }, [iconSrc])
+
+  return (
+    <div className="flex items-start gap-4 p-3 bg-bg-dark rounded-lg border border-border/60">
+      {/* 圖示框 — 深灰背景讓透明圖層可辨識 */}
+      <div className="relative w-20 h-20 shrink-0 rounded" style={{ background: '#3a3a4a' }}>
+        <img
+          src={outerFrameSrc}
+          alt="outer frame"
+          className="absolute object-contain"
+          style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80%', height: '80%' }}
+          onLoad={() => setFrameStatus('ok')}
+          onError={() => setFrameStatus('error')}
+        />
+        {iconSrc && (
+          <img
+            src={iconSrc}
+            alt="skill icon"
+            className="absolute object-contain"
+            style={{ top: '50%', left: '50%', transform: 'translate(-51%, -52%) rotate(16deg)', width: '48%', height: '48%' }}
+            onLoad={() => setIconStatus('ok')}
+            onError={() => setIconStatus('error')}
+          />
+        )}
+      </div>
+
+      {/* 狀態文字 */}
+      <div className="space-y-1 text-[12px] pt-0.5">
+        <p className="text-text-secondary font-medium text-[13px]">圖示預覽</p>
+        <p>
+          <span className="text-text-dim mr-1">外框：</span>
+          {frameStatus === 'ok'    && <span className="text-green-400">✓ 載入成功</span>}
+          {frameStatus === 'error' && <span className="text-accent-red">✗ 載入失敗</span>}
+          {frameStatus === 'loading' && <span className="text-text-dim">載入中…</span>}
+        </p>
+        {iconSrc && (
+          <p>
+            <span className="text-text-dim mr-1">技能圖：</span>
+            {iconStatus === 'ok'    && <span className="text-green-400">✓ 載入成功</span>}
+            {iconStatus === 'error' && <span className="text-accent-red">✗ 載入失敗</span>}
+            {iconStatus === 'loading' && <span className="text-text-dim">載入中…</span>}
+          </p>
+        )}
+        {!hasOuterFrameLocal && (
+          <p className="text-accent-orange">⚠ outerFrameLocal 未設定，使用推算路徑</p>
+        )}
+        <p className="text-text-dim break-all max-w-xs leading-relaxed">{outerFrameSrc}</p>
+      </div>
     </div>
   )
 }
@@ -545,32 +614,30 @@ function ComponentEditPanel({
             <Field label="技能圖示 key icon（如 Icon_skill_passive_5223）">
               <input value={form.icon ?? ''} onChange={(e) => updateBase('icon', e.target.value || undefined)} className="input-field" placeholder="Icon_skill_passive_..." />
             </Field>
-            <Field label="本機圖示路徑 iconLocal">
+            <Field label="技能圖示路徑 iconLocal">
               <input value={form.iconLocal ?? ''} onChange={(e) => updateBase('iconLocal', e.target.value || undefined)} className="input-field" placeholder="/images/components/..." />
             </Field>
           </div>
 
+          <Field label="外框圖路徑 outerFrameLocal（由 patch 腳本自動填入）">
+            <input
+              value={form.outerFrameLocal ?? ''}
+              onChange={(e) => updateBase('outerFrameLocal', e.target.value || undefined)}
+              className="input-field"
+              placeholder="/images/components/OuterFrame/statetype_Condition.png"
+            />
+            <p className="text-[12px] text-text-dim mt-1">
+              若空白則自動推算：OuterFrame/statetype_{form.componentType}{form.componentsWType === ComponentsWType.W ? '_W' : ''}.png
+            </p>
+          </Field>
+
           {/* 圖示預覽 */}
-          {(form.icon || form.iconLocal) && (
-            <div className="flex items-center gap-3">
-              <div className="relative w-12 h-12 shrink-0 border border-border rounded bg-bg-dark">
-                <img
-                  src={`/images/components/statetype_${form.componentType}.png`}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-contain"
-                  onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
-                />
-                {form.iconLocal && (
-                  <img
-                    src={form.iconLocal}
-                    alt=""
-                    className="absolute inset-0 w-full h-full object-contain"
-                    onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
-                  />
-                )}
-              </div>
-              <p className="text-[13px] text-text-dim">圖示預覽（框架 + 技能圖示疊合）</p>
-            </div>
+          {(form.icon || form.iconLocal || form.outerFrameLocal) && (
+            <ComponentIconPreview
+              outerFrameSrc={assetUrl(form.outerFrameLocal ?? `/images/components/OuterFrame/statetype_${form.componentType}${form.componentsWType === ComponentsWType.W ? '_W' : ''}.png`)}
+              iconSrc={form.iconLocal ? assetUrl(form.iconLocal) : undefined}
+              hasOuterFrameLocal={!!form.outerFrameLocal}
+            />
           )}
 
         </div>

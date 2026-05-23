@@ -406,12 +406,12 @@ body {
   <!-- Phase 3 -->
   <div class="phase">
     <div class="phase-header">
-      <span class="phase-badge done">✓ DONE</span>
-      <span class="phase-title">Phase 3 — 模組圖鑑 + 配裝模擬器基礎 + 匯出分享圖</span>
+      <span class="phase-badge progress">⟳ IN PROGRESS</span>
+      <span class="phase-title">Phase 3 — 模組圖鑑 + 配裝模擬器基礎 + 匯出分享圖 + 元件圖鑑</span>
       <span class="phase-ref">規劃書 §06</span>
     </div>
-    <div class="progress-bar"><div class="progress-bar-fill green" style="width:100%"></div></div>
-    <div class="progress-percent">100%</div>
+    <div class="progress-bar"><div class="progress-bar-fill yellow" style="width:90%"></div></div>
+    <div class="progress-percent">90%（9 / 10）— 元件圖鑑頁面待開發（PLAN-012）</div>
     <ul class="task-list">
       <li class="task-item">
         <span class="task-status done">✓</span>
@@ -457,6 +457,12 @@ body {
         <span class="task-status done">✓</span>
         <span class="task-name done">匯出 PNG（html2canvas）+ 手機原生分享 API</span>
         <span class="task-date">2026-05-14</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status pending">○</span>
+        <span class="task-name">元件圖鑑頁面（/components）— 觸元件 / 應元件清單、稀有度篩選、conditionType / effectType 標籤、雙層圖示渲染、BottomSheet</span>
+        <div class="task-note">Firestore 資料與型別 / Hook 均已就緒；詳見 <a href="../05_階段性開發計畫/執行中/PLAN-012_元件圖鑑/計畫書.html" style="color:var(--accent-yellow);">PLAN-012</a></div>
+        <span class="task-date">—</span>
       </li>
     </ul>
   </div>
@@ -756,11 +762,17 @@ body {
         <span class="task-name">PLAN-004 · 技能資料抽離 — PilotSkill → pilotSkills Collection、NeuralDrive → neuralDrives Collection</span>
         <span class="task-date">—</span>
       </li>
+      <li class="task-item">
+        <span class="task-status pending">○</span>
+        <span class="task-name">PLAN-012 · 元件圖鑑 — /components 頁面、ComponentIcon / ComponentBadges 元件、篩選 / BottomSheet（0/8）</span>
+        <div class="task-note">Firestore 資料與型別 / Hook 均已就緒，估計 2–3 天完成；<a href="../05_階段性開發計畫/執行中/PLAN-012_元件圖鑑/計畫書.html" style="color:var(--accent-yellow);">→ 計畫書</a></div>
+        <span class="task-date">—</span>
+      </li>
     </ul>
   </div>
 
   <div class="updated">
-    最後更新：2026-05-23（Phase 2 補完 — 首頁改版 / 機師詳情 / 武器詳情頁 / 元件系統建立 / 頁面重構；Phase 4 驗證通過 → 83%；Phase 7 開始 — PLAN-008 手機版完成 → 50%；PLAN 系列追蹤新增）｜
+    最後更新：2026-05-24（Phase 3 元件圖鑑任務補入 → 90%；PLAN-012 元件圖鑑計畫建立）｜
     <a href="../01_規劃書/鋼嵐工具站_規劃書.html" style="color:var(--accent-cyan);text-decoration:none;">對照規劃書 v2.0 §10 Roadmap</a>
     ｜ <a href="../05_階段性開發計畫/index.html" style="color:var(--accent-purple);text-decoration:none;">PLAN 系列開發計畫</a>
     ｜ <a href="../02_技術文件/04_Firebase/資料庫設計文件/Firebase資料庫設計文件.html" style="color:var(--accent-blue);text-decoration:none;">資料庫設計文件</a>

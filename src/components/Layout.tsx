@@ -14,6 +14,7 @@ const navItems = [
   { to: '/weapons', label: '武器圖鑑', icon: '🔫' },
   { to: '/backpacks', label: '背包圖鑑', icon: '🎒' },
   { to: '/modules', label: '模組圖鑑', icon: '🧩' },
+  { to: '/components', label: '元件圖鑑', icon: '⚙️' },
   { to: '/simulator', label: '配裝模擬器', icon: '⚔️' },
   { to: '/news', label: '改版資訊', icon: '📰' },
   { to: '/guides', label: '攻略專區', icon: '📚' },
