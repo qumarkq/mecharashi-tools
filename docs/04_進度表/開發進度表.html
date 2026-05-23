@@ -207,11 +207,11 @@ body {
       <div class="label">已完成</div>
     </div>
     <div class="summary-card progress">
-      <div class="num">1</div>
+      <div class="num">2</div>
       <div class="label">進行中</div>
     </div>
     <div class="summary-card pending">
-      <div class="num">3</div>
+      <div class="num">2</div>
       <div class="label">未開始</div>
     </div>
   </div>
@@ -355,6 +355,51 @@ body {
         <div class="task-note">state 提升至父元件，修正匯出資料為最新修改後數值；新增未儲存變更提示；新增裝甲類型篩選與槽位篩選；底部新增統計卡片</div>
         <span class="task-date">2026-05-14</span>
       </li>
+      <li class="task-item" style="border-top:1px dashed rgba(255,107,43,0.15);margin-top:8px;padding-top:14px;">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">首頁改版為吉祥物歡迎頁（移除快速入口卡片，改版為主視覺 Hero）</span>
+        <span class="task-date">2026-05-18</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">全域字體大小切換（小 / 中 / 大），以 localStorage 持久化；模組描述數字 % 紅色標示</span>
+        <span class="task-date">2026-05-18</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">機師 / 機甲詳情頁改版（PLAN-002）— Hero 三欄壓縮、神經驅動四象限、天賦旁專武面板</span>
+        <span class="task-date">2026-05-17</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">武器詳情頁（PLAN-006）— /weapons/:id，完整展示技能 / 改裝 / 元件 / 專武天賦 DiffHighlight</span>
+        <span class="task-date">2026-05-20</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">武器外框 + 稀有度字體外框渲染效果（WeaponCard 視覺強化）</span>
+        <span class="task-date">2026-05-20</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">PilotsPage 新增專武顯示（PLAN-005 前端部分）</span>
+        <span class="task-date">2026-05-20</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">背包擷取腳本（PLAN-009）— scrape-backpacks.js、BackpackType / AssemblableArmorType enum、SS 背包技能自動填入</span>
+        <span class="task-date">2026-05-21</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">元件系統建立 — scrape-components.js 擷取腳本 + 管理後台元件管理面板 + TypeScript 型別更新</span>
+        <span class="task-date">2026-05-22</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">頁面目錄結構重構（Pilot / Mech / Weapon / Backpack 各自子目錄化）+ 背包功能頁面補完</span>
+        <span class="task-date">2026-05-21</span>
+      </li>
     </ul>
   </div>
 
@@ -423,8 +468,8 @@ body {
       <span class="phase-title">Phase 4 — Firebase 資料庫建置 + 資料遷移</span>
       <span class="phase-ref">規劃書 §10 / 資料庫設計文件</span>
     </div>
-    <div class="progress-bar"><div class="progress-bar-fill yellow" style="width:75%"></div></div>
-    <div class="progress-percent">75%（9 / 12）</div>
+    <div class="progress-bar"><div class="progress-bar-fill yellow" style="width:83%"></div></div>
+    <div class="progress-percent">83%（10 / 12）</div>
     <ul class="task-list">
       <li class="task-item">
         <span class="task-status done">✓</span>
@@ -463,12 +508,14 @@ body {
       </li>
       <li class="task-item">
         <span class="task-status pending">○</span>
-        <span class="task-name">buffs Collection 初始化（建立 Collection，填入已知 BUFF 名稱與描述）</span>
+        <span class="task-name">buffs Collection 初始化（填入已知 BUFF 名稱與描述）</span>
+        <div class="task-note">待 PLAN-001 技能/Buff 架構重構完成後，按新型別結構填入</div>
         <span class="task-date">—</span>
       </li>
       <li class="task-item">
         <span class="task-status pending">○</span>
         <span class="task-name">skills Collection 初始化（從 pilots 技能資料抽取共用技能定義）</span>
+        <div class="task-note">待 PLAN-004 技能資料抽離完成後執行</div>
         <span class="task-date">—</span>
       </li>
       <li class="task-item">
@@ -482,9 +529,9 @@ body {
         <span class="task-date">2026-05-16</span>
       </li>
       <li class="task-item">
-        <span class="task-status pending">○</span>
-        <span class="task-name">驗證：build 通過 + 各頁面資料正常顯示 + 安全規則測試</span>
-        <span class="task-date">—</span>
+        <span class="task-status done">✓</span>
+        <span class="task-name done">驗證：build 通過 + 各頁面資料正常顯示（持續通過多版本）</span>
+        <span class="task-date">2026-05-22</span>
       </li>
     </ul>
   </div>
@@ -544,7 +591,12 @@ body {
     <ul class="task-list">
       <li class="task-item">
         <span class="task-status pending">○</span>
-        <span class="task-name">攻略頁面（/guides）— Markdown 渲染，列表 + 詳情頁</span>
+        <span class="task-name">攻略頁面（/guides + /guides/:slug）— TipTap WYSIWYG 渲染，列表 + 詳情頁；<a href="../05_階段性開發計畫/執行中/PLAN-010_攻略系統/計畫書.html" style="color:var(--accent-cyan);">PLAN-010 Phase A</a></span>
+        <span class="task-date">—</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status pending">○</span>
+        <span class="task-name">攻略物件嵌入（EntityReferenceNode）— 嵌入機師/機甲/武器卡片，前台 Drawer 局部詳情；<a href="../05_階段性開發計畫/執行中/PLAN-010_攻略系統/計畫書.html" style="color:var(--accent-cyan);">PLAN-010 Phase B</a></span>
         <span class="task-date">—</span>
       </li>
       <li class="task-item">
@@ -554,7 +606,7 @@ body {
       </li>
       <li class="task-item">
         <span class="task-status pending">○</span>
-        <span class="task-name">管理後台：攻略 Markdown 編輯器 + 截圖上傳（Firebase Storage）</span>
+        <span class="task-name">管理後台：攻略 TipTap 編輯器 + Firebase Storage 圖片上傳</span>
         <span class="task-date">—</span>
       </li>
       <li class="task-item">
@@ -573,17 +625,22 @@ body {
   <!-- Phase 7 -->
   <div class="phase">
     <div class="phase-header">
-      <span class="phase-badge pending">PENDING</span>
+      <span class="phase-badge progress">⟳ IN PROGRESS</span>
       <span class="phase-title">Phase 7 — 優化 + 正式部署</span>
       <span class="phase-ref">規劃書 §10</span>
     </div>
-    <div class="progress-bar"><div class="progress-bar-fill yellow" style="width:0%"></div></div>
-    <div class="progress-percent">0%</div>
+    <div class="progress-bar"><div class="progress-bar-fill yellow" style="width:50%"></div></div>
+    <div class="progress-percent">50%（2 / 4）</div>
     <ul class="task-list">
       <li class="task-item">
-        <span class="task-status pending">○</span>
-        <span class="task-name">手機版 UI 全面調整（觸控友善、底部導航）</span>
-        <span class="task-date">—</span>
+        <span class="task-status done">✓</span>
+        <span class="task-name done">GitHub Pages SPA 直連子路徑 404 修正（index.html 重定向方案）</span>
+        <span class="task-date">2026-05-18</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">手機版 UI 全面調整（PLAN-008）— Tailwind lg: 斷點取代獨立手機頁面、BottomSheet 元件、底部 Toolbar 導航</span>
+        <span class="task-date">2026-05-21</span>
       </li>
       <li class="task-item">
         <span class="task-status pending">○</span>
@@ -592,7 +649,7 @@ body {
       </li>
       <li class="task-item">
         <span class="task-status pending">○</span>
-        <span class="task-name">GitHub Pages 正式部署 + CI/CD（GitHub Actions 自動部署）</span>
+        <span class="task-name">GitHub Actions CI/CD 自動部署流水線</span>
         <span class="task-date">—</span>
       </li>
     </ul>
@@ -646,10 +703,67 @@ body {
     </ul>
   </div>
 
+  <!-- PLAN Series -->
+  <div class="phase" style="border-bottom:1px solid var(--border);">
+    <div class="phase-header">
+      <span class="phase-badge" style="background:rgba(168,85,247,0.15);color:var(--accent-purple);border:1px solid var(--accent-purple);">PLAN SERIES</span>
+      <span class="phase-title">附加開發計畫（PLAN 系列）</span>
+      <span class="phase-ref">docs/05_階段性開發計畫/</span>
+    </div>
+    <ul class="task-list" style="margin-top:8px;">
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">PLAN-002 · 機師詳情 UX 改版 — Hero 壓縮、神經驅動四象限、天賦旁專武面板（9/9）</span>
+        <span class="task-date">2026-05-17</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">PLAN-006 · 武器詳情頁 — /weapons/:id，技能 / 改裝 / 元件 / DiffHighlight</span>
+        <span class="task-date">2026-05-20</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">PLAN-007 · 武器 API 欄位映射修正 — 六個欄位名稱修正 + Firebase 全量重刷（15/15）</span>
+        <span class="task-date">2026-05-20</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">PLAN-008 · 手機版響應式排版 — Tailwind lg: 斷點、BottomSheet、底部 Toolbar（6/6）</span>
+        <span class="task-date">2026-05-21</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status done">✓</span>
+        <span class="task-name done">PLAN-009 · 背包擷取腳本 — scrape-backpacks.js、BackpackType enum、SS 技能自動填入（8/8）</span>
+        <span class="task-date">2026-05-21</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status progress">⟳</span>
+        <span class="task-name">PLAN-005 · 專武天賦強化顯示 — DiffHighlight / enhancedTalentDescription（開發完成，管理員資料填入中）</span>
+        <span class="task-date">進行中</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status progress">⟳</span>
+        <span class="task-name">PLAN-003 · 武器資料模型優化 — range 重構 / WeaponType enum / 機甲限制（17/20）</span>
+        <span class="task-date">進行中</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status pending">○</span>
+        <span class="task-name">PLAN-001 · 技能 / Buff 架構重構 — SkillEffect / SkillCondition / GameBuff 型別設計</span>
+        <span class="task-date">—</span>
+      </li>
+      <li class="task-item">
+        <span class="task-status pending">○</span>
+        <span class="task-name">PLAN-004 · 技能資料抽離 — PilotSkill → pilotSkills Collection、NeuralDrive → neuralDrives Collection</span>
+        <span class="task-date">—</span>
+      </li>
+    </ul>
+  </div>
+
   <div class="updated">
-    最後更新：2026-05-16（Phase 5 完成 — Firebase Auth / AuthContext / userApi / Header 登入 / ProfilePage / ResearchPage / 配裝存檔；Phase 4 剩餘 3 項（buffs / skills Collection 初始化、最終驗證）暫時跳過，進入 Phase 5）｜
+    最後更新：2026-05-23（Phase 2 補完 — 首頁改版 / 機師詳情 / 武器詳情頁 / 元件系統建立 / 頁面重構；Phase 4 驗證通過 → 83%；Phase 7 開始 — PLAN-008 手機版完成 → 50%；PLAN 系列追蹤新增）｜
     <a href="../01_規劃書/鋼嵐工具站_規劃書.html" style="color:var(--accent-cyan);text-decoration:none;">對照規劃書 v2.0 §10 Roadmap</a>
-    ｜ <a href="../02_技術文件/04_Firebase/Firebase資料庫設計文件.html" style="color:var(--accent-blue);text-decoration:none;">資料庫設計文件 v1.0</a>
+    ｜ <a href="../05_階段性開發計畫/index.html" style="color:var(--accent-purple);text-decoration:none;">PLAN 系列開發計畫</a>
+    ｜ <a href="../02_技術文件/04_Firebase/資料庫設計文件/Firebase資料庫設計文件.html" style="color:var(--accent-blue);text-decoration:none;">資料庫設計文件</a>
     ｜ <a href="../02_技術文件/index.html" style="color:var(--accent-orange);text-decoration:none;">技術文件總覽</a>
   </div>
 

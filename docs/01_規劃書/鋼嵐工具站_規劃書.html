@@ -17,7 +17,7 @@
   <p class="hero-sub">
     傷害模擬器 · 配裝計算器 · 角色資料庫 · 攻略百科
   </p>
-  <div class="version-badge">V2.0 — Firebase Firestore 全面接管遊戲資料</div>
+  <div class="version-badge">V2.1 — Phase 1~3 ✅ · Phase 4/7 進行中 · PLAN 系列持續推進</div>
 </header>
 
 <main class="container">
@@ -205,7 +205,7 @@
       </div>
     </div>
     <div class="timeline-item">
-      <div class="timeline-phase">Phase 2 🚧</div>
+      <div class="timeline-phase">Phase 2 ✅</div>
       <div class="timeline-title">資料庫頁面 + 管理介面</div>
       <div class="timeline-tasks">
         <span class="timeline-task">機師圖鑑</span>
@@ -217,7 +217,7 @@
       </div>
     </div>
     <div class="timeline-item">
-      <div class="timeline-phase">Phase 3</div>
+      <div class="timeline-phase">Phase 3 ✅</div>
       <div class="timeline-title">模組圖鑑 + 配裝模擬器基礎 + 匯出分享圖</div>
       <div class="timeline-tasks">
         <span class="timeline-task">模組圖鑑</span>
@@ -227,7 +227,7 @@
       </div>
     </div>
     <div class="timeline-item">
-      <div class="timeline-phase">Phase 4 ★ NEW</div>
+      <div class="timeline-phase">Phase 4 🚧</div>
       <div class="timeline-title">Firebase 資料庫建置 + 資料遷移</div>
       <div class="timeline-tasks">
         <span class="timeline-task">Firebase 專案</span>
@@ -238,7 +238,7 @@
       </div>
     </div>
     <div class="timeline-item">
-      <div class="timeline-phase">Phase 5</div>
+      <div class="timeline-phase">Phase 5 ✅</div>
       <div class="timeline-title">用戶系統</div>
       <div class="timeline-tasks">
         <span class="timeline-task">Firebase Auth</span>
@@ -257,7 +257,7 @@
       </div>
     </div>
     <div class="timeline-item">
-      <div class="timeline-phase">Phase 7</div>
+      <div class="timeline-phase">Phase 7 🚧</div>
       <div class="timeline-title">優化 + 部署</div>
       <div class="timeline-tasks">
         <span class="timeline-task">手機版優化</span>
@@ -286,30 +286,32 @@
   <div class="section-title">接下來的工作</div>
 
   <div class="card-grid">
-    <div class="card red">
+    <div class="card purple">
       <div class="card-icon">1️⃣</div>
-      <h3>確認 Firebase 設計文件</h3>
-      <p>確認 Firestore Schema、Enum 定義、安全規則是否符合需求。
-        <a href="../02_技術文件/04_Firebase/Firebase資料庫設計文件.html" style="color:var(--accent-cyan);">→ Firebase 資料庫設計文件 v1.0</a>
+      <h3>完成 PLAN-001 · 技能 / Buff 架構重構</h3>
+      <p>完成 SkillEffect / SkillCondition / GameBuff 型別設計，為 Phase 4 buffs Collection 初始化鋪路。
+        <a href="../05_階段性開發計畫/執行中/PLAN-001_技能Buff架構重構/計畫書.html" style="color:var(--accent-cyan);">→ PLAN-001 計畫書</a>
       </p>
     </div>
     <div class="card orange">
       <div class="card-icon">2️⃣</div>
-      <h3>建立 Firebase 專案</h3>
-      <p>在 Firebase Console 建立專案，啟用 Firestore 與 Authentication，取得設定值。</p>
+      <h3>完成 PLAN-003 / PLAN-004 剩餘任務</h3>
+      <p>武器資料模型優化（3 項待完成）、技能資料抽離至獨立 Collections，提升資料一致性。
+        <a href="../05_階段性開發計畫/執行中/PLAN-003_武器資料模型優化/進度表.html" style="color:var(--accent-cyan);">→ PLAN-003 進度表</a>
+      </p>
     </div>
     <div class="card blue">
       <div class="card-icon">3️⃣</div>
-      <h3>撰寫 enums.ts + 遷移腳本</h3>
-      <p>定義所有 Enum 型別，撰寫 JSON → Firestore 批量遷移腳本，驗證資料完整性。
-        <a href="../02_技術文件/01_架構設計/Firestore集合總覽.html" style="color:var(--accent-cyan);">→ 枚舉型別總覽</a>
+      <h3>Phase 6 — 內容系統 + 管理後台擴充</h3>
+      <p>攻略頁面（Markdown 渲染）、改版資訊時間軸、管理後台 Firestore 遊戲資料直接編輯。
+        <a href="../04_進度表/開發進度表.html" style="color:var(--accent-cyan);">→ 開發進度表 Phase 6</a>
       </p>
     </div>
-    <div class="card green">
+    <div class="card red">
       <div class="card-icon">4️⃣</div>
-      <h3>補充 BUFF 資料</h3>
-      <p>整理遊戲中的 BUFF 列表，填入 buffs Collection 初始資料（名稱+描述）。
-        <a href="../02_技術文件/02_資料模型/skills_buffs.html" style="color:var(--accent-cyan);">→ skills / buffs 模型</a>
+      <h3>Phase 8 — 傷害計算系統</h3>
+      <p>傷害公式引擎、武器技能生效判斷、改裝效果計算、A/B 組合對比。依賴 PLAN-001 架構完成。
+        <a href="../02_技術文件/03_遊戲機制/傷害公式.html" style="color:var(--accent-cyan);">→ 傷害公式文件</a>
       </p>
     </div>
   </div>
