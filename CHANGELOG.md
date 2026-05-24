@@ -4,7 +4,7 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [Unreleased] - 2026-05-23
+## [Unreleased] - 2026-05-24
 
 ### ⚠ 重大變更
 
@@ -12,6 +12,7 @@
 
 ### ✨ 新功能
 
+- 新增元件關卡掉落資訊和篩選條件 (`bb3d7a6`)
 - 新增 PLAN-012 元件圖鑑頁面與相關元件 (`dd05ab4`)
 - 新增機師故事顯示 (`7d02f3f`)
 - 新增機師品質篩選、稀有度標籤與圖片資源 (`14f0068`)
