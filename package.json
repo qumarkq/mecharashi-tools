@@ -27,6 +27,7 @@
     "migrate:dry": "node scripts/migrate-to-firestore.mjs --dry-run"
   },
   "dependencies": {
+    "@floating-ui/react": "^0.27.19",
     "@tailwindcss/vite": "^4.3.0",
     "firebase": "^12.13.0",
     "firebase-admin": "^13.10.0",

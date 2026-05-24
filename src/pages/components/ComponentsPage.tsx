@@ -6,6 +6,8 @@ import { highlightNumbers } from '../../utils/moduleStats'
 import { BottomSheet } from '../../components/BottomSheet'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { ComponentIcon } from '../../components/ComponentIcon'
+import { BossDropTooltip, BossDropSection } from '../../components/BossDropTooltip'
+import { getAllStages, componentDropsFromStage } from '../../data/bossDrops'
 import {
   RarityBadge,
   ComponentTypeBadge,
@@ -28,6 +30,7 @@ const MODULE_SUBTYPE_LABELS: Record<number, string> = {
 const ALL_WEAPON_TYPES = ['射擊', '格鬥', '突擊', '戰術']
 
 const RARITIES = [ItemRarity.EX, ItemRarity.S, ItemRarity.A, ItemRarity.B] as const
+const STAGES = getAllStages()
 
 const RARITY_ORDER: Record<string, number> = {
   [ItemRarity.EX]: 0,
@@ -121,6 +124,9 @@ function ComponentDetail({ comp }: { comp: Component }) {
       {comp.componentsWType === ComponentsWType.W && (
         <p className="text-xs text-accent-yellow">⚠ 僅限雙手 / 背後武器可裝備</p>
       )}
+
+      {/* Boss drop sources */}
+      <BossDropSection comp={comp} />
     </div>
   )
 }
@@ -134,6 +140,7 @@ export default function ComponentsPage() {
   const [conditionTypeFilter, setConditionTypeFilter] = useState<string | null>(null)
   const [effectTypeFilter, setEffectTypeFilter]   = useState<string | null>(null)
   const [wTypeFilter, setWTypeFilter]             = useState<WFilter>('all')
+  const [stageFilter, setStageFilter]             = useState<number | null>(null)
   const [searchText, setSearchText]               = useState('')
   const [sheetComp, setSheetComp]                 = useState<Component | null>(null)
 
@@ -144,6 +151,7 @@ export default function ComponentsPage() {
     if (typeFilter !== 'all' && c.componentType !== typeFilter) return false
     if (rarityFilter && c.rarity !== rarityFilter) return false
     if (wTypeFilter !== 'all' && c.componentsWType !== wTypeFilter) return false
+    if (stageFilter !== null && !componentDropsFromStage(c.componentType, c.componentsWType, c.name, stageFilter)) return false
     // conditionType filter applies only to Condition components
     if (conditionTypeFilter && isCondition(c) && c.conditionType !== conditionTypeFilter) return false
     // effectType filter applies only to Function components
@@ -279,6 +287,23 @@ export default function ComponentsPage() {
             </button>
           ))}
         </div>
+
+        {/* Stage (Boss drop) filter */}
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-xs text-text-dim mr-1">Boss 關卡</span>
+          <button className={filterBtn(stageFilter === null)} onClick={() => setStageFilter(null)}>
+            全部
+          </button>
+          {STAGES.map((s) => (
+            <button
+              key={s}
+              className={filterBtn(stageFilter === s)}
+              onClick={() => setStageFilter((prev) => (prev === s ? null : s))}
+            >
+              第 {s} 關
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Error */}
@@ -307,53 +332,54 @@ export default function ComponentsPage() {
                 comp.allowedWeaponTypes.length < ALL_WEAPON_TYPES.length
 
               return (
-                <div
-                  key={comp.id}
-                  className={`bg-bg-card border border-border rounded-xl p-4 transition-colors hover:border-border-accent ${
-                    isMobile ? 'cursor-pointer' : ''
-                  }`}
-                  onClick={() => isMobile && setSheetComp(comp)}
-                >
-                  <div className="flex items-start gap-3">
-                    <ComponentIcon comp={comp} size={48} />
-                    <div className="flex-1 min-w-0">
-                      {/* Name + rarity + type badges */}
-                      <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
-                        <h3 className="font-bold text-sm">{comp.name}</h3>
-                        <RarityBadge rarity={comp.rarity} />
-                        <ComponentTypeBadge type={comp.componentType} />
-                      </div>
+                <BossDropTooltip key={comp.id} comp={comp}>
+                  <div
+                    className={`bg-bg-card border border-border rounded-xl p-4 transition-colors hover:border-border-accent ${
+                      isMobile ? 'cursor-pointer' : ''
+                    }`}
+                    onClick={() => isMobile && setSheetComp(comp)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <ComponentIcon comp={comp} size={48} />
+                      <div className="flex-1 min-w-0">
+                        {/* Name + rarity + type badges */}
+                        <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+                          <h3 className="font-bold text-sm">{comp.name}</h3>
+                          <RarityBadge rarity={comp.rarity} />
+                          <ComponentTypeBadge type={comp.componentType} />
+                        </div>
 
-                      {/* moduleSubtype + probabilityLevel */}
-                      <div className="flex flex-wrap gap-1.5 mb-2">
-                        {comp.moduleSubtype > 0 && (
-                          <span className="text-[11px] px-1.5 py-0.5 rounded border text-text-dim bg-bg-dark border-border">
-                            {MODULE_SUBTYPE_LABELS[comp.moduleSubtype] ?? `子類型 ${comp.moduleSubtype}`}
-                          </span>
-                        )}
-                        {comp.probabilityLevel > 0 && (
-                          <span className="text-[11px] px-1.5 py-0.5 rounded border text-text-dim bg-bg-dark border-border">
-                            Lv. {comp.probabilityLevel}
-                          </span>
-                        )}
-                      </div>
+                        {/* moduleSubtype + probabilityLevel */}
+                        <div className="flex flex-wrap gap-1.5 mb-2">
+                          {comp.moduleSubtype > 0 && (
+                            <span className="text-[11px] px-1.5 py-0.5 rounded border text-text-dim bg-bg-dark border-border">
+                              {MODULE_SUBTYPE_LABELS[comp.moduleSubtype] ?? `子類型 ${comp.moduleSubtype}`}
+                            </span>
+                          )}
+                          {comp.probabilityLevel > 0 && (
+                            <span className="text-[11px] px-1.5 py-0.5 rounded border text-text-dim bg-bg-dark border-border">
+                              Lv. {comp.probabilityLevel}
+                            </span>
+                          )}
+                        </div>
 
-                      {/* Primary description */}
-                      <p className="text-xs text-text-secondary leading-relaxed">
-                        {isCondition(comp)
-                          ? highlightNumbers(comp.condition)
-                          : highlightNumbers(comp.description)}
-                      </p>
-
-                      {/* Weapon restriction hint */}
-                      {hasRestriction && (
-                        <p className="text-[11px] text-text-dim mt-1.5">
-                          限定：{comp.allowedWeaponTypes.join('・')}
+                        {/* Primary description */}
+                        <p className="text-xs text-text-secondary leading-relaxed">
+                          {isCondition(comp)
+                            ? highlightNumbers(comp.condition)
+                            : highlightNumbers(comp.description)}
                         </p>
-                      )}
+
+                        {/* Weapon restriction hint */}
+                        {hasRestriction && (
+                          <p className="text-[11px] text-text-dim mt-1.5">
+                            限定：{comp.allowedWeaponTypes.join('・')}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                </BossDropTooltip>
               )
             })}
           </div>
