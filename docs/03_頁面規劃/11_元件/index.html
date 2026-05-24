@@ -51,6 +51,7 @@
     <span class="tech-tag tertiary">W 類型（W型 / 一般，傷害計算機相關）</span>
     <span class="tech-tag">觸發條件類型（觸元件用：雙持 / 單持 / 首次攻擊 / AP消耗 / 攻擊軀幹 / 每次攻擊）</span>
     <span class="tech-tag">效果類型（應元件用：增傷 / 增彈 / 增倍率 / 破甲 / AP增傷 / 軀幹增傷）</span>
+    <span class="tech-tag">Boss 關卡篩選（第 11–16 關；依 <code>src/data/bossDrops.ts</code> 靜態資料動態產生按鈕，<code>getAllStages()</code>）</span>
     <span class="tech-tag">關鍵字搜尋（元件名稱 / 描述文字）</span>
   </div>
 </section>
@@ -114,6 +115,16 @@
       <p>
         行動裝置點擊卡片時，以 <code>BottomSheet</code> 展示完整元件詳細資訊（觸發條件、效果類型、武器限制、probabilityLevel 等）。<br>
         參考模組圖鑑的 <code>BottomSheet</code> 實作模式。
+      </p>
+    </div>
+    <div class="card orange">
+      <div class="card-icon">🏆</div>
+      <h3>Boss 掉落資訊</h3>
+      <p>
+        顯示每個元件的 Boss 掉落來源（關卡 + Boss 編號 + 頭像）。<br>
+        <strong>桌面版</strong>：<code>BossDropTooltip</code> — 滑鼠懸停卡片時以 @floating-ui/react Tooltip 浮出顯示，延遲 200ms 開 / 80ms 關，搭配 <code>safePolygon()</code> 防誤觸。<br>
+        <strong>行動版</strong>：<code>BossDropSection</code> — 內嵌於 BottomSheet 底部，直接列出所有掉落來源；無掉落資料時不渲染。<br>
+        資料來源：<code>src/data/bossDrops.ts</code>（靜態 TS 檔案，非 Firestore）。
       </p>
     </div>
   </div>
@@ -184,7 +195,16 @@
     <strong>篩選切換行為</strong><br>
     · 切換 componentType（觸元件 / 應元件）時，conditionType 篩選器與 effectType 篩選器互斥顯示<br>
     · 選「全部」時，conditionType 與 effectType 篩選器同時顯示，各自獨立過濾<br>
-    · W 類型篩選器在觸元件 / 應元件 / 全部 模式下均顯示
+    · W 類型篩選器在觸元件 / 應元件 / 全部 模式下均顯示<br>
+    · Boss 關卡篩選器在所有模式下均顯示；<code>getAllStages()</code> 動態從 bossDrops.ts 產生按鈕，無需硬編碼關卡清單
+  </div>
+
+  <div class="note-block" style="margin-top:12px;">
+    <strong>Boss 掉落資訊顯示</strong><br>
+    · 掉落資料存放於 <code>src/data/bossDrops.ts</code>（靜態 TypeScript，非 Firestore）<br>
+    · <code>componentDropsFromStage(componentType, componentsWType, fullName, stage)</code> 用於關卡篩選<br>
+    · <code>getComponentDrops(componentType, componentsWType, fullName)</code> 用於 Tooltip / BottomSheet 展示<br>
+    · Boss 頭像路徑規則：<code>/images/components/Stage{N}_Boss/character_{N}_{bossNum}.png</code>
   </div>
 
   <div class="note-block" style="margin-top:12px;">

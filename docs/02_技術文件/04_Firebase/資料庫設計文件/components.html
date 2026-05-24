@@ -27,7 +27,7 @@
     <span>MECHARASHI — FIRESTORE SCHEMA v1.1</span>
   </h1>
   <p class="hero-sub">觸元件（Condition）· 應元件（Function）· 觸發條件 · 效果類型</p>
-  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.3 — 2026-05-22</div>
+  <div class="version-badge" style="background:var(--accent-blue);color:#fff;">V1.4 — 2026-05-24</div>
 </header>
 
 <main class="container">
@@ -79,6 +79,22 @@
       <tr><td>9</td><td>RANGE_RELATED</td><td>距離相關</td></tr>
       <tr><td>10</td><td>SPECIAL_EFFECT</td><td>特殊效果</td></tr>
       <tr><td>11</td><td>MOVEMENT_RELATED</td><td>移動相關</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label blue">02b — 補充說明</div>
+  <div class="section-title">Boss 掉落資料（本機靜態，非 Firestore）</div>
+  <div class="section-desc">元件 Boss 掉落資訊不存入 Firestore，以本機靜態 TypeScript 檔案維護，無需雲端查詢即可篩選。</div>
+  <div class="data-table-wrap">
+    <table class="data-table blue-head">
+      <tr><th>項目</th><th>說明</th></tr>
+      <tr><td>檔案位置</td><td><code>src/data/bossDrops.ts</code></td></tr>
+      <tr><td>資料結構</td><td><code>BOSS_DROPS[componentType][componentsWType][shortName] → StageDrop[]</code>（StageDrop: <code>{ stage: number; bosses: number[] }</code>）</td></tr>
+      <tr><td>圖片路徑</td><td><code>/images/components/Stage{N}_Boss/character_{N}_{bossNum}.png</code>（存放於 <code>public/images/components/</code>）</td></tr>
+      <tr><td>維護方式</td><td>手動編輯 <code>bossDrops.ts</code>，新增關卡時在對應元件條目加入 <code>{ stage: N, bosses: [...] }</code></td></tr>
+      <tr><td>關卡篩選</td><td><code>getAllStages()</code> 動態從資料中取得所有關卡編號；<code>componentDropsFromStage()</code> 供前端篩選邏輯使用</td></tr>
     </table>
   </div>
 </section>
