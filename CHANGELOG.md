@@ -84,6 +84,10 @@
 - **layout**: 更新頁尾免責聲明文字 (`2a6abe7`)
 - 更新 .gitignore 並修正 pre-push hook CI 跳過問題 (`8dcddc6`)
 
+### 🚀 CI/CD
+
+- add preview deployment workflow and dynamic base path (`954413a`)
+
 ### 其他
 
 - 更新元件定義 (`4155274`)
