@@ -88,6 +88,7 @@
 
 ### 🚀 CI/CD
 
+- 重新觸發 preview 部署 (`af8e9fc`)
 - 同步 workflow 設定，防止 gh-pages 競爭條件 (`4ede30e`)
 - add preview deployment workflow and dynamic base path (`954413a`)
 
