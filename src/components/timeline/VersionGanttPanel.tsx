@@ -192,7 +192,6 @@ function ActivityGanttRow({
   const c = COLORS[act.type]
   const endDt = addDays(parseDate(act.startDate), act.weeks * 7 - 1)
   const sub = act.pilots?.join('、') ?? act.mechs?.join('、') ?? ''
-  const tooltip = `${act.name}${sub ? `（${sub}）` : ''} | ${act.startDate} → ${fmtFull(endDt)}`
 
   const cells: React.ReactNode[] = []
 
