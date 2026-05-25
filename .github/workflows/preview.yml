@@ -5,6 +5,12 @@ on:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: '要部署的分支名稱'
+        required: true
+        default: 'feature/PLAN-013-homepage-timeline'
 
 permissions:
   contents: write
@@ -16,7 +22,7 @@ concurrency:
 
 jobs:
   deploy-preview:
-    if: github.event.action != 'closed'
+    if: github.event_name == 'workflow_dispatch' || github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,7 +31,8 @@ jobs:
       - name: Sanitize branch name
         id: branch
         run: |
-          SAFE=$(echo "${{ github.head_ref }}" | sed 's/[^a-zA-Z0-9-]/-/g')
+          REF="${{ github.head_ref || github.event.inputs.branch }}"
+          SAFE=$(echo "$REF" | sed 's/[^a-zA-Z0-9-]/-/g')
           echo "name=$SAFE" >> $GITHUB_OUTPUT
 
       - name: Setup Node.js
