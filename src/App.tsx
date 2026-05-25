@@ -25,7 +25,7 @@ const AdminVersionEditorPage = lazy(() => import('./pages/admin/AdminVersionEdit
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter basename="/mecharashi-tools">
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
