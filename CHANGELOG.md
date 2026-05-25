@@ -4,7 +4,7 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [Unreleased] - 2026-05-24
+## [Unreleased] - 2026-05-25
 
 ### ⚠ 重大變更
 
@@ -12,6 +12,7 @@
 
 ### ✨ 新功能
 
+- PLAN-013 首頁版本時間線 + PLAN-014 後台管理基礎建設 (`158a478`)
 - 新增元件關卡掉落資訊和篩選條件 (`bb3d7a6`)
 - 新增 PLAN-012 元件圖鑑頁面與相關元件 (`dd05ab4`)
 - 新增機師故事顯示 (`7d02f3f`)
@@ -86,6 +87,7 @@
 
 ### 🚀 CI/CD
 
+- 同步 workflow 設定，防止 gh-pages 競爭條件 (`4ede30e`)
 - add preview deployment workflow and dynamic base path (`954413a`)
 
 ### 其他
