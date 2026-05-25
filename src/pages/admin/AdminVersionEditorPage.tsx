@@ -1,0 +1,431 @@
+import { useState, useEffect, useRef } from 'react'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { db, storage } from '../../lib/firebase'
+import type { PatchVersion, PatchHalf } from '../../data/patchVersions/types'
+import AdminHalfEditorPanel from '../../components/admin/AdminHalfEditorPanel'
+
+// ── 常數 / 工具 ────────────────────────────────────────────────────────────────
+
+type Tab = 'core' | 'upper' | 'lower'
+type SaveStatus = null | 'saving' | 'success' | 'error'
+
+const EMPTY_HALF: PatchHalf = { cnDate: '' }
+
+const EMPTY_VERSION: PatchVersion = {
+  version: '',
+  upper: { ...EMPTY_HALF },
+  lower: { ...EMPTY_HALF },
+}
+
+/** Firestore 不接受 undefined — 用 JSON round-trip 移除 */
+function stripUndefined<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj))
+}
+
+// ── 動態字串列表（用於 crisisShop） ───────────────────────────────────────────
+
+function StringListEditor({
+  values,
+  onChange,
+  placeholder,
+}: {
+  values: string[]
+  onChange: (v: string[]) => void
+  placeholder?: string
+}) {
+  return (
+    <div className="space-y-1.5">
+      {values.map((v, idx) => (
+        <div key={idx} className="flex gap-2">
+          <input
+            type="text"
+            value={v}
+            onChange={e => onChange(values.map((x, i) => (i === idx ? e.target.value : x)))}
+            placeholder={placeholder}
+            className="flex-1 bg-bg-card border border-border rounded px-3 py-1.5 text-sm text-text-primary placeholder-text-dim outline-none focus:border-accent-purple/50 min-w-0"
+          />
+          <button
+            type="button"
+            onClick={() => onChange(values.filter((_, i) => i !== idx))}
+            className="px-2 text-text-dim hover:text-accent-red transition-colors"
+            title="刪除"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() => onChange([...values, ''])}
+        className="text-[11px] text-accent-purple hover:text-accent-purple/80 transition-colors"
+      >
+        + 新增
+      </button>
+    </div>
+  )
+}
+
+// ── 欄位標籤 ──────────────────────────────────────────────────────────────────
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return <label className="text-xs text-text-dim block mb-1.5">{children}</label>
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="text-[10px] font-bold text-text-dim tracking-[3px] uppercase mb-3 mt-6 pt-4 border-t border-border first:mt-0 first:pt-0 first:border-t-0">
+      {children}
+    </div>
+  )
+}
+
+const INPUT_CLS =
+  'w-full bg-bg-card border border-border rounded px-3 py-2 text-sm text-text-primary placeholder-text-dim outline-none focus:border-accent-purple/50'
+
+// ── 主頁面 ────────────────────────────────────────────────────────────────────
+
+export default function AdminVersionEditorPage() {
+  const { versionId } = useParams<{ versionId: string }>()
+  const navigate = useNavigate()
+  const isNew = versionId === 'new'
+
+  const [formData, setFormData]   = useState<PatchVersion>({ ...EMPTY_VERSION })
+  const [loading, setLoading]     = useState(!isNew)
+  const [notFound, setNotFound]   = useState(false)
+  const [activeTab, setActiveTab] = useState<Tab>('core')
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>(null)
+  const [saveMsg, setSaveMsg]     = useState('')
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // ── 載入現有版本 ────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (isNew) return
+    setLoading(true)
+    getDoc(doc(db, 'patchVersions', `v${versionId}`))
+      .then(snap => {
+        if (snap.exists()) {
+          setFormData(snap.data() as PatchVersion)
+        } else {
+          setNotFound(true)
+        }
+      })
+      .catch(err => {
+        console.error('[AdminVersionEditorPage] load error:', err)
+        setNotFound(true)
+      })
+      .finally(() => setLoading(false))
+  }, [versionId, isNew])
+
+  // ── 儲存 ────────────────────────────────────────────────────────────────────
+
+  async function handleSave() {
+    if (!formData.version.trim()) {
+      setSaveStatus('error')
+      setSaveMsg('版本號不可為空')
+      return
+    }
+    setSaveStatus('saving')
+    setSaveMsg('儲存中...')
+    try {
+      const clean = stripUndefined(formData)
+      await setDoc(doc(db, 'patchVersions', `v${formData.version}`), clean)
+      setSaveStatus('success')
+      setSaveMsg('儲存成功！Firestore 已更新。')
+      if (isNew) {
+        // 建立後跳轉至編輯頁
+        navigate(`/admin/versions/${formData.version}`, { replace: true })
+      }
+    } catch (err) {
+      console.error('[AdminVersionEditorPage] save error:', err)
+      setSaveStatus('error')
+      setSaveMsg('儲存失敗，請確認 Firebase 連線與管理員權限。')
+    }
+  }
+
+  // ── Banner 圖片上傳 ─────────────────────────────────────────────────────────
+
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const fileRef = storageRef(storage, `banners/${Date.now()}_${file.name}`)
+      await uploadBytes(fileRef, file)
+      const url = await getDownloadURL(fileRef)
+      setFormData(prev => ({ ...prev, bannerImage: url }))
+    } catch (err) {
+      console.error('[AdminVersionEditorPage] upload error:', err)
+      alert('圖片上傳失敗，請確認 Firebase Storage 設定。')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  // ── 局部 update helpers ─────────────────────────────────────────────────────
+
+  function updateCore(patch: Partial<PatchVersion>) {
+    setFormData(prev => ({ ...prev, ...patch }))
+  }
+
+  function updateHalf(half: 'upper' | 'lower', newHalf: PatchHalf) {
+    setFormData(prev => ({ ...prev, [half]: newHalf }))
+  }
+
+  // ── 渲染條件 ────────────────────────────────────────────────────────────────
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <p className="text-text-dim text-sm">載入中...</p>
+      </div>
+    )
+  }
+
+  if (notFound) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-16 text-center">
+        <p className="text-text-dim mb-4">找不到版本「{versionId}」</p>
+        <Link to="/admin/versions" className="text-accent-purple text-sm hover:underline">
+          ← 返回版本列表
+        </Link>
+      </div>
+    )
+  }
+
+  const crisisShop = formData.crisisShop ?? []
+
+  const TABS: { key: Tab; label: string }[] = [
+    { key: 'core',  label: '核心資訊' },
+    { key: 'upper', label: '上半' },
+    { key: 'lower', label: '下半' },
+  ]
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8 pb-24">
+      {/* 麵包屑 */}
+      <div className="flex items-center gap-2 text-xs text-text-dim mb-4">
+        <Link to="/admin" className="hover:text-text-secondary transition-colors no-underline">後台管理</Link>
+        <span>›</span>
+        <Link to="/admin/versions" className="hover:text-text-secondary transition-colors no-underline">版本列表</Link>
+        <span>›</span>
+        <span className="text-accent-purple">{isNew ? '建立新版本' : `v${versionId}`}</span>
+      </div>
+
+      {/* 頁首 */}
+      <div className="mb-6">
+        <div className="text-[10px] font-[Orbitron,sans-serif] tracking-[3px] text-accent-purple uppercase mb-1">
+          Admin · Version Editor
+        </div>
+        <h1 className="text-2xl font-bold text-text-primary">
+          {isNew ? '建立新版本' : `v${versionId} 版本編輯`}
+        </h1>
+      </div>
+
+      {/* Tab 切換列 */}
+      <div className="flex border-b border-border mb-6">
+        {TABS.map(({ key, label }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setActiveTab(key)}
+            className={`px-5 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+              activeTab === key
+                ? 'text-accent-purple border-accent-purple'
+                : 'text-text-dim border-transparent hover:text-text-secondary'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Tab 1：核心資訊 ── */}
+      {activeTab === 'core' && (
+        <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {/* 版本號 */}
+            <div>
+              <FieldLabel>版本號（如：2.8）</FieldLabel>
+              {isNew ? (
+                <input
+                  type="text"
+                  value={formData.version}
+                  onChange={e => updateCore({ version: e.target.value })}
+                  placeholder="2.8"
+                  className={INPUT_CLS}
+                />
+              ) : (
+                <div className="px-3 py-2 bg-bg-card border border-border rounded text-sm text-accent-orange font-bold">
+                  v{formData.version}
+                  <span className="text-text-dim text-xs font-normal ml-2">（建立後不可更改）</span>
+                </div>
+              )}
+            </div>
+
+            {/* 版本名稱 */}
+            <div>
+              <FieldLabel>版本名稱（選填）</FieldLabel>
+              <input
+                type="text"
+                value={formData.name ?? ''}
+                onChange={e => updateCore({ name: e.target.value || undefined })}
+                placeholder="（選填）"
+                className={INPUT_CLS}
+              />
+            </div>
+          </div>
+
+          <SectionLabel>版本前瞻圖</SectionLabel>
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <input
+                type="text"
+                value={formData.bannerImage ?? ''}
+                onChange={e => updateCore({ bannerImage: e.target.value || undefined })}
+                placeholder="圖片 URL（上傳後自動填入，或手動貼上）"
+                className={`${INPUT_CLS} flex-1`}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="flex-shrink-0 px-3 py-2 text-sm bg-bg-card border border-border rounded hover:border-accent-purple/50 text-text-secondary transition-colors disabled:opacity-50"
+              >
+                {uploading ? '上傳中...' : '📤 上傳圖片'}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </div>
+            {formData.bannerImage && (
+              <div className="text-[11px] text-text-dim truncate">
+                目前：{formData.bannerImage}
+              </div>
+            )}
+          </div>
+
+          <SectionLabel>台服設定</SectionLabel>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.isTwCurrent ?? false}
+              onChange={e => updateCore({ isTwCurrent: e.target.checked || undefined })}
+              className="accent-accent-green w-4 h-4"
+            />
+            <div>
+              <span className="text-sm text-text-primary font-medium">★ 台服當前版本</span>
+              <p className="text-xs text-text-dim mt-0.5">勾選此版本為台服目前進行中的版本（同時請取消其他版本的同一勾選）</p>
+            </div>
+          </label>
+
+          <SectionLabel>危境重構機師</SectionLabel>
+          <StringListEditor
+            values={crisisShop}
+            onChange={v => updateCore({ crisisShop: v.length ? v : undefined })}
+            placeholder="機師名稱（如：亞瑟）"
+          />
+
+          <SectionLabel>其他版本資訊</SectionLabel>
+          <div className="space-y-4">
+            <div>
+              <FieldLabel>記憶風暴說明（memoryStorm）</FieldLabel>
+              <input
+                type="text"
+                value={formData.memoryStorm ?? ''}
+                onChange={e => updateCore({ memoryStorm: e.target.value || undefined })}
+                placeholder="（選填）"
+                className={INPUT_CLS}
+              />
+            </div>
+            <div>
+              <FieldLabel>邊境商店更新（borderShop）</FieldLabel>
+              <input
+                type="text"
+                value={formData.borderShop ?? ''}
+                onChange={e => updateCore({ borderShop: e.target.value || undefined })}
+                placeholder="（選填）"
+                className={INPUT_CLS}
+              />
+            </div>
+            <div>
+              <FieldLabel>鬥技場更新（arenaShop）</FieldLabel>
+              <input
+                type="text"
+                value={formData.arenaShop ?? ''}
+                onChange={e => updateCore({ arenaShop: e.target.value || undefined })}
+                placeholder="（選填）"
+                className={INPUT_CLS}
+              />
+            </div>
+            <div>
+              <FieldLabel>備註（notes）</FieldLabel>
+              <textarea
+                value={formData.notes ?? ''}
+                onChange={e => updateCore({ notes: e.target.value || undefined })}
+                placeholder="（選填）"
+                rows={3}
+                className={`${INPUT_CLS} resize-none`}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Tab 2：上半 ── */}
+      {activeTab === 'upper' && (
+        <AdminHalfEditorPanel
+          value={formData.upper}
+          onChange={half => updateHalf('upper', half)}
+        />
+      )}
+
+      {/* ── Tab 3：下半 ── */}
+      {activeTab === 'lower' && (
+        <AdminHalfEditorPanel
+          value={formData.lower}
+          onChange={half => updateHalf('lower', half)}
+        />
+      )}
+
+      {/* ── 固定底部儲存列 ── */}
+      <div className="fixed bottom-0 left-0 right-0 bg-bg-dark border-t border-border px-4 py-3 flex items-center justify-between z-50">
+        <div className="text-sm">
+          {saveStatus === 'saving' && (
+            <span className="text-text-dim">{saveMsg}</span>
+          )}
+          {saveStatus === 'success' && (
+            <span className="text-accent-green">{saveMsg}</span>
+          )}
+          {saveStatus === 'error' && (
+            <span className="text-accent-red">{saveMsg}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/admin/versions"
+            className="px-4 py-2 text-sm text-text-dim border border-border rounded-lg hover:border-text-dim/50 transition-colors no-underline"
+          >
+            取消
+          </Link>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saveStatus === 'saving'}
+            className="px-6 py-2 text-sm font-bold bg-accent-purple text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+          >
+            {saveStatus === 'saving' ? '儲存中...' : '儲存至 Firestore'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

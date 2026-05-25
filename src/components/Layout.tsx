@@ -89,6 +89,20 @@ export default function Layout() {
                 {item.label}
               </NavLink>
             ))}
+            {(userProfile?.role === 'ADMIN' || userProfile?.role === 'OWNER') && (
+              <NavLink
+                to="/admin/versions"
+                className={({ isActive }) =>
+                  `px-3 py-2 rounded-lg text-sm no-underline transition-colors whitespace-nowrap ${
+                    isActive
+                      ? 'bg-accent-purple/15 text-accent-purple'
+                      : 'text-accent-purple/70 hover:text-accent-purple hover:bg-accent-purple/10'
+                  }`
+                }
+              >
+                後台管理
+              </NavLink>
+            )}
           </nav>
 
           {/* User area */}
@@ -245,6 +259,25 @@ export default function Layout() {
             </NavLink>
           ))}
         </div>
+
+        {/* Admin 入口（手機版 More Panel） */}
+        {(userProfile?.role === 'ADMIN' || userProfile?.role === 'OWNER') && (
+          <div className="border-t border-border px-4 py-2">
+            <NavLink
+              to="/admin/versions"
+              onClick={() => setMoreOpen(false)}
+              className={({ isActive }) =>
+                `block w-full py-2 text-sm text-center rounded-lg transition-colors no-underline ${
+                  isActive
+                    ? 'bg-accent-purple/15 text-accent-purple'
+                    : 'text-accent-purple/70 hover:text-accent-purple hover:bg-accent-purple/10'
+                }`
+              }
+            >
+              🛠️ 後台管理
+            </NavLink>
+          </div>
+        )}
 
         {/* 登入/登出區 */}
         <div className="border-t border-border px-4 py-3">

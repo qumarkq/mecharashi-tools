@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>patchVersions — 版本時間線資料模型 — 鋼嵐工具站</title>
+<link rel="stylesheet" href="../../_shared/style.css">
+<style>
+.field-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 14px 0;
+}
+.field-table th {
+  background: rgba(255,107,43,0.08);
+  color: var(--accent-orange);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 9px 14px;
+  text-align: left;
+  border: 1px solid var(--border);
+}
+.field-table td {
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  vertical-align: top;
+  line-height: 1.7;
+}
+.field-table tr:hover td { background: var(--bg-card-hover); }
+.field-name {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-orange);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.field-type {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-cyan);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+.badge-opt  { background: rgba(107,114,128,0.15); color: var(--text-dim); }
+.badge-req  { background: rgba(255,107,43,0.15);  color: var(--accent-orange); }
+.badge-dep  { background: rgba(239,68,68,0.15);   color: var(--accent-red); }
+.badge-new  { background: rgba(34,197,94,0.15);   color: var(--accent-green); }
+.code-block {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 22px;
+  margin: 12px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.9;
+  overflow-x: auto;
+  color: #e6edf3;
+}
+.code-block .kw  { color: #ff7b72; }
+.code-block .ty  { color: #79c0ff; }
+.code-block .st  { color: #a5d6ff; }
+.code-block .cm  { color: #8b949e; }
+.code-block .nm  { color: #e3b341; }
+.decision-block {
+  background: rgba(6,182,212,0.06);
+  border: 1px solid rgba(6,182,212,0.2);
+  border-left: 3px solid var(--accent-cyan);
+  border-radius: 0 10px 10px 0;
+  padding: 14px 18px;
+  margin: 12px 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.warning-block {
+  background: rgba(234,179,8,0.06);
+  border: 1px solid rgba(234,179,8,0.2);
+  border-left: 3px solid var(--accent-yellow);
+  border-radius: 0 10px 10px 0;
+  padding: 14px 18px;
+  margin: 12px 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.type-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 10px 0;
+}
+.type-card h4 {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-orange);
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+.color-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+</style>
+</head>
+<body>
+
+<nav class="breadcrumb">
+  <div class="container">
+    <a href="../../index.html">📋 文件首頁</a>
+    <span>›</span>
+    <a href="../index.html">技術文件</a>
+    <span>›</span>
+    <a href="#">資料模型</a>
+    <span>›</span>
+    <span class="current">patchVersions</span>
+  </div>
+</nav>
+
+<header class="hero" style="background:radial-gradient(ellipse 80% 50% at 50% 0%, rgba(168,85,247,0.10) 0%, transparent 60%), var(--bg-dark);">
+  <div class="hero-badge purple">◆ DATA MODEL</div>
+  <h1>patchVersions<span style="-webkit-text-fill-color:var(--text-secondary);">版本時間線資料模型</span></h1>
+  <p class="hero-sub">靜態 TypeScript 資料檔，定義版本資訊（PatchVersion）、半版本（PatchHalf）、計時活動（TimedActivity）的完整欄位規格。PLAN-014 Phase A 擴充。</p>
+</header>
+
+<main class="container">
+
+<!-- ── 概述 ── -->
+<section class="section">
+  <div class="section-label purple">Overview</div>
+  <div class="section-title">資料來源 &amp; 用途</div>
+
+  <div class="decision-block">
+    <strong>位置</strong>：<code>src/data/patchVersions/</code><br><br>
+    <strong>組成</strong>：每個版本各一份 <code>v{N}.ts</code>；型別定義集中於 <code>types.ts</code>；
+    <code>index.ts</code> 匯總 <code>PATCH_VERSIONS</code> 陣列供前台元件使用。<br><br>
+    <strong>用途</strong>：首頁版本時間線（<code>VersionTimeline</code>）、版本濃縮資訊表（<code>VersionQuickTable</code>）、
+    展開面板（<code>VersionExpandedPanel</code>）、甘特圖活動時間線（<code>ActivityTimeline</code>）。<br><br>
+    <strong>PLAN-014 Phase B</strong> 計畫將此靜態資料遷移至 Firebase Firestore，並以
+    <code>usePatchVersions()</code> hook 取代靜態 import，屆時本文件中的欄位定義亦適用於 Firestore Document 結構。
+  </div>
+</section>
+
+<!-- ── PatchVersion ── -->
+<section class="section">
+  <div class="section-label purple">PatchVersion</div>
+  <div class="section-title">PatchVersion — 版本頂層</div>
+
+  <div class="code-block">
+<span class="kw">export interface</span> <span class="ty">PatchVersion</span> {
+  version: <span class="ty">string</span>              <span class="cm">// 如 "2.8"、"3.3"</span>
+  name?: <span class="ty">string</span>               <span class="cm">// 版本副標，如 "黃昏紀元"</span>
+  bannerImage?: <span class="ty">string</span>        <span class="cm">// 版本前瞻圖路徑（/images/banners/v2.8.jpg）</span>
+  upper: <span class="ty">PatchHalf</span>            <span class="cm">// 上半版本</span>
+  lower: <span class="ty">PatchHalf</span>            <span class="cm">// 下半版本</span>
+  crisisShop?: <span class="ty">string</span>[]       <span class="cm">// 危境重構可兌換機師</span>
+  memoryStorm?: <span class="ty">string</span>        <span class="cm">// 記憶風暴說明</span>
+  borderShop?: <span class="ty">string</span>         <span class="cm">// 邊境商店更新（如 "雷克斯(6/15)"）</span>
+  arenaShop?: <span class="ty">string</span>          <span class="cm">// 鬥技場更新（如 "銀閃(6/18)"）</span>
+  grayOpsUpdates?: <span class="ty">GrayOpsUpdate</span>[]  <span class="cm">// 灰燼行動機甲列表更新</span>
+  notes?: <span class="ty">string</span>              <span class="cm">// 版本備註</span>
+  isTwCurrent?: <span class="ty">boolean</span>       <span class="cm">// 此版本是否為台服當前版本（首頁標記用）</span>
+}
+  </div>
+
+  <table class="field-table">
+    <tr>
+      <th>欄位</th><th>型別</th><th>必填</th><th>說明</th>
+    </tr>
+    <tr>
+      <td class="field-name">version</td>
+      <td class="field-type">string</td>
+      <td><span class="badge badge-req">必填</span></td>
+      <td>版本號字串，如 <code>"2.8"</code>、<code>"3.3"</code>。PLAN-014 Phase B 將作為 Firestore Document ID。</td>
+    </tr>
+    <tr>
+      <td class="field-name">name</td>
+      <td class="field-type">string?</td>
+      <td><span class="badge badge-opt">選填</span></td>
+      <td>版本副標題，如 <code>"黃昏紀元"</code>，顯示於版本徽章與頁頭。</td>
+    </tr>
+    <tr>
+      <td class="field-name">bannerImage</td>
+      <td class="field-type">string?</td>
+      <td><span class="badge badge-opt">選填</span></td>
+      <td>版本前瞻圖路徑，相對於 <code>public/</code>，如 <code>/images/banners/v2.8.jpg</code>。</td>
+    </tr>
+    <tr>
+      <td class="field-name">isTwCurrent</td>
+      <td class="field-type">boolean?</td>
+      <td><span class="badge badge-opt">選填</span></td>
+      <td>台服當前版本標記，全局只有一個版本為 <code>true</code>，於首頁顯示 ★ 標記。</td>
+    </tr>
+    <tr>
+      <td class="field-name">crisisShop</td>
+      <td class="field-type">string[]?</td>
+      <td><span class="badge badge-opt">選填</span></td>
+      <td>危境重構商店中此版本新增的機師名稱列表。</td>
+    </tr>
+    <tr>
+      <td class="field-name">grayOpsUpdates</td>
+      <td class="field-type">GrayOpsUpdate[]?</td>
+      <td><span class="badge badge-opt">選填</span></td>
+      <td>灰燼行動公司機甲列表更新，參見 <code>GrayOpsUpdate</code> 型別。</td>
+    </tr>
+  </table>
+</section>
+
+<!-- ── PatchHalf ── -->
+<section class="section">
+  <div class="section-label purple">PatchHalf</div>
+  <div class="section-title">PatchHalf — 半版本（上半 / 下半）</div>
+
+  <div class="code-block">
+<span class="kw">export interface</span> <span class="ty">PatchHalf</span> {
+  cnDate: <span class="ty">string</span>            <span class="cm">// 陸服起始日 YYYY/MM/DD（固定週四）</span>
+  twDate?: <span class="ty">string</span>           <span class="cm">// 台服起始日（可含 "約 " 前綴）</span>
+  twIsPredicted?: <span class="ty">boolean</span>    <span class="cm">// 台服日期是否為預測值</span>
+  pilots?: <span class="ty">string</span>[]          <span class="cm">// 本半版本新機師</span>
+  mechs?: <span class="ty">string</span>[]            <span class="cm">// 本半版本新機甲</span>
+  pilotSelection?: <span class="ty">string</span>[]  <span class="cm">// 角雕特遣機師列表（舊欄位，改用 cnActivities）</span>
+  mechSelection?: <span class="ty">string</span>[]   <span class="cm">// 跨域海運機甲列表（舊欄位，改用 cnActivities）</span>
+  armamentRaids?: <span class="ty">ArmamentRaid</span>[]  <span class="cm">// 武裝討伐副本</span>
+  battlePass?: <span class="ty">BattlePass</span>      <span class="cm">// 版本戰令</span>
+
+  <span class="cm">// ── PLAN-014 Phase A 新增：甘特圖活動 ──</span>
+  cnActivities?: <span class="ty">TimedActivity</span>[]  <span class="cm">// 陸服活動（起始日 + 週數）</span>
+  twActivities?: <span class="ty">TimedActivity</span>[]  <span class="cm">// 台服活動（獨立維護，與陸服無關）</span>
+
+  <span class="cm">// ── 舊欄位（deprecated）：cnActivities/twActivities 存在時優先使用 ──</span>
+  <span class="cm">/** @deprecated */</span> skinGacha?: <span class="ty">string</span>
+  <span class="cm">/** @deprecated */</span> rouletteEvent?: <span class="ty">boolean</span>
+  <span class="cm">/** @deprecated */</span> specialEvents?: <span class="ty">string</span>[]
+  <span class="cm">/** @deprecated */</span> revivedBanners?: <span class="ty">string</span>[]
+}
+  </div>
+
+  <div class="warning-block">
+    <strong>陸台分離原則</strong><br><br>
+    同一活動在陸服與台服的時間不同，且台服有時調整順序，因此
+    <code>cnActivities</code> 與 <code>twActivities</code> 各自獨立填寫，不從陸服日期自動推算台服。<br><br>
+    <strong>遷移策略</strong>：舊欄位（<code>skinGacha</code>、<code>rouletteEvent</code> 等）保留以維持向下相容；
+    UI 優先讀取 <code>cnActivities</code> / <code>twActivities</code>，若不存在則 fallback 顯示舊欄位的文字清單。
+    Phase B 完成後可逐步移除舊欄位。
+  </div>
+</section>
+
+<!-- ── TimedActivity ── -->
+<section class="section">
+  <div class="section-label purple">TimedActivity</div>
+  <div class="section-title">TimedActivity — 計時活動（甘特圖單筆）</div>
+
+  <div class="decision-block">
+    <strong>設計背景</strong>：鋼嵐所有活動均以<strong>星期四</strong>為起訖單位。
+    活動可用「起始日（週四）+ 持續週數」完整描述，結束日公式為
+    <code>endDate = startDate + weeks × 7 − 1 天</code>（即下週三）。
+    UI 元件自動計算結束日，不需手動填入。
+  </div>
+
+  <div class="code-block">
+<span class="kw">export interface</span> <span class="ty">TimedActivity</span> {
+  name: <span class="ty">string</span>          <span class="cm">// 活動名稱，如「角雕刮刮樂」、「環島物流節」</span>
+  startDate: <span class="ty">string</span>     <span class="cm">// 起始日 YYYY/MM/DD，必須為星期四</span>
+  weeks: <span class="ty">number</span>         <span class="cm">// 持續週數（1 = 當週四到下週三）</span>
+  type: <span class="ty">ActivityType</span>    <span class="cm">// 決定甘特條顏色</span>
+  pilots?: <span class="ty">string</span>[]     <span class="cm">// pilotMission 型別時的機師列表</span>
+  mechs?: <span class="ty">string</span>[]       <span class="cm">// crossShipping 型別時的機甲列表</span>
+}
+  </div>
+
+  <table class="field-table">
+    <tr>
+      <th>欄位</th><th>型別</th><th>必填</th><th>說明</th>
+    </tr>
+    <tr>
+      <td class="field-name">name</td>
+      <td class="field-type">string</td>
+      <td><span class="badge badge-req">必填</span></td>
+      <td>活動名稱，顯示於甘特條 hover tooltip，如「角雕刮刮樂」、「白夜凍鋒（復刻）」。</td>
+    </tr>
+    <tr>
+      <td class="field-name">startDate</td>
+      <td class="field-type">string</td>
+      <td><span class="badge badge-req">必填</span></td>
+      <td>活動起始日，格式 <code>YYYY/MM/DD</code>，必須為星期四（遊戲固定週四更新）。</td>
+    </tr>
+    <tr>
+      <td class="field-name">weeks</td>
+      <td class="field-type">number</td>
+      <td><span class="badge badge-req">必填</span></td>
+      <td>持續週數，最小值 1。UI 自動計算 <code>endDate = startDate + weeks × 7 − 1</code>。</td>
+    </tr>
+    <tr>
+      <td class="field-name">type</td>
+      <td class="field-type">ActivityType</td>
+      <td><span class="badge badge-req">必填</span></td>
+      <td>活動類型，決定甘特條顏色，詳見下方 ActivityType 一覽表。</td>
+    </tr>
+    <tr>
+      <td class="field-name">pilots</td>
+      <td class="field-type">string[]?</td>
+      <td><span class="badge badge-opt">選填</span></td>
+      <td>僅 <code>pilotMission</code> 類型時填入，顯示於 tooltip，如 <code>['白夜凍鋒', '十字線上的明光']</code>。</td>
+    </tr>
+    <tr>
+      <td class="field-name">mechs</td>
+      <td class="field-type">string[]?</td>
+      <td><span class="badge badge-opt">選填</span></td>
+      <td>僅 <code>crossShipping</code> 類型時填入，顯示於 tooltip。</td>
+    </tr>
+  </table>
+</section>
+
+<!-- ── ActivityType ── -->
+<section class="section">
+  <div class="section-label purple">ActivityType</div>
+  <div class="section-title">ActivityType — 活動類型與甘特條顏色</div>
+
+  <div class="code-block">
+<span class="kw">export type</span> <span class="ty">ActivityType</span> =
+  | <span class="st">'skinGacha'</span>           <span class="cm">// 角雕刮刮樂</span>
+  | <span class="st">'roulette'</span>            <span class="cm">// 角雕輪盤</span>
+  | <span class="st">'pilotMission'</span>        <span class="cm">// 角雕特遣（含機師列表）</span>
+  | <span class="st">'crossShipping'</span>       <span class="cm">// 跨域海運（含機甲列表）</span>
+  | <span class="st">'specificPilotBanner'</span> <span class="cm">// 特定角色限定卡池</span>
+  | <span class="st">'specificMechBanner'</span>  <span class="cm">// 特定機甲限定卡池</span>
+  | <span class="st">'limitedEvent'</span>        <span class="cm">// 限時活動（環島物流節等）</span>
+  | <span class="st">'loginEvent'</span>          <span class="cm">// 限時簽到活動（碼區補給等）</span>
+  | <span class="st">'battlePass'</span>          <span class="cm">// 版本戰令</span>
+  </div>
+
+  <table class="field-table">
+    <tr>
+      <th>ActivityType</th><th>顏色</th><th>甘特條簡稱</th><th>說明</th>
+    </tr>
+    <tr>
+      <td class="field-name">skinGacha</td>
+      <td><span class="color-dot" style="background:#ff6b2b;"></span>accent-orange</td>
+      <td>刮</td>
+      <td>角雕刮刮樂，通常持續 2 週</td>
+    </tr>
+    <tr>
+      <td class="field-name">roulette</td>
+      <td><span class="color-dot" style="background:#eab308;"></span>accent-yellow</td>
+      <td>輪</td>
+      <td>角雕輪盤，通常在版本末週</td>
+    </tr>
+    <tr>
+      <td class="field-name">pilotMission</td>
+      <td><span class="color-dot" style="background:#a855f7;"></span>accent-purple</td>
+      <td>特</td>
+      <td>角雕特遣，需填 <code>pilots</code> 列表</td>
+    </tr>
+    <tr>
+      <td class="field-name">crossShipping</td>
+      <td><span class="color-dot" style="background:#c9a0dc;"></span>#c9a0dc</td>
+      <td>海</td>
+      <td>跨域海運，需填 <code>mechs</code> 列表</td>
+    </tr>
+    <tr>
+      <td class="field-name">specificPilotBanner</td>
+      <td><span class="color-dot" style="background:#79c0ff;"></span>#79c0ff</td>
+      <td>角池</td>
+      <td>特定角色限定卡池</td>
+    </tr>
+    <tr>
+      <td class="field-name">specificMechBanner</td>
+      <td><span class="color-dot" style="background:#58a6d4;"></span>#58a6d4</td>
+      <td>甲池</td>
+      <td>特定機甲限定卡池</td>
+    </tr>
+    <tr>
+      <td class="field-name">limitedEvent</td>
+      <td><span class="color-dot" style="background:#06b6d4;"></span>accent-cyan</td>
+      <td>限</td>
+      <td>限時活動（環島物流節、回盤戰線等邏輯類活動）</td>
+    </tr>
+    <tr>
+      <td class="field-name">loginEvent</td>
+      <td><span class="color-dot" style="background:#22c55e;"></span>accent-green</td>
+      <td>簽</td>
+      <td>限時簽到活動（碼區補給等）</td>
+    </tr>
+    <tr>
+      <td class="field-name">battlePass</td>
+      <td><span class="color-dot" style="background:#6b7280;"></span>gray-500</td>
+      <td>令</td>
+      <td>版本戰令（通常貫穿整個半版本）</td>
+    </tr>
+  </table>
+</section>
+
+<!-- ── 資料範例 ── -->
+<section class="section">
+  <div class="section-label purple">Example</div>
+  <div class="section-title">v2.8 上半資料範例</div>
+
+  <div class="code-block">
+<span class="cm">// src/data/patchVersions/v2.8.ts</span>
+upper: {
+  cnDate: <span class="st">'2025/11/06'</span>,
+  twDate: <span class="st">'2026/04/23'</span>,
+  pilots: [<span class="st">'鄭樂萱'</span>],
+  mechs: [<span class="st">'霸王（中甲）'</span>],
+  armamentRaids: [
+    { name: <span class="st">'帕洛瑪'</span>, weapons: [<span class="st">'焰刀'</span>] },
+    { name: <span class="st">'維護者'</span>, backpacks: [<span class="st">'修理型背包'</span>] },
+  ],
+  battlePass: { pilots: [<span class="st">'阿黛勒'</span>, <span class="st">'懷亞特'</span>], mechs: [<span class="st">'影武者'</span>, <span class="st">'芬里厄'</span>] },
+  <span class="cm">// 甘特圖 — 陸服活動</span>
+  cnActivities: [
+    { name: <span class="st">'角雕刮刮樂'</span>, startDate: <span class="st">'2025/11/13'</span>, weeks: <span class="nm">2</span>, type: <span class="st">'skinGacha'</span> },
+    { name: <span class="st">'角雕特遣'</span>,   startDate: <span class="st">'2025/11/20'</span>, weeks: <span class="nm">1</span>, type: <span class="st">'pilotMission'</span>,
+      pilots: [<span class="st">'白夜凍鋒'</span>, <span class="st">'十字線上的明光'</span>] },
+    { name: <span class="st">'環島物流節'</span>, startDate: <span class="st">'2025/11/20'</span>, weeks: <span class="nm">2</span>, type: <span class="st">'limitedEvent'</span> },
+  ],
+  <span class="cm">// 甘特圖 — 台服活動（與陸服獨立維護，起始日不同）</span>
+  twActivities: [
+    { name: <span class="st">'角雕刮刮樂'</span>, startDate: <span class="st">'2026/04/30'</span>, weeks: <span class="nm">2</span>, type: <span class="st">'skinGacha'</span> },
+    { name: <span class="st">'角雕特遣'</span>,   startDate: <span class="st">'2026/05/07'</span>, weeks: <span class="nm">1</span>, type: <span class="st">'pilotMission'</span>,
+      pilots: [<span class="st">'白夜凍鋒'</span>, <span class="st">'十字線上的明光'</span>] },
+    { name: <span class="st">'環島物流節'</span>, startDate: <span class="st">'2026/05/07'</span>, weeks: <span class="nm">2</span>, type: <span class="st">'limitedEvent'</span> },
+  ],
+},
+  </div>
+</section>
+
+<!-- ── 甘特圖計算規則 ── -->
+<section class="section">
+  <div class="section-label purple">Gantt Rules</div>
+  <div class="section-title">甘特圖週列計算規則</div>
+
+  <div class="type-card">
+    <h4>ActivityTimeline 元件計算邏輯</h4>
+    <ul style="padding-left:18px;font-size:13px;color:var(--text-secondary);line-height:2.2;">
+      <li><strong>週單位</strong>：以週四作為每週起始日（<code>weekStart</code>），一週 = 週四到下週三</li>
+      <li><strong>活動結束日</strong>：<code>endDate = startDate + weeks × 7</code>（exclusive）</li>
+      <li><strong>週格是否啟用</strong>：<code>actStart ≤ weekStart &lt; actEnd</code></li>
+      <li><strong>上半週列範圍</strong>：從 <code>upper.cnDate</code>（或 <code>twDate</code>）到 <code>lower.cnDate</code>（若活動延伸則擴展）</li>
+      <li><strong>下半週列範圍</strong>：從 <code>lower.cnDate</code> 延伸到最後一個活動的結束日（最少 3 週）</li>
+      <li><strong>跨半版本活動</strong>：上半活動延伸到下半的週格會在分界線兩側連續顯示色塊，不需特殊處理</li>
+      <li><strong>Tracks（欄道）</strong>：<code>upper + lower</code> 所有 activities 合併為欄道列表；上/下半共用同一組欄道</li>
+    </ul>
+  </div>
+
+  <div class="warning-block">
+    <strong>台服 twDate 含 "約 " 前綴</strong><br><br>
+    台服預測日期格式為 <code>"約 2026/06/25"</code>，解析時需 strip 前綴後再拆解
+    YYYY/MM/DD。<code>parseDate()</code> 已處理此情況：<code>str.replace(/^[^0-9]+/, '')</code>。
+  </div>
+</section>
+
+<!-- ── 相關元件 ── -->
+<section class="section">
+  <div class="section-label purple">Components</div>
+  <div class="section-title">使用此資料模型的元件</div>
+
+  <table class="field-table">
+    <tr>
+      <th>元件</th><th>路徑</th><th>用途</th>
+    </tr>
+    <tr>
+      <td class="field-name">ActivityTimeline</td>
+      <td style="font-family:monospace;font-size:11px;">src/components/timeline/ActivityTimeline.tsx</td>
+      <td>甘特圖週列色塊渲染（上/下半 + 分界線），依 <code>cnActivities</code> / <code>twActivities</code>；無資料時 fallback 舊欄位文字</td>
+    </tr>
+    <tr>
+      <td class="field-name">CoreInfoPanel</td>
+      <td style="font-family:monospace;font-size:11px;">src/components/timeline/CoreInfoPanel.tsx</td>
+      <td>版本核心資訊（機師/機甲/武裝/戰令/日期），獨立於活動時間資訊</td>
+    </tr>
+    <tr>
+      <td class="field-name">VersionExpandedPanel</td>
+      <td style="font-family:monospace;font-size:11px;">src/components/timeline/VersionExpandedPanel.tsx</td>
+      <td>三欄式佈局容器（陸版 ActivityTimeline + CoreInfoPanel + 台版 ActivityTimeline）；手機版 Tab 切換</td>
+    </tr>
+  </table>
+</section>
+
+</main>
+
+<footer class="footer">
+  鋼嵐工具站 技術文件 · 資料模型 · patchVersions —
+  <a href="../index.html" style="color:var(--accent-purple);text-decoration:none;">← 技術文件</a>
+</footer>
+
+</body>
+</html>

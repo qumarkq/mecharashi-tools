@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import Layout from './components/Layout'
+import AdminRoute from './components/AdminRoute'
 import HomePage from './pages/home/HomePage'
 import PilotsPage from './pages/pilots/PilotsPage'
 import PilotDetailPage from './pages/pilots/PilotDetailPage'
@@ -17,6 +18,8 @@ import GuidesPage from './pages/guides/GuidesPage'
 import ProfilePage from './pages/user/ProfilePage'
 import AdminPage from './pages/user/AdminPage'
 import ComponentsPage from './pages/components/ComponentsPage'
+import AdminVersionListPage from './pages/admin/AdminVersionListPage'
+import AdminVersionEditorPage from './pages/admin/AdminVersionEditorPage'
 
 const WeaponDetailPage = lazy(() => import('./pages/weapons/WeaponDetailPage'))
 
@@ -42,6 +45,14 @@ function App() {
             <Route path="guides" element={<GuidesPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="admin" element={<AdminPage />} />
+            <Route
+              path="admin/versions"
+              element={<AdminRoute><AdminVersionListPage /></AdminRoute>}
+            />
+            <Route
+              path="admin/versions/:versionId"
+              element={<AdminRoute><AdminVersionEditorPage /></AdminRoute>}
+            />
           </Route>
         </Routes>
       </BrowserRouter>
