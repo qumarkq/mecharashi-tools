@@ -47,6 +47,7 @@
 
 ### 🐛 修復
 
+- 修正build錯誤 (`c1b44c1`)
 - 移除 VersionGanttPanel 未使用的 tooltip 變數 (`1fa7846`)
 - 修正頭像選擇 (`bd469d1`)
 - 修正用戶控制異常 (`78356c6`)
