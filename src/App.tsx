@@ -18,10 +18,9 @@ import GuidesPage from './pages/guides/GuidesPage'
 import ProfilePage from './pages/user/ProfilePage'
 import AdminPage from './pages/user/AdminPage'
 import ComponentsPage from './pages/components/ComponentsPage'
-import AdminVersionListPage from './pages/admin/AdminVersionListPage'
-import AdminVersionEditorPage from './pages/admin/AdminVersionEditorPage'
-
-const WeaponDetailPage = lazy(() => import('./pages/weapons/WeaponDetailPage'))
+const WeaponDetailPage     = lazy(() => import('./pages/weapons/WeaponDetailPage'))
+const AdminVersionListPage = lazy(() => import('./pages/admin/AdminVersionListPage'))
+const AdminVersionEditorPage = lazy(() => import('./pages/admin/AdminVersionEditorPage'))
 
 function App() {
   return (
@@ -47,11 +46,11 @@ function App() {
             <Route path="admin" element={<AdminPage />} />
             <Route
               path="admin/versions"
-              element={<AdminRoute><AdminVersionListPage /></AdminRoute>}
+              element={<AdminRoute><Suspense fallback={null}><AdminVersionListPage /></Suspense></AdminRoute>}
             />
             <Route
               path="admin/versions/:versionId"
-              element={<AdminRoute><AdminVersionEditorPage /></AdminRoute>}
+              element={<AdminRoute><Suspense fallback={null}><AdminVersionEditorPage /></Suspense></AdminRoute>}
             />
           </Route>
         </Routes>
