@@ -2,8 +2,8 @@
 
 @theme {
   --color-bg-dark: #0a0c10;
-  --color-bg-card: #12151c;
-  --color-bg-card-hover: #181c26;
+  --color-bg-card: rgb(18 21 28 / 0.65);
+  --color-bg-card-hover: rgb(24 28 38 / 0.85);
   --color-accent-orange: #ff6b2b;
   --color-accent-blue: #3b82f6;
   --color-accent-cyan: #06b6d4;
@@ -21,6 +21,11 @@
 
 body {
   background-color: var(--color-bg-dark);
+  background-image: url('/images/General/homepage_background.jpg');
+  background-size: cover;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-position: center center;
   color: var(--color-text-primary);
   font-family: 'Noto Sans TC', sans-serif;
   line-height: 1.8;

@@ -180,7 +180,7 @@ export default function ComponentsPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
+    <div className="max-w-7xl mx-auto px-4 py-12 bg-bg-dark/10 backdrop-blur-sm rounded-2xl">
       <BottomSheet open={!!sheetComp} onClose={() => setSheetComp(null)}>
         {sheetComp && <ComponentDetail comp={sheetComp} />}
       </BottomSheet>

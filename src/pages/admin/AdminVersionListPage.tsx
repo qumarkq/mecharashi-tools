@@ -23,7 +23,7 @@ export default function AdminVersionListPage() {
   const sorted = [...versions].reverse()
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8 bg-bg-dark/10 backdrop-blur-sm rounded-2xl">
 
       {/* 麵包屑 */}
       <div className="flex items-center gap-2 text-xs text-text-dim mb-4">

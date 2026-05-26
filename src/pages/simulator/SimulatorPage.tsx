@@ -321,7 +321,7 @@ export default function SimulatorPage() {
 
   if (loading || !data) {
     return (
-      <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="max-w-6xl mx-auto px-4 py-12 bg-bg-dark/10 backdrop-blur-sm rounded-2xl">
         <div className="text-center py-20 text-text-dim">載入資料中...</div>
       </div>
     )

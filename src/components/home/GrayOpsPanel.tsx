@@ -41,7 +41,7 @@ export default function GrayOpsPanel({ versions, loading }: Props) {
   const ROSTER = buildRoster(versions)
 
   return (
-    <div>
+    <div className="bg-bg-dark/10 rounded-2xl p-4 backdrop-blur-sm">
       <div className="flex items-center gap-2 mb-3">
         <span className="text-[10px] font-bold tracking-[3px] text-accent-orange uppercase font-[Orbitron,sans-serif]">
           Gray Ops

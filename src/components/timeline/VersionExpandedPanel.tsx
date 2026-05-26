@@ -35,7 +35,7 @@ export default function VersionExpandedPanel({ version, isExpanded }: Props) {
 
         {/* ── Version badge ── */}
         <div className="absolute top-3 right-3 z-10">
-          <div className="bg-bg-dark/80 backdrop-blur-sm border border-border/60 px-2 py-1 rounded-lg">
+          <div className="bg-bg-dark/10 backdrop-blur-sm border border-border/60 px-2 py-1 rounded-lg">
             <span className="text-xs font-bold text-accent-orange font-[Orbitron,sans-serif] tracking-wide">
               v{version.version}{version.name ? ` ${version.name}` : ''}
             </span>

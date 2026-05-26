@@ -575,7 +575,7 @@ export default function PilotDetailPage() {
   const handleNdLevelClick = (level: NdLevel) => { if (isMobile) setNdSheetLevel(level) }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
+    <div className="max-w-6xl mx-auto px-4 py-10 bg-bg-dark/10 backdrop-blur-sm rounded-2xl">
       {/* Back */}
       <Link
         to="/pilots"

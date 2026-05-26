@@ -72,7 +72,7 @@ function SlotBoxes({ count, colorClass }: { count: number; colorClass: string })
 
 function LoadingSkeleton() {
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12 space-y-5">
+    <div className="max-w-4xl mx-auto px-4 py-12 bg-bg-dark/10 backdrop-blur-sm rounded-2xl space-y-5">
       <div className="h-4 w-28 bg-bg-card rounded animate-pulse" />
       <div className="h-36 bg-bg-card rounded-xl animate-pulse" />
       <div className="h-28 bg-bg-card rounded-xl animate-pulse" />
@@ -92,7 +92,7 @@ export default function WeaponDetailPage() {
 
   if (error || !weapon) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="max-w-4xl mx-auto px-4 py-12 bg-bg-dark/10 backdrop-blur-sm rounded-2xl">
         <Link to="/weapons" className="text-accent-cyan hover:underline text-sm">← 返回武器圖鑑</Link>
         <div className="mt-8 bg-bg-card border border-border rounded-xl p-12 text-center text-text-dim">
           {error ? `載入失敗：${error.message}` : '找不到此武器'}
@@ -107,7 +107,7 @@ export default function WeaponDetailPage() {
   const hasSlots    = weapon.triggerSlots > 0 || weapon.effectSlots > 0 || weapon.componentLimit > 0
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12 space-y-6">
+    <div className="max-w-4xl mx-auto px-4 py-12 bg-bg-dark/10 backdrop-blur-sm rounded-2xl space-y-6">
 
       {/* Breadcrumb */}
       <div>

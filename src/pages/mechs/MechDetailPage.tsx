@@ -383,7 +383,7 @@ export default function MechDetailPage() {
   })
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10" onClick={() => setPinnedTooltip(null)}>
+    <div className="max-w-5xl mx-auto px-4 py-10 bg-bg-dark/10 backdrop-blur-sm rounded-2xl" onClick={() => setPinnedTooltip(null)}>
 
       {activeMod && activeTooltip && !isMobile && (
         <TooltipPortal

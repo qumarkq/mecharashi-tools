@@ -1,6 +1,6 @@
 export default function NewsPage() {
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
+    <div className="max-w-6xl mx-auto px-4 py-12 bg-bg-dark/10 backdrop-blur-sm rounded-2xl">
       <div className="mb-8">
         <span className="text-xs text-accent-orange tracking-[3px] uppercase font-[Orbitron,sans-serif]">Content</span>
         <h1 className="text-3xl font-bold mt-2">改版資訊</h1>

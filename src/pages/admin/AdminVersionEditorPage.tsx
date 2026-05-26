@@ -206,7 +206,7 @@ export default function AdminVersionEditorPage() {
   ]
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 pb-24">
+    <div className="max-w-4xl mx-auto px-4 py-8 pb-24 bg-bg-dark/10 backdrop-blur-sm rounded-2xl">
       {/* 麵包屑 */}
       <div className="flex items-center gap-2 text-xs text-text-dim mb-4">
         <Link to="/admin" className="hover:text-text-secondary transition-colors no-underline">後台管理</Link>
