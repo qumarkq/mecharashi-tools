@@ -7,7 +7,7 @@ export default function GuidesPage() {
         <p className="text-text-secondary mt-2">關卡攻略與配裝推薦。</p>
       </div>
       <div className="bg-bg-card border border-border rounded-xl p-8 text-center text-text-dim">
-        攻略專區開發中... (Phase 5 將實作攻略文章列表)
+        攻略專區開發中... 還是你想加入？
       </div>
     </div>
   )

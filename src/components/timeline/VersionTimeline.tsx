@@ -44,6 +44,11 @@ export default function VersionTimeline({ versions, loading }: Props) {
     setTimeout(() => setMode('timeline'), 460)
   }
 
+  const currentVersion = versions.find(v => v.isTwCurrent)
+  const currentBannerSrc = currentVersion?.bannerImage
+    ? `${import.meta.env.BASE_URL}${currentVersion.bannerImage.replace(/^\//, '')}`
+    : null
+
   const rows = versions.map((version, idx) => {
     const labelRight = idx % 2 === 0
     const isCurrent = version.isTwCurrent
@@ -74,7 +79,7 @@ export default function VersionTimeline({ versions, loading }: Props) {
     )
 
     return (
-      <div key={version.version} className="relative flex items-center h-[120px] md:h-[140px] px-6">
+      <div key={version.version} className="relative flex items-center h-[95px] md:h-[110px] px-6">
         <div className="flex-1 flex justify-end pr-8 min-w-0">
           {!labelRight && label}
         </div>
@@ -89,7 +94,7 @@ export default function VersionTimeline({ versions, loading }: Props) {
   return (
     <div>
       {/* Section header */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 mb-2">
         <div className="h-px flex-1 bg-gradient-to-r from-transparent to-border" />
         <span className="text-xs font-bold tracking-[3px] text-accent-orange uppercase font-[Orbitron,sans-serif]">
           Version Timeline
@@ -98,7 +103,21 @@ export default function VersionTimeline({ versions, loading }: Props) {
       </div>
 
       {/* Outer container: overflow-hidden required for clip-path to animate within bounds */}
-      <div ref={containerRef} className="relative border border-border rounded-2xl overflow-hidden bg-bg-card min-h-[720px]">
+      <div ref={containerRef} className="relative border border-border rounded-2xl overflow-hidden bg-bg-card min-h-[580px]">
+        {/* Current TW version banner as subtle background */}
+        {currentBannerSrc && (
+          <div className="absolute inset-0 pointer-events-none select-none z-0">
+            <img
+              src={currentBannerSrc}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover object-top opacity-20"
+              draggable={false}
+              onError={(e) => { e.currentTarget.style.display = 'none' }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-bg-card/40 via-bg-card/60 to-bg-card/90" />
+          </div>
+        )}
+
         {loading && (
           <div className="absolute top-0 left-0 right-0 h-0.5 z-20 overflow-hidden">
             <div className="h-full bg-accent-orange animate-pulse w-full opacity-60" />
@@ -106,30 +125,30 @@ export default function VersionTimeline({ versions, loading }: Props) {
         )}
 
         {/* ── Timeline ── (stays in DOM to hold container height) */}
-        <div className={`transition-opacity duration-200 ${mode !== 'timeline' ? 'opacity-0 pointer-events-none' : ''}`}>
+        <div className={`relative z-10 transition-opacity duration-200 ${mode !== 'timeline' ? 'opacity-0 pointer-events-none' : ''}`}>
           {/* Mobile: fixed-height scrollable */}
           <div className="md:hidden h-[560px] overflow-y-auto relative">
             <div
               className="absolute w-px bg-border/60 pointer-events-none"
-              style={{ left: 'calc(50% - 0.5px)', top: '2rem', bottom: '2rem' }}
+              style={{ left: 'calc(50% - 0.5px)', top: '1rem', bottom: '1rem' }}
             />
-            <div className="py-8">{rows}</div>
+            <div className="py-4">{rows}</div>
           </div>
 
           {/* PC: auto height, shows all versions */}
           <div className="hidden md:block relative">
             <div
               className="absolute w-px bg-border/60 pointer-events-none"
-              style={{ left: 'calc(50% - 0.5px)', top: '2rem', bottom: '2rem' }}
+              style={{ left: 'calc(50% - 0.5px)', top: '1rem', bottom: '1rem' }}
             />
-            <div className="py-8">{rows}</div>
+            <div className="py-4">{rows}</div>
           </div>
         </div>
 
         {/* ── Detail overlay ── clip-path circle animates from dot position */}
         {mode !== 'timeline' && (
           <div
-            className="absolute inset-0 bg-bg-card"
+            className="absolute inset-0 bg-bg-card/10 backdrop-blur-md"
             style={{
               clipPath: clipOpen
                 ? `circle(200% at ${origin.x}px ${origin.y}px)`

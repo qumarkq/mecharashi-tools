@@ -92,7 +92,7 @@ function ArmamentRaidEditor({
               type="text"
               value={raid.name}
               onChange={e => updateRaid(idx, { name: e.target.value })}
-              placeholder="關卡名稱（如：帕洛瑪）"
+              placeholder="關卡名稱（如：無名之輩）"
               className="flex-1 bg-bg-card border border-border rounded px-2 py-1 text-xs text-text-primary placeholder-text-dim outline-none focus:border-accent-purple/50"
             />
             <button

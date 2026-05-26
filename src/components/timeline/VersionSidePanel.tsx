@@ -76,7 +76,7 @@ export default function VersionSidePanel({ version, side }: Props) {
   const borderClass = isTw ? 'border-accent-green/30' : 'border-border'
 
   return (
-    <div className={`p-3 rounded-xl border bg-bg-dark/75 backdrop-blur-md ${borderClass}`}>
+    <div className={`p-3 rounded-xl border bg-bg-dark/55 backdrop-blur-md ${borderClass}`}>
       {/* Side header */}
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
         <span className={`text-xs font-bold tracking-[3px] uppercase font-[Orbitron,sans-serif] ${accentClass}`}>

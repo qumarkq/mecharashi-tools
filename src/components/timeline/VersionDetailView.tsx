@@ -56,7 +56,7 @@ export default function VersionDetailView({ versions, activeIndex, onNavigate, o
   return (
     <div className="h-full flex flex-col">
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0 bg-bg-card">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0 bg-bg-card/40 backdrop-blur-md">
         <button
           onClick={onClose}
           className="flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors"
@@ -86,7 +86,7 @@ export default function VersionDetailView({ versions, activeIndex, onNavigate, o
       </div>
 
       {/* Version quick-select pills */}
-      <div className="flex gap-1.5 px-4 py-2 border-b border-border/50 overflow-x-auto shrink-0 bg-bg-card/50">
+      <div className="flex gap-1.5 px-4 py-2 border-b border-border/50 overflow-x-auto shrink-0 bg-bg-card/30 backdrop-blur-md">
         {versions.map((v, i) => (
           <button
             key={v.version}

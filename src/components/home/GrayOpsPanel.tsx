@@ -44,7 +44,7 @@ export default function GrayOpsPanel({ versions, loading }: Props) {
     <div className="bg-bg-dark/10 rounded-2xl p-4 backdrop-blur-sm">
       <div className="flex items-center gap-2 mb-3">
         <span className="text-[10px] font-bold tracking-[3px] text-accent-orange uppercase font-[Orbitron,sans-serif]">
-          Gray Ops
+          灰燼行動未來機甲一覽
         </span>
         {loading && <span className="text-[9px] text-text-dim animate-pulse">同步中…</span>}
         <div className="h-px flex-1 bg-border" />
@@ -56,17 +56,17 @@ export default function GrayOpsPanel({ versions, loading }: Props) {
             key={company}
             className={`rounded-xl border p-3 ${COMPANY_COLORS[company]}`}
           >
-            <div className="text-[11px] font-bold tracking-wide mb-2 pb-1.5 border-b border-current/20">
+            <div className="text-[13px] font-bold tracking-wide mb-2 pb-1.5 border-b border-current/20">
               {company}
             </div>
             <div className="flex flex-col gap-1">
               {ROSTER[company]?.map((entry, i) => (
                 <div key={i} className="flex items-center gap-1.5">
-                  <span className="text-[11px] text-text-secondary leading-tight">
+                  <span className="text-[13px] text-text-secondary leading-tight">
                     {entry.name}
                   </span>
                   {entry.version && (
-                    <span className="text-[9px] text-accent-cyan border border-accent-cyan/30 px-1 rounded leading-tight shrink-0">
+                    <span className="text-[11px] text-accent-cyan border border-accent-cyan/30 px-1 rounded leading-tight shrink-0">
                       {entry.version}
                     </span>
                   )}

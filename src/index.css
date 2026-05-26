@@ -40,6 +40,31 @@ body {
 }
 
 /* Admin panel input fields */
+/* ── PLAN-015: Page Snap (homepage only) ─────────────────────────── */
+.homepage-snap {
+  height: calc(100vh - 4rem);
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+.homepage-snap::-webkit-scrollbar {
+  display: none;
+}
+
+.snap-page {
+  height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1023px) {
+  .homepage-snap {
+    height: calc(100vh - 4rem - 3.5rem - env(safe-area-inset-bottom));
+  }
+}
+/* ──────────────────────────────────────────────────────────────────── */
+
 .input-field {
   width: 100%;
   padding: 0.5rem 0.75rem;

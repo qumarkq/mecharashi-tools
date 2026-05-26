@@ -1,49 +1,57 @@
-import VersionQuickTable from '../../components/home/VersionQuickTable'
-import GrayOpsPanel from '../../components/home/GrayOpsPanel'
-import VersionTimeline from '../../components/timeline/VersionTimeline'
 import { usePatchVersions } from '../../hooks/usePatchVersions'
+import HomeTabPanel from '../../components/home/HomeTabPanel'
 
 export default function HomePage() {
   const { data: versions, loading, error } = usePatchVersions()
 
   return (
-    <div>
-      {/* ── 上方雙欄：版本濃縮資訊表 + 灰燼行動參考 ── */}
-      <section className="border-b border-border px-4 py-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-[3fr_2fr] gap-6">
-          <VersionQuickTable versions={versions} loading={loading} error={error} />
-          <GrayOpsPanel versions={versions} loading={loading} />
-        </div>
-      </section>
+    <div className="homepage-snap">
 
-      {/* ── 版本時間線 ── */}
-      <section className="px-4 py-8">
-        <div className="max-w-5xl mx-auto">
-          <VersionTimeline versions={versions} loading={loading} />
-        </div>
-      </section>
+      {/* ── Page 1: Hero ── */}
+      <section className="snap-page relative flex items-center overflow-hidden">
+        {/* Left-to-right overlay: opaque on left for readability, fades to transparent on right */}
+        <div className="absolute inset-0 bg-gradient-to-r from-bg-dark/85 via-bg-dark/50 lg:via-bg-dark/30 to-transparent pointer-events-none" />
 
-      {/* ── 原 Hero / Welcome（縮版，移至底部） ── */}
-      <section className="border-t border-border px-6 py-12 text-center">
-        <div className="relative max-w-xl mx-auto">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(255,107,43,0.07)_0%,transparent_70%)]" />
-          <div className="relative z-10 flex flex-col items-center gap-6">
-            <img
-              src={`${import.meta.env.BASE_URL}images/cat_no_bg.png`}
-              alt="吉祥物"
-              className="w-28 object-contain pointer-events-none opacity-80"
-            />
-            <div>
-              <h2 className="text-2xl font-black tracking-wider bg-gradient-to-br from-white to-accent-orange bg-clip-text text-transparent font-[Orbitron,sans-serif] mb-2">
-                獾迎！
-              </h2>
-              <p className="text-text-secondary text-sm leading-loose">
-                傷害模擬器 · 配裝計算器 · 角色資料庫 · 機甲資料庫 · 模組資料庫 · 武器資料庫
-              </p>
-            </div>
+        <div className="relative z-10 w-full max-w-[90vw] lg:max-w-[45vw] px-8 lg:px-16 flex flex-col gap-5">
+          {/* Site name */}
+          <div>
+            <h1 className="font-[Orbitron,sans-serif] text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider leading-tight bg-gradient-to-br from-white to-accent-orange bg-clip-text text-transparent">
+              MECHARASHI<br />
+              <span className="text-xl sm:text-2xl lg:text-3xl">
+                Milhama PawInfo Station
+              </span>
+            </h1>
+            <p className="mt-3 text-text-secondary text-base font-semibold tracking-[0.2em]">
+              獾迎你的到來！
+            </p>
+          </div>
+
+          {/* Feature summary */}
+          <p className="text-text-dim text-sm leading-loose">
+            機甲資料庫 · 機師資料庫 · 武器資料庫 · 傷害模擬器 · 配裝模擬器 · 攻略專區
+          </p>
+
+          {/* Scroll hint */}
+          <div className="flex items-center gap-2 text-text-dim text-xs animate-bounce w-fit">
+            <span>▼</span>
+            <span className="tracking-widest">向下捲動看版本摘要</span>
           </div>
         </div>
       </section>
+
+      {/* ── Page 2: Data Tab ── */}
+      <section className="snap-page relative flex flex-col overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-bg-dark/90 via-bg-dark/60 lg:via-bg-dark/35 to-transparent pointer-events-none" />
+
+        {/* Panel + copyright, constrained to left portion */}
+        <div className="relative z-10 flex flex-col flex-1 min-h-0 w-full md:max-w-[70vw] lg:max-w-[48vw]">
+          <HomeTabPanel versions={versions} loading={loading} error={error} />
+          <div className="shrink-0 px-5 py-2 text-[11px] text-text-dim border-t border-border/50">
+            米赫瑪超吉情豹站 — 非官方社群工具，與官方無關，無營利。99%圖片資源都來源於官方網站或WIKI
+          </div>
+        </div>
+      </section>
+
     </div>
   )
 }

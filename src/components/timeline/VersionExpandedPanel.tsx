@@ -20,17 +20,17 @@ export default function VersionExpandedPanel({ version, isExpanded }: Props) {
 
         {/* ── Background layer ── */}
         <div className="absolute inset-0 pointer-events-none select-none">
-          <div className="absolute inset-0 bg-gradient-to-br from-bg-card to-bg-card-hover" />
+          <div className="absolute inset-0 bg-gradient-to-br from-bg-card/30 to-bg-card-hover/60" />
           {bannerSrc && (
             <img
               src={bannerSrc}
               alt=""
-              className="absolute inset-0 w-full h-full object-cover object-top opacity-55"
+              className="absolute inset-0 w-full h-full object-cover object-top opacity-80"
               draggable={false}
               onError={(e) => { e.currentTarget.style.display = 'none' }}
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-b from-bg-dark/30 via-bg-dark/55 to-bg-dark/85" />
+          <div className="absolute inset-0 bg-gradient-to-b from-bg-dark/20 via-bg-dark/35 to-bg-dark/65" />
         </div>
 
         {/* ── Version badge ── */}
@@ -51,7 +51,7 @@ export default function VersionExpandedPanel({ version, isExpanded }: Props) {
         )}
 
         <div className="relative z-10 pt-10 pb-3 px-3">
-          <div className="p-3 rounded-xl border border-border bg-bg-dark/75 backdrop-blur-md">
+          <div className="p-3 rounded-xl border border-border bg-bg-dark/45 backdrop-blur-md">
             <VersionGanttPanel version={version} />
           </div>
         </div>
