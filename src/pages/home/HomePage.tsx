@@ -28,7 +28,7 @@ export default function HomePage() {
 
           {/* Feature summary */}
           <p className="text-text-dim text-sm leading-loose">
-            機甲資料庫 · 機師資料庫 · 武器資料庫 · 傷害模擬器 · 配裝模擬器 · 攻略專區
+            機甲資料庫 · 機師資料庫 · 武器資料庫 · 傷害模擬器
           </p>
 
           {/* Scroll hint */}
