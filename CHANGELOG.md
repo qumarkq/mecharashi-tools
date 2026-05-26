@@ -4,7 +4,7 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [Unreleased] - 2026-05-25
+## [Unreleased] - 2026-05-26
 
 ### ⚠ 重大變更
 
@@ -81,6 +81,7 @@
 
 ### 🎨 樣式
 
+- 更新所有容器的樣式，並新增背景 (`6b7fabd`)
 - 更新首頁文字 (`e8a42e2`)
 - 調整機師頭像比例置中 (`0473986`)
 
