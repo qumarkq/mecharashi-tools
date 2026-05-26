@@ -42,7 +42,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="max-w-4xl mx-auto px-4 py-12 bg-bg-dark/10 backdrop-blur-sm rounded-2xl">
         <div className="text-center py-20 text-text-dim">載入中...</div>
       </div>
     )
@@ -50,7 +50,7 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="max-w-4xl mx-auto px-4 py-12 bg-bg-dark/10 backdrop-blur-sm rounded-2xl">
         <div className="mb-8">
           <span className="text-xs text-accent-orange tracking-[3px] uppercase font-[Orbitron,sans-serif]">User</span>
           <h1 className="text-3xl font-bold mt-2">個人中心</h1>
@@ -76,7 +76,7 @@ export default function ProfilePage() {
   const googlePhotoUrl = user.photoURL ?? null
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
+    <div className="max-w-2xl mx-auto px-4 py-12 bg-bg-dark/10 backdrop-blur-sm rounded-2xl">
       <div className="mb-6">
         <span className="text-xs text-accent-orange tracking-[3px] uppercase font-[Orbitron,sans-serif]">User</span>
         <h1 className="text-3xl font-bold mt-2">個人中心</h1>

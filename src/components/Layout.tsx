@@ -16,7 +16,6 @@ const navItems = [
   { to: '/modules', label: '模組圖鑑', icon: '🧩' },
   { to: '/components', label: '元件圖鑑', icon: '⚙️' },
   { to: '/simulator', label: '配裝模擬器', icon: '⚔️' },
-  { to: '/news', label: '改版資訊', icon: '📰' },
   { to: '/guides', label: '攻略專區', icon: '📚' },
 ]
 
@@ -40,7 +39,11 @@ export default function Layout() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const isMoreActive = moreNavItems.some((item) =>
+  const isHome = location.pathname === '/'
+  const isAdmin = userProfile?.role === 'ADMIN' || userProfile?.role === 'OWNER'
+  const visibleNavItems = navItems.filter((item) => item.to !== '/simulator' || isAdmin)
+  const visibleMoreNavItems = moreNavItems.filter((item) => item.to !== '/simulator' || isAdmin)
+  const isMoreActive = visibleMoreNavItems.some((item) =>
     item.to === '/' ? location.pathname === '/' : location.pathname.startsWith(item.to)
   )
 
@@ -67,13 +70,13 @@ export default function Layout() {
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2 no-underline shrink-0">
             <span className="text-accent-orange font-bold text-xl tracking-wider font-[Orbitron,sans-serif]">
-              鋼嵐工具站
+              米赫瑪超吉情豹站
             </span>
           </Link>
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-1 overflow-x-auto">
-            {navItems.map((item) => (
+            {visibleNavItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -89,6 +92,20 @@ export default function Layout() {
                 {item.label}
               </NavLink>
             ))}
+            {(userProfile?.role === 'ADMIN' || userProfile?.role === 'OWNER') && (
+              <NavLink
+                to="/admin/versions"
+                className={({ isActive }) =>
+                  `px-3 py-2 rounded-lg text-sm no-underline transition-colors whitespace-nowrap ${
+                    isActive
+                      ? 'bg-accent-purple/15 text-accent-purple'
+                      : 'text-accent-purple/70 hover:text-accent-purple hover:bg-accent-purple/10'
+                  }`
+                }
+              >
+                後台管理
+              </NavLink>
+            )}
           </nav>
 
           {/* User area */}
@@ -163,13 +180,13 @@ export default function Layout() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main className="flex-1 overflow-hidden">
         <Outlet />
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-8 text-center text-text-dim text-sm">
-        <p>鋼嵐工具站 — Mecharashi Community Toolkit</p>
+      {/* Footer — homepage manages its own footer inside snap container */}
+      {!isHome && <footer className="border-t border-border py-8 text-center text-text-dim text-sm">
+        <p>米赫瑪超吉情豹站 — Mecharashi Community Toolkit</p>
         <p className="mt-1">本站是氣吉敗壞的豹吉自己摸出來的，無營利，完全免費，與官方無關，但99%圖片資源都來源於官方WIKI</p>
         <div className="mt-4 flex items-center justify-center gap-4">
           <NavLink
@@ -194,14 +211,16 @@ export default function Layout() {
             </>
           )}
         </div>
-      </footer>
+      </footer>}
 
       {/* 手機底部 Tab Bar 佔位 — 防止 footer 被 fixed bar 遮住 */}
-      <div
-        className="lg:hidden shrink-0"
-        style={{ height: 'calc(3.5rem + env(safe-area-inset-bottom))' }}
-        aria-hidden="true"
-      />
+      {!isHome && (
+        <div
+          className="lg:hidden shrink-0"
+          style={{ height: 'calc(3.5rem + env(safe-area-inset-bottom))' }}
+          aria-hidden="true"
+        />
+      )}
 
       {/* More Panel 背景遮罩 */}
       {moreOpen && (
@@ -226,7 +245,7 @@ export default function Layout() {
 
         {/* 導航格線 */}
         <div className="grid grid-cols-3 gap-2 px-4 pb-2">
-          {moreNavItems.map((item) => (
+          {visibleMoreNavItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -245,6 +264,25 @@ export default function Layout() {
             </NavLink>
           ))}
         </div>
+
+        {/* Admin 入口（手機版 More Panel） */}
+        {(userProfile?.role === 'ADMIN' || userProfile?.role === 'OWNER') && (
+          <div className="border-t border-border px-4 py-2">
+            <NavLink
+              to="/admin/versions"
+              onClick={() => setMoreOpen(false)}
+              className={({ isActive }) =>
+                `block w-full py-2 text-sm text-center rounded-lg transition-colors no-underline ${
+                  isActive
+                    ? 'bg-accent-purple/15 text-accent-purple'
+                    : 'text-accent-purple/70 hover:text-accent-purple hover:bg-accent-purple/10'
+                }`
+              }
+            >
+              🛠️ 後台管理
+            </NavLink>
+          </div>
+        )}
 
         {/* 登入/登出區 */}
         <div className="border-t border-border px-4 py-3">

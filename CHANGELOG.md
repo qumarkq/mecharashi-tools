@@ -4,7 +4,7 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [Unreleased] - 2026-05-24
+## [Unreleased] - 2026-05-26
 
 ### ⚠ 重大變更
 
@@ -12,6 +12,8 @@
 
 ### ✨ 新功能
 
+- 重構首頁為全螢幕 snap-scroll 設計，完成 PLAN-013/PLAN-015 (`f1edb3d`)
+- PLAN-013 首頁版本時間線 + PLAN-014 後台管理基礎建設 (`158a478`)
 - 新增元件關卡掉落資訊和篩選條件 (`bb3d7a6`)
 - 新增 PLAN-012 元件圖鑑頁面與相關元件 (`dd05ab4`)
 - 新增機師故事顯示 (`7d02f3f`)
@@ -46,6 +48,9 @@
 
 ### 🐛 修復
 
+- 使用 BASE_URL 修正預覽部署的路由 basename 不匹配問題 (`59e65b5`)
+- 修正build錯誤 (`c1b44c1`)
+- 移除 VersionGanttPanel 未使用的 tooltip 變數 (`1fa7846`)
 - 修復主站 404 — 改回 peaceiris 部署架構 (`0b223d7`)
 - 修正頭像選擇 (`bd469d1`)
 - 修正用戶控制異常 (`78356c6`)
@@ -77,6 +82,7 @@
 
 ### 🎨 樣式
 
+- 更新所有容器的樣式，並新增背景 (`6b7fabd`)
 - 更新首頁文字 (`e8a42e2`)
 - 調整機師頭像比例置中 (`0473986`)
 
@@ -84,6 +90,13 @@
 
 - **layout**: 更新頁尾免責聲明文字 (`2a6abe7`)
 - 更新 .gitignore 並修正 pre-push hook CI 跳過問題 (`8dcddc6`)
+
+### 🚀 CI/CD
+
+- 新增 workflow_dispatch 觸發方式至 preview workflow (`f354195`)
+- 重新觸發 preview 部署 (`af8e9fc`)
+- 同步 workflow 設定，防止 gh-pages 競爭條件 (`4ede30e`)
+- add preview deployment workflow and dynamic base path (`954413a`)
 
 ### 其他
 

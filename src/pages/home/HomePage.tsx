@@ -1,73 +1,57 @@
+import { usePatchVersions } from '../../hooks/usePatchVersions'
+import HomeTabPanel from '../../components/home/HomeTabPanel'
+
 export default function HomePage() {
+  const { data: versions, loading, error } = usePatchVersions()
+
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="relative py-16 px-6 text-center border-b border-border">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(255,107,43,0.12)_0%,transparent_60%)]" />
-        <div className="relative z-10 flex flex-col items-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 border border-accent-orange rounded-full text-xs text-accent-orange tracking-[3px] uppercase mb-6 bg-accent-orange/5">
-            ◆ COMMUNITY TOOLKIT
+    <div className="homepage-snap">
+
+      {/* ── Page 1: Hero ── */}
+      <section className="snap-page relative flex items-center overflow-hidden">
+        {/* Left-to-right overlay: opaque on left for readability, fades to transparent on right */}
+        <div className="absolute inset-0 bg-gradient-to-r from-bg-dark/85 via-bg-dark/50 lg:via-bg-dark/30 to-transparent pointer-events-none" />
+
+        <div className="relative z-10 w-full max-w-[90vw] lg:max-w-[45vw] px-8 lg:px-16 flex flex-col gap-5">
+          {/* Site name */}
+          <div>
+            <h1 className="font-[Orbitron,sans-serif] text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider leading-tight bg-gradient-to-br from-white to-accent-orange bg-clip-text text-transparent">
+              MECHARASHI<br />
+              <span className="text-xl sm:text-2xl lg:text-3xl">
+                Milhama PawInfo Station
+              </span>
+            </h1>
+            <p className="mt-3 text-text-secondary text-base font-semibold tracking-[0.2em]">
+              獾迎你的到來！
+            </p>
           </div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-wider bg-gradient-to-br from-white to-accent-orange bg-clip-text text-transparent font-[Orbitron,sans-serif]">
-            獾迎！
-          </h1>
-          <img
-            src={`${import.meta.env.BASE_URL}images/cat_no_bg.png`}
-            alt="吉祥物"
-            className="w-52 md:w-64 object-contain pointer-events-none"
-          />
-          <p className="text-text-secondary text-base md:text-lg max-w-2xl mx-auto mt-6 leading-relaxed">
-            傷害模擬器(沒做完) · 配裝計算器(沒做完) · 角色資料庫 · 機甲資料庫 · 模組資料庫 · 武器資料庫 · 攻略百科(等你加入)
+
+          {/* Feature summary */}
+          <p className="text-text-dim text-sm leading-loose">
+            機甲資料庫 · 機師資料庫 · 武器資料庫 · 傷害模擬器 · 配裝模擬器 · 攻略專區
           </p>
+
+          {/* Scroll hint */}
+          <div className="flex items-center gap-2 text-text-dim text-xs animate-bounce w-fit">
+            <span>▼</span>
+            <span className="tracking-widest">向下捲動看版本摘要</span>
+          </div>
         </div>
       </section>
 
-      {/* Welcome Section */}
-      <section className="max-w-xl mx-auto px-4 py-16 flex flex-col items-center gap-10">
+      {/* ── Page 2: Data Tab ── */}
+      <section className="snap-page relative flex flex-col overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-bg-dark/90 via-bg-dark/60 lg:via-bg-dark/35 to-transparent pointer-events-none" />
 
-        {/* Welcome card */}
-        <div className="relative w-full group">
-          {/* Ambient glow */}
-          <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-accent-orange/25 via-accent-purple/15 to-accent-orange/25 blur-xl opacity-50 group-hover:opacity-80 transition-opacity duration-700" />
-          <div className="relative bg-bg-card border border-border-accent rounded-2xl overflow-hidden">
-            {/* Top accent bar */}
-            <div className="h-0.5 bg-gradient-to-r from-transparent via-accent-orange to-transparent" />
-            <div className="px-6 py-8 sm:px-10 sm:py-10 text-center">
-              <p className="text-2xl md:text-3xl font-bold text-text-primary leading-relaxed mb-5">
-                你的到來真是讓人獾天喜地！
-              </p>
-              <p className="text-text-secondary text-base leading-loose">
-                因為是免費的，所以關於使用者的提議<br />
-                我們都會仔細聆聽...吧？
-              </p>
-              {/* Divider dots */}
-              <div className="mt-8 flex items-center justify-center gap-2">
-                <div className="h-px w-20 bg-gradient-to-r from-transparent to-border-accent" />
-                <div className="w-1.5 h-1.5 rounded-full bg-accent-orange" />
-                <div className="h-px w-20 bg-gradient-to-l from-transparent to-border-accent" />
-              </div>
-            </div>
-            {/* Bottom accent bar */}
-            <div className="h-0.5 bg-gradient-to-r from-transparent via-accent-orange to-transparent" />
+        {/* Panel + copyright, constrained to left portion */}
+        <div className="relative z-10 flex flex-col flex-1 min-h-0 w-full md:max-w-[70vw] lg:max-w-[48vw]">
+          <HomeTabPanel versions={versions} loading={loading} error={error} />
+          <div className="shrink-0 px-5 py-2 text-[11px] text-text-dim border-t border-border/50">
+            米赫瑪超吉情豹站 — 非官方社群工具，與官方無關，無營利。99%圖片資源都來源於官方網站或WIKI
           </div>
         </div>
-
-        {/* Sticker badge */}
-        <div
-          className="select-none shadow-2xl"
-          style={{ transform: 'rotate(-1.5deg)' }}
-        >
-          <div className="rounded-lg overflow-hidden border-2 border-gray-600 w-52 ring-4 ring-gray-900">
-            <div className="bg-[#1a1a1a] text-white text-center text-xl font-black py-4 tracking-[0.4em]">
-              意見接受
-            </div>
-            <div className="bg-yellow-400 text-gray-900 text-center text-xl font-black py-4 tracking-[0.4em]">
-              態度依舊
-            </div>
-          </div>
-        </div>
-
       </section>
+
     </div>
   )
 }

@@ -1,0 +1,319 @@
+import { Fragment, useMemo, useState } from 'react'
+import type { PatchVersion } from '../../data/patchVersions'
+import { usePilots, useMechs, useWeapons, useBackpacks } from '../../hooks/useFirestore'
+import { assetUrl } from '../../utils/assets'
+
+const CDN_BASE = 'https://media.zlongame.com/media/pictures/cn/community/img/gl/gameInfo'
+
+function localPathToCdn(localPath: string | undefined, cdnDir: string): string | undefined {
+  if (!localPath) return undefined
+  const filename = localPath.split('/').pop()
+  return filename ? `${CDN_BASE}/${cdnDir}/${filename}` : undefined
+}
+
+// ── Data helpers ──────────────────────────────────────────────────────────────
+
+function getArmamentRaidNames(v: PatchVersion) {
+  const seen = new Set<string>()
+  const results: string[] = []
+  for (const half of [v.upper, v.lower]) {
+    for (const r of half.armamentRaids ?? []) {
+      if (!seen.has(r.name)) { seen.add(r.name); results.push(r.name) }
+    }
+  }
+  return results
+}
+
+function getArmamentWeapons(v: PatchVersion) {
+  const results: string[] = []
+  for (const half of [v.upper, v.lower]) {
+    for (const r of half.armamentRaids ?? []) {
+      if (r.weapons?.length) results.push(...r.weapons)
+    }
+  }
+  return results
+}
+
+function getArmamentBackpacks(v: PatchVersion) {
+  const results: string[] = []
+  for (const half of [v.upper, v.lower]) {
+    for (const r of half.armamentRaids ?? []) {
+      if (r.backpacks?.length) results.push(...r.backpacks)
+    }
+  }
+  return results
+}
+
+function getBattlePassPilots(v: PatchVersion) {
+  const results: string[] = []
+  for (const half of [v.upper, v.lower]) {
+    if (half.battlePass?.pilots?.length) results.push(...half.battlePass.pilots)
+  }
+  return results
+}
+
+function getBattlePassMechs(v: PatchVersion) {
+  const results: string[] = []
+  for (const half of [v.upper, v.lower]) {
+    if (half.battlePass?.mechs?.length) results.push(...half.battlePass.mechs)
+  }
+  return results
+}
+
+// ── Thumbnail types ───────────────────────────────────────────────────────────
+
+type LookupMap = Map<string, string | undefined>
+type LookupKey = 'pilots' | 'mechs' | 'weapons' | 'backpacks'
+
+// ── ThumbnailItem ─────────────────────────────────────────────────────────────
+
+function ThumbnailItem({ name, imageUrl, isPredicted }: {
+  name: string; imageUrl?: string; isPredicted: boolean
+}) {
+  const [broken, setBroken] = useState(false)
+  const textEl = (
+    <span className={`text-[13px] leading-tight whitespace-nowrap ${isPredicted ? 'text-accent-cyan' : 'text-text-secondary'}`}>
+      {name}
+    </span>
+  )
+  if (!imageUrl || broken) return textEl
+  return (
+    <div className="relative group inline-flex shrink-0">
+      <img
+        src={imageUrl}
+        alt={name}
+        className="w-9 h-9 object-cover object-top rounded border border-border/50 group-hover:border-accent-orange transition-colors cursor-default"
+        onError={() => setBroken(true)}
+      />
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-0.5 bg-bg-dark border border-border rounded text-[11px] text-text-primary whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-md">
+        {name}
+      </div>
+    </div>
+  )
+}
+
+// ── Item lists ────────────────────────────────────────────────────────────────
+
+function ThumbnailList({ items, isPredicted, lookup }: {
+  items: string[]; isPredicted: boolean; lookup?: LookupMap
+}) {
+  if (!items.length) return <span className="text-text-dim/30 text-xs">—</span>
+  return (
+    <div className="flex flex-wrap gap-1">
+      {items.map((name, i) => (
+        <ThumbnailItem key={i} name={name} imageUrl={lookup?.get(name)} isPredicted={isPredicted} />
+      ))}
+    </div>
+  )
+}
+
+function TextList({ items, isPredicted }: { items: string[]; isPredicted: boolean }) {
+  if (!items.length) return <span className="text-text-dim/30 text-xs">—</span>
+  return (
+    <div className="flex flex-col gap-1">
+      {items.map((item, i) => (
+        <span key={i} className={`text-[13px] leading-tight whitespace-nowrap ${isPredicted ? 'text-accent-cyan' : 'text-text-secondary'}`}>
+          {item}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+// ── Split cell (機師 | 機甲) ──────────────────────────────────────────────────
+
+function SplitCell({ left, right, isPredicted, isCurrent, lookupLeft, lookupRight }: {
+  left: string[]; right: string[]; isPredicted: boolean; isCurrent: boolean;
+  lookupLeft?: LookupMap; lookupRight?: LookupMap;
+}) {
+  const bg = isCurrent ? 'bg-accent-green/5' : ''
+  return (
+    <>
+      <td className={`px-2 py-2 border-r border-b border-border/40 align-middle ${bg}`}>
+        <ThumbnailList items={left} isPredicted={isPredicted} lookup={lookupLeft} />
+      </td>
+      <td className={`px-2 py-2 border-r border-b border-border align-middle ${bg}`}>
+        <ThumbnailList items={right} isPredicted={isPredicted} lookup={lookupRight} />
+      </td>
+    </>
+  )
+}
+
+// ── Normal cell (colSpan=2) ───────────────────────────────────────────────────
+
+function Cell({ items, isPredicted, isCurrent, lookup }: {
+  items: string[]; isPredicted: boolean; isCurrent: boolean; lookup?: LookupMap
+}) {
+  const base = `px-3 py-2 border-r border-b border-border align-middle ${isCurrent ? 'bg-accent-green/5' : ''}`
+  if (!items.length) return <td colSpan={2} className={`${base} text-center text-text-dim/30 text-xs`}>—</td>
+  return (
+    <td colSpan={2} className={base}>
+      {lookup
+        ? <ThumbnailList items={items} isPredicted={isPredicted} lookup={lookup} />
+        : <TextList items={items} isPredicted={isPredicted} />
+      }
+    </td>
+  )
+}
+
+// ── Row definitions ───────────────────────────────────────────────────────────
+
+type SplitRow = {
+  key: string; label: string; split: true;
+  fnLeft: (v: PatchVersion) => string[];
+  fnRight: (v: PatchVersion) => string[];
+  lookupLeft?: LookupKey;
+  lookupRight?: LookupKey;
+}
+type NormalRow = {
+  key: string; label: string; split?: false;
+  fn: (v: PatchVersion) => string[];
+  lookup?: LookupKey;
+}
+type RowDef = SplitRow | NormalRow
+
+const ROW_DEFS: RowDef[] = [
+  { key: 'upper',    label: '上半更新', split: true, fnLeft: v => v.upper.pilots ?? [], fnRight: v => v.upper.mechs ?? [], lookupLeft: 'pilots', lookupRight: 'mechs' },
+  { key: 'lower',    label: '下半更新', split: true, fnLeft: v => v.lower.pilots ?? [], fnRight: v => v.lower.mechs ?? [], lookupLeft: 'pilots', lookupRight: 'mechs' },
+  { key: 'armament', label: '武裝討伐', fn: getArmamentRaidNames },
+  { key: 'weapons',  label: '武裝生產', fn: getArmamentWeapons,   lookup: 'weapons' },
+  { key: 'backpack', label: '背包製作', fn: getArmamentBackpacks, lookup: 'backpacks' },
+  { key: 'bpPilot',  label: '角色戰令', fn: getBattlePassPilots,  lookup: 'pilots' },
+  { key: 'bpMech',   label: '機甲戰令', fn: getBattlePassMechs,   lookup: 'mechs' },
+  { key: 'crisis',   label: '危境商店', fn: v => v.crisisShop ?? [], lookup: 'pilots' },
+  { key: 'border',   label: '邊境商店', fn: v => v.borderShop ? [v.borderShop] : [] },
+  { key: 'arena',    label: '鬥技場',   fn: v => v.arenaShop  ? [v.arenaShop]  : [] },
+]
+
+// ── Main component ────────────────────────────────────────────────────────────
+
+interface Props {
+  versions: PatchVersion[]
+  loading: boolean
+  error: Error | null
+}
+
+export default function VersionQuickTable({ versions, loading, error }: Props) {
+  const currentIdx = versions.findIndex(v => v.isTwCurrent)
+  const displayVersions = currentIdx >= 0 ? versions.slice(currentIdx, currentIdx + 5) : versions.slice(0, 5)
+
+  const { data: pilots }    = usePilots()
+  const { data: mechs }     = useMechs()
+  const { data: weapons }   = useWeapons()
+  const { data: backpacks } = useBackpacks()
+
+  const lookups = useMemo<Record<LookupKey, LookupMap>>(() => ({
+    pilots:    new Map(pilots.map(p    => [p.name, p.portraitUrl ?? assetUrl(p.portrait)])),
+    mechs:     new Map(mechs.map(m     => [m.name, m.portrait ? assetUrl(m.portrait) : m.parts.torso.mechaIcon ? `${CDN_BASE}/waparts/${m.parts.torso.mechaIcon}.png` : undefined])),
+    weapons:   new Map(weapons.map(w   => [w.name, localPathToCdn(w.icon, 'weapons')])),
+    backpacks: new Map(backpacks.map(b => [b.name, localPathToCdn(b.icon, 'pack')])),
+  }), [pilots, mechs, weapons, backpacks])
+
+  return (
+    <div className="bg-bg-dark/10 rounded-2xl p-4 backdrop-blur-sm">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-[10px] font-bold tracking-[3px] text-accent-orange uppercase font-[Orbitron,sans-serif]">
+          版本濃縮資訊
+        </span>
+        {loading && <span className="text-[9px] text-text-dim animate-pulse">同步中…</span>}
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      {error && (
+        <p className="text-[11px] text-accent-yellow mb-2">⚠ 無法連線 Firestore，顯示本地資料</p>
+      )}
+
+      <div className="overflow-x-auto rounded-xl border border-border">
+        <table className="w-full border-collapse text-sm" style={{ minWidth: '720px' }}>
+          <thead>
+            {/* Row 1: 類別 (rowSpan=2) + version headers (colSpan=2 each) */}
+            <tr className="border-b border-border">
+              <th
+                rowSpan={2}
+                className="sticky left-0 z-10 bg-bg-dark px-3 py-2.5 text-left text-[10px] font-bold tracking-[2px] text-accent-orange uppercase font-[Orbitron,sans-serif] border-r border-border whitespace-nowrap w-20 align-middle"
+              >
+                類別
+              </th>
+              {displayVersions.map(v => {
+                const isCurrent = v.isTwCurrent
+                const isPredicted = v.upper.twIsPredicted && !isCurrent
+                const twDate = v.upper.twDate?.replace('約 ', '') ?? '—'
+                return (
+                  <th
+                    key={v.version}
+                    colSpan={2}
+                    className={`px-3 py-2.5 text-center border-r border-border whitespace-nowrap ${
+                      isCurrent ? 'bg-accent-green/8 text-accent-green' : isPredicted ? 'text-accent-cyan' : 'text-text-secondary'
+                    }`}
+                  >
+                    <div className="text-[13px] font-bold font-[Orbitron,sans-serif] tracking-wide">
+                      v{v.version}{isCurrent ? ' ★' : ''}
+                    </div>
+                    <div className="text-[11px] font-normal mt-0.5 opacity-70">{twDate}</div>
+                  </th>
+                )
+              })}
+            </tr>
+            {/* Row 2: 機師 / 機甲 sub-headers */}
+            <tr className="border-b border-border">
+              {displayVersions.map(v => {
+                const isCurrent = v.isTwCurrent
+                const bg = isCurrent ? 'bg-accent-green/5' : ''
+                return (
+                  <Fragment key={v.version}>
+                    <th className={`px-2 py-1 text-center text-[10px] text-text-dim font-normal border-r border-border/40 ${bg}`}>
+                      機師
+                    </th>
+                    <th className={`px-2 py-1 text-center text-[10px] text-text-dim font-normal border-r border-border ${bg}`}>
+                      機甲
+                    </th>
+                  </Fragment>
+                )
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {ROW_DEFS.map((row, rowIdx) => (
+              <tr key={row.key} className={rowIdx % 2 === 1 ? 'bg-bg-card/30' : ''}>
+                <td className="sticky left-0 z-10 bg-bg-dark px-3 py-2 text-[13px] text-text-dim font-medium border-r border-b border-border whitespace-nowrap align-middle">
+                  {row.label}
+                </td>
+                {displayVersions.map(v => {
+                  const isCurrent = v.isTwCurrent ?? false
+                  const isPredicted = !isCurrent && !!(v.upper.twIsPredicted || v.lower.twIsPredicted)
+                  if (row.split) {
+                    return (
+                      <SplitCell
+                        key={v.version}
+                        left={row.fnLeft(v)}
+                        right={row.fnRight(v)}
+                        isPredicted={isPredicted}
+                        isCurrent={isCurrent}
+                        lookupLeft={row.lookupLeft ? lookups[row.lookupLeft] : undefined}
+                        lookupRight={row.lookupRight ? lookups[row.lookupRight] : undefined}
+                      />
+                    )
+                  }
+                  return (
+                    <Cell
+                      key={v.version}
+                      items={row.fn(v)}
+                      isPredicted={isPredicted}
+                      isCurrent={isCurrent}
+                      lookup={row.lookup ? lookups[row.lookup] : undefined}
+                    />
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="text-[10px] text-text-dim mt-1.5 text-right">
+        <span className="text-accent-cyan">■</span> 預測值
+        <span className="text-accent-green">■</span> 台服當前
+      </p>
+    </div>
+  )
+}

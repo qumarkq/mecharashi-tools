@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import Layout from './components/Layout'
+import AdminRoute from './components/AdminRoute'
 import HomePage from './pages/home/HomePage'
 import PilotsPage from './pages/pilots/PilotsPage'
 import PilotDetailPage from './pages/pilots/PilotDetailPage'
@@ -17,13 +18,14 @@ import GuidesPage from './pages/guides/GuidesPage'
 import ProfilePage from './pages/user/ProfilePage'
 import AdminPage from './pages/user/AdminPage'
 import ComponentsPage from './pages/components/ComponentsPage'
-
-const WeaponDetailPage = lazy(() => import('./pages/weapons/WeaponDetailPage'))
+const WeaponDetailPage     = lazy(() => import('./pages/weapons/WeaponDetailPage'))
+const AdminVersionListPage = lazy(() => import('./pages/admin/AdminVersionListPage'))
+const AdminVersionEditorPage = lazy(() => import('./pages/admin/AdminVersionEditorPage'))
 
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter basename="/mecharashi-tools">
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
@@ -42,6 +44,14 @@ function App() {
             <Route path="guides" element={<GuidesPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="admin" element={<AdminPage />} />
+            <Route
+              path="admin/versions"
+              element={<AdminRoute><Suspense fallback={null}><AdminVersionListPage /></Suspense></AdminRoute>}
+            />
+            <Route
+              path="admin/versions/:versionId"
+              element={<AdminRoute><Suspense fallback={null}><AdminVersionEditorPage /></Suspense></AdminRoute>}
+            />
           </Route>
         </Routes>
       </BrowserRouter>

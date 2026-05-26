@@ -11,5 +11,13 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
 
+    // ── 版本前瞻圖（公開讀，登入用戶可上傳；管理員身分由應用層驗證）──────────
+    match /banners/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
   }
 }
