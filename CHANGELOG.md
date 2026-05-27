@@ -4,7 +4,7 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [Unreleased] - 2026-05-26
+## [Unreleased] - 2026-05-27
 
 ### ⚠ 重大變更
 
@@ -12,6 +12,7 @@
 
 ### ✨ 新功能
 
+- 新增快取層，降低firebase用量 (`9320f1f`)
 - 重構首頁為全螢幕 snap-scroll 設計，完成 PLAN-013/PLAN-015 (`f1edb3d`)
 - PLAN-013 首頁版本時間線 + PLAN-014 後台管理基礎建設 (`158a478`)
 - 新增元件關卡掉落資訊和篩選條件 (`bb3d7a6`)
