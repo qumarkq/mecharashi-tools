@@ -94,7 +94,7 @@ export default function Layout() {
             ))}
             {(userProfile?.role === 'ADMIN' || userProfile?.role === 'OWNER') && (
               <NavLink
-                to="/admin/versions"
+                to="/admin"
                 className={({ isActive }) =>
                   `px-3 py-2 rounded-lg text-sm no-underline transition-colors whitespace-nowrap ${
                     isActive
@@ -188,29 +188,6 @@ export default function Layout() {
       {!isHome && <footer className="border-t border-border py-8 text-center text-text-dim text-sm">
         <p>米赫瑪超吉情豹站 — Mecharashi Community Toolkit</p>
         <p className="mt-1">本站是氣吉敗壞的豹吉自己摸出來的，無營利，完全免費，與官方無關，但99%圖片資源都來源於官方WIKI</p>
-        <div className="mt-4 flex items-center justify-center gap-4">
-          <NavLink
-            to="/profile"
-            className={({ isActive }) =>
-              `text-xs no-underline transition-colors ${isActive ? 'text-accent-orange' : 'hover:text-text-secondary'}`
-            }
-          >
-            👤 個人中心
-          </NavLink>
-          {(userProfile?.role === 'ADMIN' || userProfile?.role === 'OWNER') && (
-            <>
-              <span className="text-border">|</span>
-              <NavLink
-                to="/admin"
-                className={({ isActive }) =>
-                  `text-xs no-underline transition-colors ${isActive ? 'text-accent-orange' : 'hover:text-text-secondary'}`
-                }
-              >
-                🛠️ 管理後台
-              </NavLink>
-            </>
-          )}
-        </div>
       </footer>}
 
       {/* 手機底部 Tab Bar 佔位 — 防止 footer 被 fixed bar 遮住 */}
@@ -269,7 +246,7 @@ export default function Layout() {
         {(userProfile?.role === 'ADMIN' || userProfile?.role === 'OWNER') && (
           <div className="border-t border-border px-4 py-2">
             <NavLink
-              to="/admin/versions"
+              to="/admin"
               onClick={() => setMoreOpen(false)}
               className={({ isActive }) =>
                 `block w-full py-2 text-sm text-center rounded-lg transition-colors no-underline ${

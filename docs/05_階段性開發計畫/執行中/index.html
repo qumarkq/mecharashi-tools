@@ -111,6 +111,15 @@
         <a class="card-link" href="PLAN-016_Firebase快取層/進度表.html">→ 進度表</a>
       </div>
     </div>
+    <div class="card green">
+      <div class="card-icon">◆</div>
+      <h3>PLAN-017 · localStorage 版本快取</h3>
+      <p>在 PLAN-016 的基礎上，讓回訪用戶的遊戲資料完全從 localStorage 讀取，每次 session 僅消耗 1 次 Firestore 讀取（版本比對）。Firestore 新增 <code>meta/gameData</code> 版本文件，GameDataContext 啟動時先讀版本，命中快取則跳過 11 次讀取。Admin 一鍵 Bump 版本號即可使全站快取失效。估計回訪用戶讀取降幅 91%。</p>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <a class="card-link" href="PLAN-017_localStorage版本快取/計畫書.html">→ 計畫書</a>
+        <a class="card-link" href="PLAN-017_localStorage版本快取/進度表.html">→ 進度表</a>
+      </div>
+    </div>
     <div class="card purple">
       <div class="card-icon">◆</div>
       <h3>PLAN-014 · 版本甘特圖與後台管理</h3>

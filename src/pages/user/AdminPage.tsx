@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import type { Module, Mech, ConditionalEffect, ModuleLevel, UserProfile, Pilot, PilotSkill, SkillEffect, SkillCondition, Weapon, WeaponSkill, Component, ComponentBase, ConditionComponent, FunctionComponent } from '../../types'
 import { formatWeaponReq } from '../../types'
 import { ModuleRarity, MechPartPosition, ModuleSlot, ModuleSource, ModuleDataSource, ConditionalTrigger, PilotClass, MechLicense, ItemRarity, SkillType, WeaponType, WeaponKind, WeaponEquipSlot, RangeType, WeaponRarity, MechRestriction, SkillActivation, ComponentType, ModuleSubtype, ConditionType, EffectType, ComponentsWType } from '../../types/enums'
@@ -3720,6 +3721,21 @@ export default function AdminPage() {
         <p className="text-text-secondary mt-2 text-sm">
           維護模組數值、機甲模組綁定、機師基本資料、用戶權限。儲存後直接更新 Firestore，無需手動匯出。
         </p>
+      </div>
+
+      {/* 版本管理入口 */}
+      <div className="mb-6">
+        <Link
+          to="/admin/versions"
+          className="inline-flex items-center gap-3 px-5 py-3 bg-accent-purple/10 border border-accent-purple/30 rounded-xl hover:bg-accent-purple/20 hover:border-accent-purple/50 transition-colors no-underline"
+        >
+          <span className="text-accent-purple text-xl">📋</span>
+          <div>
+            <div className="text-sm font-bold text-accent-purple">版本管理</div>
+            <div className="text-xs text-text-dim">管理遊戲版本與活動資料</div>
+          </div>
+          <span className="text-accent-purple/50 ml-2 text-lg">›</span>
+        </Link>
       </div>
 
       {/* 分頁標籤 */}
