@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom'
 import type { Module, Mech, ConditionalEffect, ModuleLevel, UserProfile, Pilot, PilotSkill, SkillEffect, SkillCondition, Weapon, WeaponSkill, Component, ComponentBase, ConditionComponent, FunctionComponent } from '../../types'
 import { formatWeaponReq } from '../../types'
 import { ModuleRarity, MechPartPosition, ModuleSlot, ModuleSource, ModuleDataSource, ConditionalTrigger, PilotClass, MechLicense, ItemRarity, SkillType, WeaponType, WeaponKind, WeaponEquipSlot, RangeType, WeaponRarity, MechRestriction, SkillActivation, ComponentType, ModuleSubtype, ConditionType, EffectType, ComponentsWType } from '../../types/enums'
-import { getModules, getMechs, updateModule, updateMech, getPilots, updatePilot, getWeapons, updateWeapon, getComponents, updateComponent } from '../../lib/firestoreApi'
+import { updateModule, updateMech, updatePilot, updateWeapon, updateComponent } from '../../lib/firestoreApi'
 import { getAllUsers, updateUserRole } from '../../lib/userApi'
 import { useAuth } from '../../contexts/AuthContext'
+import { useGameData } from '../../contexts/GameDataContext'
 import { assetUrl } from '../../utils/assets'
 
 // ── 顯示常數 ───────────────────────────────────────────────────────────────────
@@ -3525,13 +3526,17 @@ function TabButton({
 // ─── 用戶管理分頁 ──────────────────────────────────────────────────────────
 function UserAdmin({ currentUid }: { currentUid: string }) {
   const [users, setUsers] = useState<UserProfile[]>([])
+  const [hasMore, setHasMore] = useState(false)
   const [usersLoading, setUsersLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [updatingUid, setUpdatingUid] = useState<string | null>(null)
 
   useEffect(() => {
     getAllUsers()
-      .then(setUsers)
+      .then(({ users, hasMore }) => {
+        setUsers(users)
+        setHasMore(hasMore)
+      })
       .catch((e: unknown) =>
         setError(
           e instanceof Error
@@ -3561,7 +3566,9 @@ function UserAdmin({ currentUid }: { currentUid: string }) {
 
   return (
     <div>
-      <p className="text-text-dim text-xs mb-4">共 {users.length} 位用戶</p>
+      <p className="text-text-dim text-xs mb-4">
+        顯示 {users.length} 位用戶{hasMore && '（已達上限 200 筆，實際用戶數更多）'}
+      </p>
       <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
         {users.map((u) => (
           <div
@@ -3619,27 +3626,37 @@ function UserAdmin({ currentUid }: { currentUid: string }) {
 // ─── 主頁面 ──────────────────────────────────────────────────────────────
 export default function AdminPage() {
   const { user, userProfile, loading: authLoading } = useAuth()
+  const {
+    modules: ctxModules,
+    mechs: ctxMechs,
+    pilots: ctxPilots,
+    weapons: ctxWeapons,
+    components: ctxComponents,
+    loading,
+    error: dataError,
+  } = useGameData()
+  const loadError = dataError?.message ?? null
+
   const [tab, setTab] = useState<'modules' | 'mechs' | 'pilots' | 'weapons' | 'components' | 'users'>('modules')
   const [modules, setModules] = useState<Module[]>([])
   const [mechs, setMechs] = useState<Mech[]>([])
   const [pilots, setPilots] = useState<Pilot[]>([])
   const [weapons, setWeapons] = useState<Weapon[]>([])
   const [components, setComponents] = useState<Component[]>([])
-  const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState<string | null>(null)
 
+  // Sync local editable copies from context once loaded (or after context reload).
+  // Intentionally excludes ctx* from deps — we only want to reset on loading state change,
+  // not on every context reference update, to preserve in-progress optimistic edits.
   useEffect(() => {
-    Promise.all([getModules(), getMechs(), getPilots(), getWeapons(), getComponents()])
-      .then(([mods, m, ps, ws, comps]) => {
-        setModules(mods)
-        setMechs(m)
-        setPilots(ps)
-        setWeapons(ws)
-        setComponents(comps)
-      })
-      .catch((e: unknown) => setLoadError(e instanceof Error ? e.message : '載入失敗'))
-      .finally(() => setLoading(false))
-  }, [])
+    if (!loading) {
+      setModules(ctxModules)
+      setMechs(ctxMechs)
+      setPilots(ctxPilots)
+      setWeapons(ctxWeapons)
+      setComponents(ctxComponents)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading])
 
   async function handleModuleSave(updated: Module) {
     await updateModule(updated)

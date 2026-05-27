@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type {
   Pilot, Mech, Module, Weapon, Backpack, Component,
-  PilotResearch, GlobalResearch,
+  GlobalResearch,
 } from '../types'
 import { ModuleSlot } from '../types/enums'
 import { useGameData, EMPTY_GLOBAL_RESEARCH } from '../contexts/GameDataContext'
@@ -171,17 +171,16 @@ export interface AllGameData {
   backpacks: Backpack[]
   modules: Module[]
   components: Component[]
-  pilotResearch: PilotResearch[]
   globalResearch: GlobalResearch
 }
 
 export function useAllGameData(): HookResult<AllGameData | null> {
-  const { pilots, mechs, weapons, backpacks, modules, components, pilotResearch, globalResearch, loading, error } = useGameData()
+  const { pilots, mechs, weapons, backpacks, modules, components, globalResearch, loading, error } = useGameData()
 
   const data = useMemo<AllGameData | null>(() => {
     if (loading) return null
-    return { pilots, mechs, weapons, backpacks, modules, components, pilotResearch, globalResearch }
-  }, [loading, pilots, mechs, weapons, backpacks, modules, components, pilotResearch, globalResearch])
+    return { pilots, mechs, weapons, backpacks, modules, components, globalResearch }
+  }, [loading, pilots, mechs, weapons, backpacks, modules, components, globalResearch])
 
   return { data, loading, error }
 }

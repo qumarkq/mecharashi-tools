@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useCallback } from 'react'
+﻿import { useState, useRef, useCallback, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import html2canvas from 'html2canvas'
 import type {
@@ -16,6 +16,7 @@ import type {
   UserBuild,
 } from '../../types'
 import { useAllGameData, type AllGameData } from '../../hooks/useFirestore'
+import { getAllPilotResearch } from '../../lib/firestoreApi'
 
 type AllData = AllGameData
 import { useAuth } from '../../contexts/AuthContext'
@@ -135,6 +136,11 @@ export default function SimulatorPage() {
   const { user } = useAuth()
   const location = useLocation()
 
+  const [pilotResearchList, setPilotResearchList] = useState<PilotResearch[]>([])
+  useEffect(() => {
+    getAllPilotResearch().then(setPilotResearchList)
+  }, [])
+
   const incomingBuild = (location.state as { build?: UserBuild } | null)?.build
   const [step, setStep] = useState<Step>(
     incomingBuild?.pilotId && incomingBuild?.mechId && incomingBuild?.weaponId ? 'result' : 'pilot'
@@ -196,9 +202,9 @@ export default function SimulatorPage() {
   }, [data, selectedMech])
 
   const getPilotResearch = useCallback(() => {
-    if (!data || !selectedPilot) return null
-    return data.pilotResearch.find((pr) => pr.pilotId === selectedPilot.id) ?? null
-  }, [data, selectedPilot])
+    if (!selectedPilot) return null
+    return pilotResearchList.find((pr) => pr.pilotId === selectedPilot.id) ?? null
+  }, [pilotResearchList, selectedPilot])
 
   // ─── Handlers ────────────────────────────────────────────────────────────
 

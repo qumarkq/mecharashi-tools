@@ -9,6 +9,7 @@ import {
   deleteDoc,
   query,
   orderBy,
+  limit,
 } from 'firebase/firestore'
 import { db } from './firebase'
 import type { UserProfile, UserBuild, Build, UserResearchLevels } from '../types'
@@ -47,10 +48,16 @@ export async function patchUserProfile(uid: string, data: Partial<UserProfile>):
   await setDoc(profileDoc(uid), { ...data, updatedAt: new Date().toISOString() }, { merge: true })
 }
 
-export async function getAllUsers(): Promise<UserProfile[]> {
+const USERS_FETCH_LIMIT = 200
+
+export async function getAllUsers(): Promise<{ users: UserProfile[]; hasMore: boolean }> {
   // 需要 Firestore 規則允許管理者讀取所有 users/{uid}/profile 子集合
-  const snap = await getDocs(collectionGroup(db, 'profile'))
-  return snap.docs.map((d) => d.data() as UserProfile)
+  const snap = await getDocs(query(collectionGroup(db, 'profile'), limit(USERS_FETCH_LIMIT + 1)))
+  const docs = snap.docs.slice(0, USERS_FETCH_LIMIT)
+  return {
+    users: docs.map((d) => d.data() as UserProfile),
+    hasMore: snap.docs.length > USERS_FETCH_LIMIT,
+  }
 }
 
 export async function updateUserRole(uid: string, role: 'USER' | 'ADMIN' | 'OWNER'): Promise<void> {

@@ -1,8 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
-import type { Pilot, Mech, Module, Weapon, Backpack, Component, PilotResearch, GlobalResearch } from '../types'
+import type { Pilot, Mech, Module, Weapon, Backpack, Component, GlobalResearch } from '../types'
 import {
   getPilots, getMechs, getModules, getWeapons, getBackpacks, getComponents,
-  getAllPilotResearch, getGlobalResearch,
+  getGlobalResearch,
 } from '../lib/firestoreApi'
 
 export const EMPTY_GLOBAL_RESEARCH: GlobalResearch = {
@@ -18,7 +18,6 @@ export interface GameDataState {
   backpacks:      Backpack[]
   modules:        Module[]
   components:     Component[]
-  pilotResearch:  PilotResearch[]
   globalResearch: GlobalResearch
   loading:        boolean
   error:          Error | null
@@ -34,7 +33,6 @@ export function GameDataProvider({ children }: { children: ReactNode }) {
   const [backpacks,      setBackpacks]      = useState<Backpack[]>([])
   const [modules,        setModules]        = useState<Module[]>([])
   const [components,     setComponents]     = useState<Component[]>([])
-  const [pilotResearch,  setPilotResearch]  = useState<PilotResearch[]>([])
   const [globalResearch, setGlobalResearch] = useState<GlobalResearch>(EMPTY_GLOBAL_RESEARCH)
   const [loading,        setLoading]        = useState(true)
   const [error,          setError]          = useState<Error | null>(null)
@@ -52,17 +50,15 @@ export function GameDataProvider({ children }: { children: ReactNode }) {
       getBackpacks(),
       getModules(),
       getComponents(),
-      getAllPilotResearch(),
       getGlobalResearch(),
     ])
-      .then(([p, m, w, b, mo, co, pr, gr]) => {
+      .then(([p, m, w, b, mo, co, gr]) => {
         setPilots(p)
         setMechs(m)
         setWeapons(w)
         setBackpacks(b)
         setModules(mo)
         setComponents(co)
-        setPilotResearch(pr)
         setGlobalResearch(gr ?? EMPTY_GLOBAL_RESEARCH)
       })
       .catch((e: unknown) => setError(e instanceof Error ? e : new Error(String(e))))
@@ -72,7 +68,7 @@ export function GameDataProvider({ children }: { children: ReactNode }) {
   return (
     <GameDataContext.Provider value={{
       pilots, mechs, weapons, backpacks, modules, components,
-      pilotResearch, globalResearch, loading, error, reload,
+      globalResearch, loading, error, reload,
     }}>
       {children}
     </GameDataContext.Provider>
