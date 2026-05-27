@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { collection, onSnapshot } from 'firebase/firestore'
+import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import { PATCH_VERSIONS } from '../data/patchVersions'
 import type { PatchVersion } from '../data/patchVersions'
@@ -16,9 +16,8 @@ export function usePatchVersions(): PatchVersionsResult {
   const [error, setError]     = useState<Error | null>(null)
 
   useEffect(() => {
-    const unsub = onSnapshot(
-      collection(db, 'patchVersions'),
-      (snap) => {
+    getDocs(collection(db, 'patchVersions'))
+      .then((snap) => {
         if (!snap.empty) {
           const versions = snap.docs
             .map(d => d.data() as PatchVersion)
@@ -27,15 +26,12 @@ export function usePatchVersions(): PatchVersionsResult {
         }
         // empty collection → keep static fallback already in state
         setLoading(false)
-        setError(null)
-      },
-      (err) => {
+      })
+      .catch((err: unknown) => {
         console.error('[usePatchVersions] Firestore error, using static fallback:', err)
-        setError(err)
+        setError(err instanceof Error ? err : new Error(String(err)))
         setLoading(false)
-      }
-    )
-    return unsub
+      })
   }, [])
 
   return { data, loading, error }

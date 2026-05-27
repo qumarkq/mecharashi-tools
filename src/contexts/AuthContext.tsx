@@ -41,12 +41,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (cancelled) return
       setUser(u)
       if (u) {
-        await initUserProfile(u.uid, {
+        const profile = await initUserProfile(u.uid, {
           displayName: u.displayName ?? u.email ?? 'User',
           email: u.email ?? '',
           photoURL: u.photoURL ?? undefined,
         })
-        const profile = await getUserProfile(u.uid)
         if (!cancelled) {
           setUserProfile(profile)
           setLoading(false)

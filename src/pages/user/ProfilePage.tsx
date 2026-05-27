@@ -16,16 +16,20 @@ export default function ProfilePage() {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [builds, setBuilds] = useState<UserBuild[]>([])
   const [buildsLoading, setBuildsLoading] = useState(false)
+  const [buildsLoaded, setBuildsLoaded] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!user || tab !== 'builds') return
+    if (!user || tab !== 'builds' || buildsLoaded) return
     setBuildsLoading(true)
     getUserBuilds(user.uid)
       .then(setBuilds)
       .catch(console.error)
-      .finally(() => setBuildsLoading(false))
-  }, [user, tab])
+      .finally(() => {
+        setBuildsLoading(false)
+        setBuildsLoaded(true)
+      })
+  }, [user, tab, buildsLoaded])
 
   const handleDelete = async (buildId: string) => {
     if (!user || !confirm('確定要刪除此配裝？')) return

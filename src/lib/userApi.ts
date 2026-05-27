@@ -24,20 +24,23 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
 export async function initUserProfile(
   uid: string,
   data: Pick<UserProfile, 'displayName' | 'email' | 'photoURL'>
-): Promise<void> {
+): Promise<UserProfile> {
   const ref = profileDoc(uid)
   const snap = await getDoc(ref)
-  if (!snap.exists()) {
-    const now = new Date().toISOString()
-    await setDoc(ref, {
-      uid,
-      ...data,
-      role: 'USER',
-      researchLevels: { pilotByClass: {}, mechByType: {}, weaponByType: {} },
-      createdAt: now,
-      updatedAt: now,
-    })
+  if (snap.exists()) {
+    return snap.data() as UserProfile
   }
+  const now = new Date().toISOString()
+  const newProfile: UserProfile = {
+    uid,
+    ...data,
+    role: 'USER',
+    researchLevels: { pilotByClass: {}, mechByType: {}, weaponByType: {} },
+    createdAt: now,
+    updatedAt: now,
+  }
+  await setDoc(ref, newProfile)
+  return newProfile
 }
 
 export async function patchUserProfile(uid: string, data: Partial<UserProfile>): Promise<void> {

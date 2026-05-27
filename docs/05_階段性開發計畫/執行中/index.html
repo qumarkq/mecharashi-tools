@@ -102,7 +102,16 @@
         <a class="card-link" href="PLAN-010_攻略系統/計畫書.html">→ 計畫書</a>
       </div>
     </div>
-<div class="card purple">
+    <div class="card cyan">
+      <div class="card-icon">◆</div>
+      <h3>PLAN-016 · Firebase 快取層</h3>
+      <p>建立 GameDataContext 全局快取層，App 啟動時一次讀取全部 11 個 game data collection，頁面切換完全走 in-memory。同步修正 usePilotExclusiveWeapon/s、useMechWithModules 的全量讀取查詢，以及 usePatchVersions 的 real-time listener。估計降低 70–80% Firestore 讀取次數，解決單日超出免費配額問題。</p>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <a class="card-link" href="PLAN-016_Firebase快取層/計畫書.html">→ 計畫書</a>
+        <a class="card-link" href="PLAN-016_Firebase快取層/進度表.html">→ 進度表</a>
+      </div>
+    </div>
+    <div class="card purple">
       <div class="card-icon">◆</div>
       <h3>PLAN-014 · 版本甘特圖與後台管理</h3>
       <p>Phase A：為版本展開面板加入甘特圖展示，活動（復刻卡池、刮刮樂、輪盤等）以起始日＋持續週數繪製橫條，陸台各自獨立輸入，三欄式版面（陸版甘特圖｜核心資訊｜台版甘特圖）。Phase B：版本資料遷移至 Firebase Firestore，建立圖形化後台管理介面，讓非技術維護者無須碰程式碼即可更新版本內容。</p>

@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import { GameDataProvider } from './contexts/GameDataContext'
 import Layout from './components/Layout'
 import AdminRoute from './components/AdminRoute'
 import HomePage from './pages/home/HomePage'
@@ -25,6 +26,7 @@ const AdminVersionEditorPage = lazy(() => import('./pages/admin/AdminVersionEdit
 function App() {
   return (
     <AuthProvider>
+      <GameDataProvider>
       <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
           <Route path="/" element={<Layout />}>
@@ -55,6 +57,7 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      </GameDataProvider>
     </AuthProvider>
   )
 }
