@@ -60,6 +60,13 @@ export interface GrayOpsUpdate {
 
 export type GrayOpsCompany = '武裝工坊' | '創新動力' | 'GeekX' | '火花塞'
 
+export interface VersionIconUrls {
+  pilots?: Record<string, string>
+  mechs?: Record<string, string>
+  weapons?: Record<string, string>
+  backpacks?: Record<string, string>
+}
+
 export interface PatchVersion {
   version: string
   name?: string
@@ -73,4 +80,5 @@ export interface PatchVersion {
   grayOpsUpdates?: GrayOpsUpdate[]
   notes?: string
   isTwCurrent?: boolean
+  iconUrls?: VersionIconUrls
 }

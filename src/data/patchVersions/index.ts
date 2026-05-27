@@ -1,4 +1,4 @@
-export type { ArmamentRaid, BattlePass, PatchHalf, GrayOpsUpdate, GrayOpsCompany, PatchVersion, TimedActivity, ActivityType } from './types'
+export type { ArmamentRaid, BattlePass, PatchHalf, GrayOpsUpdate, GrayOpsCompany, PatchVersion, VersionIconUrls, TimedActivity, ActivityType } from './types'
 export { GRAY_OPS_BASE } from './base'
 
 import v2_8 from './v2.8'

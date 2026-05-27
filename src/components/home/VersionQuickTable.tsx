@@ -1,15 +1,5 @@
 import { Fragment, useMemo, useState } from 'react'
 import type { PatchVersion } from '../../data/patchVersions'
-import { usePilots, useMechs, useWeapons, useBackpacks } from '../../hooks/useFirestore'
-import { assetUrl } from '../../utils/assets'
-
-const CDN_BASE = 'https://media.zlongame.com/media/pictures/cn/community/img/gl/gameInfo'
-
-function localPathToCdn(localPath: string | undefined, cdnDir: string): string | undefined {
-  if (!localPath) return undefined
-  const filename = localPath.split('/').pop()
-  return filename ? `${CDN_BASE}/${cdnDir}/${filename}` : undefined
-}
 
 // ── Data helpers ──────────────────────────────────────────────────────────────
 
@@ -197,17 +187,25 @@ export default function VersionQuickTable({ versions, loading, error }: Props) {
   const currentIdx = versions.findIndex(v => v.isTwCurrent)
   const displayVersions = currentIdx >= 0 ? versions.slice(currentIdx, currentIdx + 5) : versions.slice(0, 5)
 
-  const { data: pilots }    = usePilots()
-  const { data: mechs }     = useMechs()
-  const { data: weapons }   = useWeapons()
-  const { data: backpacks } = useBackpacks()
-
-  const lookups = useMemo<Record<LookupKey, LookupMap>>(() => ({
-    pilots:    new Map(pilots.map(p    => [p.name, p.portraitUrl ?? assetUrl(p.portrait)])),
-    mechs:     new Map(mechs.map(m     => [m.name, m.portrait ? assetUrl(m.portrait) : m.parts.torso.mechaIcon ? `${CDN_BASE}/waparts/${m.parts.torso.mechaIcon}.png` : undefined])),
-    weapons:   new Map(weapons.map(w   => [w.name, localPathToCdn(w.icon, 'weapons')])),
-    backpacks: new Map(backpacks.map(b => [b.name, localPathToCdn(b.icon, 'pack')])),
-  }), [pilots, mechs, weapons, backpacks])
+  const lookups = useMemo<Record<LookupKey, LookupMap>>(() => {
+    const merged: Record<LookupKey, Record<string, string>> = {
+      pilots: {}, mechs: {}, weapons: {}, backpacks: {},
+    }
+    for (const v of displayVersions) {
+      const u = v.iconUrls
+      if (!u) continue
+      if (u.pilots)    Object.assign(merged.pilots,    u.pilots)
+      if (u.mechs)     Object.assign(merged.mechs,     u.mechs)
+      if (u.weapons)   Object.assign(merged.weapons,   u.weapons)
+      if (u.backpacks) Object.assign(merged.backpacks, u.backpacks)
+    }
+    return {
+      pilots:    new Map(Object.entries(merged.pilots)),
+      mechs:     new Map(Object.entries(merged.mechs)),
+      weapons:   new Map(Object.entries(merged.weapons)),
+      backpacks: new Map(Object.entries(merged.backpacks)),
+    }
+  }, [displayVersions])
 
   return (
     <div className="bg-bg-dark/10 rounded-2xl p-4 backdrop-blur-sm">

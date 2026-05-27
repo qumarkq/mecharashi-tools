@@ -1,15 +1,49 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../../lib/firebase'
-import type { PatchVersion, PatchHalf } from '../../data/patchVersions/types'
+import type { PatchVersion, PatchHalf, VersionIconUrls } from '../../data/patchVersions/types'
+import type { Pilot, Mech, Weapon, Backpack } from '../../types'
+import { assetUrl } from '../../utils/assets'
+import { invalidatePatchVersionsCache } from '../../hooks/usePatchVersions'
 import AdminHalfEditorPanel from '../../components/admin/AdminHalfEditorPanel'
+
+const CDN_BASE = 'https://media.zlongame.com/media/pictures/cn/community/img/gl/gameInfo'
 
 // ── 常數 / 工具 ────────────────────────────────────────────────────────────────
 
-type Tab = 'core' | 'upper' | 'lower'
+type Tab = 'core' | 'upper' | 'lower' | 'icons'
 type SaveStatus = null | 'saving' | 'success' | 'error'
+
+type IconCategory = keyof VersionIconUrls
+
+/** Collect all names per icon category that appear in this version's data. */
+function collectVersionNames(fd: PatchVersion): Record<IconCategory, string[]> {
+  const pilots    = new Set<string>()
+  const mechs     = new Set<string>()
+  const weapons   = new Set<string>()
+  const backpacks = new Set<string>()
+
+  for (const half of [fd.upper, fd.lower]) {
+    for (const n of half.pilots    ?? []) pilots.add(n)
+    for (const n of half.mechs     ?? []) mechs.add(n)
+    for (const n of half.battlePass?.pilots ?? []) pilots.add(n)
+    for (const n of half.battlePass?.mechs  ?? []) mechs.add(n)
+    for (const raid of half.armamentRaids ?? []) {
+      for (const n of raid.weapons   ?? []) weapons.add(n)
+      for (const n of raid.backpacks ?? []) backpacks.add(n)
+    }
+  }
+  for (const n of fd.crisisShop ?? []) pilots.add(n)
+
+  return {
+    pilots:    [...pilots].sort(),
+    mechs:     [...mechs].sort(),
+    weapons:   [...weapons].sort(),
+    backpacks: [...backpacks].sort(),
+  }
+}
 
 const EMPTY_HALF: PatchHalf = { cnDate: '' }
 
@@ -98,6 +132,8 @@ export default function AdminVersionEditorPage() {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>(null)
   const [saveMsg, setSaveMsg]     = useState('')
   const [uploading, setUploading] = useState(false)
+  const [syncing, setSyncing]     = useState(false)
+  const [syncMsg, setSyncMsg]     = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // ── 載入現有版本 ────────────────────────────────────────────────────────────
@@ -122,6 +158,95 @@ export default function AdminVersionEditorPage() {
 
   // ── 儲存 ────────────────────────────────────────────────────────────────────
 
+  // ── Icon URL 同步 ──────────────────────────────────────────────────────────
+
+  async function handleSyncIcons() {
+    setSyncing(true)
+    setSyncMsg('從 Firestore 讀取資料中…')
+    try {
+      const names = collectVersionNames(formData)
+      const pSet = new Set(names.pilots)
+      const mSet = new Set(names.mechs)
+      const wSet = new Set(names.weapons)
+      const bSet = new Set(names.backpacks)
+
+      const [pilotSnap, mechSnap, weaponSnap, backpackSnap] = await Promise.all([
+        getDocs(collection(db, 'pilots')),
+        getDocs(collection(db, 'mechs')),
+        getDocs(collection(db, 'weapons')),
+        getDocs(collection(db, 'backpacks')),
+      ])
+
+      const pilots: Record<string, string> = {}
+      for (const d of pilotSnap.docs) {
+        const p = d.data() as Pilot
+        if (!pSet.has(p.name)) continue
+        const url = p.portraitUrl ?? (p.portrait ? assetUrl(p.portrait) : undefined)
+        if (url) pilots[p.name] = url
+      }
+
+      const mechs: Record<string, string> = {}
+      for (const d of mechSnap.docs) {
+        const m = d.data() as Mech
+        if (!mSet.has(m.name)) continue
+        const url = m.portrait
+          ? assetUrl(m.portrait)
+          : m.parts.torso.mechaIcon
+            ? `${CDN_BASE}/waparts/${m.parts.torso.mechaIcon}.png`
+            : undefined
+        if (url) mechs[m.name] = url
+      }
+
+      const weapons: Record<string, string> = {}
+      for (const d of weaponSnap.docs) {
+        const w = d.data() as Weapon
+        if (!wSet.has(w.name)) continue
+        const filename = w.icon?.split('/').pop()
+        if (filename) weapons[w.name] = `${CDN_BASE}/weapons/${filename}`
+      }
+
+      const backpacks: Record<string, string> = {}
+      for (const d of backpackSnap.docs) {
+        const b = d.data() as Backpack
+        if (!bSet.has(b.name)) continue
+        const filename = b.icon?.split('/').pop()
+        if (filename) backpacks[b.name] = `${CDN_BASE}/pack/${filename}`
+      }
+
+      const iconUrls: VersionIconUrls = {}
+      if (Object.keys(pilots).length)    iconUrls.pilots    = pilots
+      if (Object.keys(mechs).length)     iconUrls.mechs     = mechs
+      if (Object.keys(weapons).length)   iconUrls.weapons   = weapons
+      if (Object.keys(backpacks).length) iconUrls.backpacks = backpacks
+
+      setFormData(prev => ({ ...prev, iconUrls: Object.keys(iconUrls).length ? iconUrls : undefined }))
+      setSyncMsg(`同步完成：機師 ${Object.keys(pilots).length}，機甲 ${Object.keys(mechs).length}，武器 ${Object.keys(weapons).length}，背包 ${Object.keys(backpacks).length}`)
+    } catch (err) {
+      console.error('[AdminVersionEditorPage] sync icons error:', err)
+      setSyncMsg('同步失敗，請確認 Firebase 連線。')
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  function updateIconUrl(category: IconCategory, name: string, url: string) {
+    setFormData(prev => {
+      const existing = prev.iconUrls?.[category] ?? {}
+      const updated = { ...existing }
+      if (url.trim()) {
+        updated[name] = url.trim()
+      } else {
+        delete updated[name]
+      }
+      const newCat = Object.keys(updated).length ? updated : undefined
+      const newUrls = { ...prev.iconUrls, [category]: newCat }
+      const hasAny = Object.values(newUrls).some(v => v !== undefined)
+      return { ...prev, iconUrls: hasAny ? newUrls : undefined }
+    })
+  }
+
+  // ── 儲存 ────────────────────────────────────────────────────────────────────
+
   async function handleSave() {
     if (!formData.version.trim()) {
       setSaveStatus('error')
@@ -133,6 +258,7 @@ export default function AdminVersionEditorPage() {
     try {
       const clean = stripUndefined(formData)
       await setDoc(doc(db, 'patchVersions', `v${formData.version}`), clean)
+      invalidatePatchVersionsCache()
       setSaveStatus('success')
       setSaveMsg('儲存成功！Firestore 已更新。')
       if (isNew) {
@@ -203,6 +329,7 @@ export default function AdminVersionEditorPage() {
     { key: 'core',  label: '核心資訊' },
     { key: 'upper', label: '上半' },
     { key: 'lower', label: '下半' },
+    { key: 'icons', label: 'Icon URLs' },
   ]
 
   return (
@@ -395,6 +522,82 @@ export default function AdminVersionEditorPage() {
           onChange={half => updateHalf('lower', half)}
         />
       )}
+
+      {/* ── Tab 4：Icon URLs ── */}
+      {activeTab === 'icons' && (() => {
+        const names = collectVersionNames(formData)
+        const CATEGORIES: { key: IconCategory; label: string }[] = [
+          { key: 'pilots',    label: '機師' },
+          { key: 'mechs',     label: '機甲' },
+          { key: 'weapons',   label: '武器' },
+          { key: 'backpacks', label: '背包' },
+        ]
+        return (
+          <div>
+            {/* Sync button */}
+            <div className="flex items-center gap-3 mb-5">
+              <button
+                type="button"
+                onClick={handleSyncIcons}
+                disabled={syncing}
+                className="px-4 py-2 text-sm font-medium bg-bg-card border border-border rounded-lg hover:border-accent-cyan/50 text-accent-cyan transition-colors disabled:opacity-50"
+              >
+                {syncing ? '同步中…' : '從 Firestore 自動同步 Icon'}
+              </button>
+              {syncMsg && (
+                <span className="text-xs text-text-dim">{syncMsg}</span>
+              )}
+            </div>
+
+            <p className="text-xs text-text-dim mb-5 leading-relaxed">
+              點擊上方按鈕可自動從 Firestore 資料庫查詢此版本所有角色／機甲／武器／背包的 Icon URL，並填入下方欄位。<br />
+              亦可手動貼上或修改任意 URL，留空代表顯示文字。
+            </p>
+
+            {CATEGORIES.map(({ key, label }) => {
+              const nameList = names[key]
+              return (
+                <div key={key} className="mb-6">
+                  <div className="text-[10px] font-bold text-text-dim tracking-[3px] uppercase mb-3 pt-4 border-t border-border">
+                    {label}
+                  </div>
+                  {nameList.length === 0 ? (
+                    <p className="text-xs text-text-dim/50">此版本無此類型資料</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {nameList.map(name => {
+                        const url = formData.iconUrls?.[key]?.[name] ?? ''
+                        return (
+                          <div key={name} className="flex items-center gap-3">
+                            {url ? (
+                              <img
+                                src={url}
+                                alt={name}
+                                className="w-8 h-8 rounded border border-border object-cover object-top shrink-0"
+                                onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded border border-border/40 bg-bg-card shrink-0" />
+                            )}
+                            <span className="text-sm text-text-secondary w-28 shrink-0 truncate">{name}</span>
+                            <input
+                              type="text"
+                              value={url}
+                              onChange={e => updateIconUrl(key, name, e.target.value)}
+                              placeholder="Icon URL（留空顯示文字）"
+                              className={`${INPUT_CLS} flex-1 text-xs`}
+                            />
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )
+      })()}
 
       {/* ── 固定底部儲存列 ── */}
       <div className="fixed bottom-0 left-0 right-0 bg-bg-dark border-t border-border px-4 py-3 flex items-center justify-between z-50">
