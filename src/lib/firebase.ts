@@ -1,5 +1,10 @@
 import { initializeApp, getApps } from 'firebase/app'
-import { getFirestore } from 'firebase/firestore'
+import {
+  initializeFirestore,
+  getFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
 import { getStorage } from 'firebase/storage'
 
@@ -13,9 +18,18 @@ const firebaseConfig = {
 }
 
 // 避免 HMR 時重複初始化
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+const isNewApp = getApps().length === 0
+const app = isNewApp ? initializeApp(firebaseConfig) : getApps()[0]
 
-export const db      = getFirestore(app)
+// initializeFirestore 只能呼叫一次；HMR reload 時改用 getFirestore 取已存在的實例
+export const db = isNewApp
+  ? initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
+    })
+  : getFirestore(app)
+
 export const auth    = getAuth(app)
 const storageBucket = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET
 export const storage = getStorage(app, storageBucket ? `gs://${storageBucket}` : undefined)
