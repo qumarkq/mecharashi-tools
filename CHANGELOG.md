@@ -12,6 +12,7 @@
 
 ### ✨ 新功能
 
+- admin page 新增 gray ops panel (`54a5f58`)
 - 優化page對firebase的讀取頻率，降低流量 (`e4d7f63`)
 - 新增 PLAN-017 計畫、精細化 Firestore 權限、調整管理後台導覽 (`521b586`)
 - 新增快取層，降低firebase用量 (`9320f1f`)
