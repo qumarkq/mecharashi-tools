@@ -4,13 +4,14 @@ import {
   getDocs,
   getDoc,
   setDoc,
+  serverTimestamp,
   query,
   where,
   orderBy,
   QueryConstraint,
 } from 'firebase/firestore'
 import { db } from './firebase'
-import type { Pilot, Mech, Module, Weapon, Backpack, Component, PilotResearch, GlobalResearch } from '../types'
+import type { Pilot, Mech, Module, Weapon, Backpack, Component, PilotResearch, GlobalResearch, GrayOpsRoster } from '../types'
 
 // ── 通用輔助 ──────────────────────────────────────────────────────────────────
 
@@ -98,4 +99,16 @@ export const updateWeapon = async (weapon: Weapon): Promise<void> => {
 export const updateComponent = async (component: Component): Promise<void> => {
   const { id, ...data } = component
   await setDoc(doc(db, 'components', id), data)
+}
+
+// ── 灰燼行動名單（單一文件，避免全集合讀取）────────────────────────────────────
+
+export const getGrayOpsRoster = async (): Promise<GrayOpsRoster | null> =>
+  fetchDocument<GrayOpsRoster>('grayOps', 'roster')
+
+export const updateGrayOpsRoster = async (roster: GrayOpsRoster): Promise<void> => {
+  await setDoc(doc(db, 'grayOps', 'roster'), {
+    companies: roster.companies,
+    updatedAt: serverTimestamp(),
+  })
 }

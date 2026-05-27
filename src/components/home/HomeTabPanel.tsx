@@ -46,7 +46,7 @@ export default function HomeTabPanel({ versions, loading, error }: Props) {
           <VersionQuickTable versions={versions} loading={loading} error={error} />
         )}
         {activeTab === 'grayops' && (
-          <GrayOpsPanel versions={versions} loading={loading} />
+          <GrayOpsPanel />
         )}
         {activeTab === 'timeline' && (
           <VersionTimeline versions={versions} loading={loading} />
