@@ -68,6 +68,7 @@
 
 ### ⚡ 效能優化
 
+- 消除首頁 Quick Table 的 Firestore 全集合讀取 (`067ee4e`)
 - 啟用 Firestore IndexedDB 離線持久化，降低重複讀取 (`e9021a4`)
 
 ### ♻️ 重構
