@@ -52,6 +52,7 @@
 
 ### 🐛 修復
 
+- 修正build失敗 (`bf787a6`)
 - 使用 BASE_URL 修正預覽部署的路由 basename 不匹配問題 (`59e65b5`)
 - 修正build錯誤 (`c1b44c1`)
 - 移除 VersionGanttPanel 未使用的 tooltip 變數 (`1fa7846`)
