@@ -4,7 +4,7 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [Unreleased] - 2026-05-27
+## [Unreleased] - 2026-05-28
 
 ### ⚠ 重大變更
 
@@ -75,6 +75,7 @@
 
 ### ♻️ 重構
 
+- AdminPage 拆分為子模組，修正活動日期計算與灰燼行動資料 (`806c09a`)
 - 重構頁面目錄結構並新增背包功能 (`e4845db`)
 
 ### 📊 資料更新
