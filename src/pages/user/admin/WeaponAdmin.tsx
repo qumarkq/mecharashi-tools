@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import type { Weapon, Pilot, WeaponSkill, SkillEffect } from '../../../types'
+import type { Weapon, Pilot, WeaponSkill } from '../../../types'
 import {
   WeaponType, WeaponKind, WeaponRarity, MechRestriction, WeaponEquipSlot,
   RangeType, SkillType, SkillActivation,

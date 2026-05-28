@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import type { Module, Mech, ConditionalEffect, ModuleLevel } from '../../../types'
 import {
-  ModuleRarity, ModuleSlot, ModuleSource, ModuleDataSource, ConditionalTrigger, ModuleSubtype,
+  ModuleRarity, ModuleSlot, ModuleSource, ModuleDataSource, ConditionalTrigger,
 } from '../../../types/enums'
 import { Field, AdminModal, useNewItemCreation, NewItemDialog } from './shared'
 import { SLOT_OPTIONS, SLOT_LABEL, PART_OPTIONS, TRIGGER_LABEL, STAT_OPTIONS } from './constants'
