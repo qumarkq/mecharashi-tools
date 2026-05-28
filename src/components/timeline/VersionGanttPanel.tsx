@@ -65,7 +65,7 @@ function activityToColumns(
 
   let colEnd = -1
   for (let i = allWeeks.length - 1; i >= 0; i--) {
-    if (allWeeks[i] < endDt) { colEnd = i; break }
+    if (allWeeks[i] <= endDt) { colEnd = i; break }
   }
   if (colEnd < colStart) return null
 
@@ -190,7 +190,7 @@ function ActivityGanttRow({
 }) {
   const cols = activityToColumns(act, allWeeks)
   const c = COLORS[act.type]
-  const endDt = addDays(parseDate(act.startDate), act.weeks * 7 - 1)
+  const endDt = addDays(parseDate(act.startDate), act.weeks * 7)
   const sub = act.pilots?.join('、') ?? act.mechs?.join('、') ?? ''
 
   const cells: React.ReactNode[] = []

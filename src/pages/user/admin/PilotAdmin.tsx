@@ -1,0 +1,620 @@
+import { useState, useEffect, useMemo } from 'react'
+import type { Pilot, PilotSkill, SkillEffect, SkillCondition } from '../../../types'
+import { formatWeaponReq } from '../../../types'
+import { ItemRarity, PilotClass, MechLicense, SkillType, WeaponType } from '../../../types/enums'
+import { Field, AdminModal } from './shared'
+import { PILOT_RARITY_CLASS, TRIGGER_DISPLAY, STAT_OPTIONS } from './constants'
+
+// ─── 技能條件編輯器 ────────────────────────────────────────────────────────────
+function SkillConditionEditor({
+  condition,
+  onChange,
+}: {
+  condition: SkillCondition
+  onChange: (updated: SkillCondition) => void
+}) {
+  return (
+    <div className="p-2 bg-bg-dark/60 rounded border border-border/40 space-y-2 mt-1.5">
+      <Field label="觸發條件 trigger">
+        <select
+          value={condition.trigger}
+          onChange={(e) => onChange({ ...condition, trigger: e.target.value })}
+          className="input-field"
+        >
+          {Object.entries(TRIGGER_DISPLAY).map(([k, label]) => (
+            <option key={k} value={k}>{label}</option>
+          ))}
+        </select>
+      </Field>
+      {condition.trigger === 'weaponType' && (
+        <Field label="武器類型 weaponType">
+          <select
+            value={condition.weaponType ?? ''}
+            onChange={(e) => onChange({ ...condition, weaponType: e.target.value || undefined })}
+            className="input-field"
+          >
+            <option value="">不限</option>
+            {Object.values(WeaponType).map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </Field>
+      )}
+      {condition.trigger === 'hpBelow' && (
+        <Field label="HP 門檻 (%) hpThreshold">
+          <input
+            type="number"
+            value={condition.hpThreshold ?? ''}
+            onChange={(e) => onChange({ ...condition, hpThreshold: e.target.value !== '' ? Number(e.target.value) : undefined })}
+            className="input-field"
+            placeholder="如：50 代表 HP < 50%"
+          />
+        </Field>
+      )}
+      {condition.trigger === 'onApSkill' && (
+        <Field label="最低 AP 消耗 minApCost">
+          <input
+            type="number"
+            value={condition.minApCost ?? ''}
+            onChange={(e) => onChange({ ...condition, minApCost: e.target.value !== '' ? Number(e.target.value) : undefined })}
+            className="input-field"
+          />
+        </Field>
+      )}
+      {condition.trigger === 'hasBuff' && (
+        <Field label="狀態名稱 hasBuff">
+          <input
+            type="text"
+            value={condition.hasBuff ?? ''}
+            onChange={(e) => onChange({ ...condition, hasBuff: e.target.value || undefined })}
+            className="input-field"
+            placeholder="如：強化射擊、瞄準"
+          />
+        </Field>
+      )}
+      <Field label="目標職業 targetClass（選填）">
+        <input
+          type="text"
+          value={condition.targetClass ?? ''}
+          onChange={(e) => onChange({ ...condition, targetClass: e.target.value || undefined })}
+          className="input-field"
+          placeholder="如：突擊手（留空 = 不限）"
+        />
+      </Field>
+    </div>
+  )
+}
+
+// ─── 技能效果項目 ──────────────────────────────────────────────────────────────
+export function SkillEffectItem({
+  effect,
+  index,
+  onChange,
+  onRemove,
+}: {
+  effect: SkillEffect
+  index: number
+  onChange: (updated: SkillEffect) => void
+  onRemove: () => void
+}) {
+  const hasCondition = effect.condition !== null
+
+  return (
+    <div className="border border-border/50 rounded-lg p-2.5 space-y-2 bg-bg-card/30">
+      <div className="flex items-center justify-between">
+        <span className="text-[13px] text-text-dim">效果 #{index + 1}</span>
+        <button
+          onClick={onRemove}
+          className="text-[13px] px-1.5 py-0.5 text-accent-red border border-accent-red/30 rounded hover:bg-accent-red/10"
+        >
+          ✕ 移除
+        </button>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        <Field label="屬性 stat">
+          <select
+            value={effect.stat}
+            onChange={(e) => onChange({ ...effect, stat: e.target.value })}
+            className="input-field text-xs"
+          >
+            {STAT_OPTIONS.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
+          </select>
+        </Field>
+        <Field label="數值 value">
+          <input
+            type="number"
+            value={effect.value}
+            onChange={(e) => onChange({ ...effect, value: Number(e.target.value) })}
+            className="input-field"
+          />
+        </Field>
+        <Field label="對象 scope">
+          <select
+            value={effect.scope}
+            onChange={(e) => onChange({ ...effect, scope: e.target.value })}
+            className="input-field"
+          >
+            <option value="self">自身 (self)</option>
+            <option value="ally">隊友 (ally)</option>
+            <option value="team">全隊 (team)</option>
+          </select>
+        </Field>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="計算方式 valueType">
+          <select
+            value={effect.valueType ?? 'add'}
+            onChange={(e) => onChange({ ...effect, valueType: e.target.value as 'add' | 'override' })}
+            className="input-field"
+          >
+            <option value="add">加算 (add)　—　預設</option>
+            <option value="override">覆蓋原始值 (override)</option>
+          </select>
+        </Field>
+      </div>
+      <label className="flex items-center gap-2 text-[14px] text-text-dim cursor-pointer">
+        <input
+          type="checkbox"
+          checked={hasCondition}
+          onChange={() => onChange({ ...effect, condition: hasCondition ? null : { trigger: 'always' } })}
+          className="accent-accent-orange w-3.5 h-3.5"
+        />
+        有條件觸發
+      </label>
+      {hasCondition && effect.condition && (
+        <SkillConditionEditor
+          condition={effect.condition}
+          onChange={(cond) => onChange({ ...effect, condition: cond })}
+        />
+      )}
+    </div>
+  )
+}
+
+// ─── 機師技能項目 ──────────────────────────────────────────────────────────────
+function PilotSkillItem({
+  skill,
+  expanded,
+  onToggle,
+  onChange,
+}: {
+  skill: PilotSkill
+  expanded: boolean
+  onToggle: () => void
+  onChange: (updated: PilotSkill) => void
+}) {
+  const effects = skill.effects ?? []
+  const buffIds = skill.buffIds ?? []
+
+  function updateEffects(next: SkillEffect[]) { onChange({ ...skill, effects: next }) }
+  function updateBuffIds(val: string) {
+    const ids = val.split(/[,\n]/).map((s) => s.trim()).filter(Boolean)
+    onChange({ ...skill, buffIds: ids })
+  }
+
+  const typeColor =
+    skill.type === SkillType.PASSIVE ? 'text-text-dim border-border bg-bg-card' :
+    skill.type === SkillType.ACTIVE  ? 'text-accent-cyan border-accent-cyan/30 bg-accent-cyan/10' :
+                                       'text-accent-orange border-accent-orange/30 bg-accent-orange/10'
+
+  return (
+    <div className="border border-border/60 rounded-lg bg-bg-dark/50">
+      <div className="flex items-center gap-2 px-3 py-2 cursor-pointer select-none" onClick={onToggle}>
+        {skill.iconLocal && (
+          <img
+            src={skill.iconLocal}
+            alt=""
+            className="w-6 h-6 rounded shrink-0"
+            onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+          />
+        )}
+        <span className="text-[13px] text-text-dim w-3 shrink-0">{expanded ? '▼' : '▶'}</span>
+        <span className="text-sm font-medium flex-1 truncate">{skill.name}</span>
+        <span className={`text-[13px] px-1.5 py-0.5 rounded border shrink-0 ${typeColor}`}>{skill.type}</span>
+        {skill.ap   && <span className="text-[13px] text-accent-green shrink-0">AP {skill.ap}</span>}
+        {skill.cd   && <span className="text-[13px] text-accent-orange shrink-0">CD {skill.cd}</span>}
+        {skill.weapon && <span className="text-[13px] text-accent-purple shrink-0">{formatWeaponReq(skill.weapon)}</span>}
+        <span className={`text-[13px] shrink-0 ml-1 ${effects.length > 0 ? 'text-accent-cyan' : 'text-text-dim'}`}>
+          效果 {effects.length}
+        </span>
+      </div>
+
+      {expanded && (
+        <div className="px-3 pb-3 border-t border-border/40 pt-2.5 space-y-3">
+          <div className="grid grid-cols-3 gap-2">
+            <Field label="技能類型 type">
+              <select value={skill.type} onChange={(e) => onChange({ ...skill, type: e.target.value })} className="input-field">
+                <option value={SkillType.PASSIVE}>{SkillType.PASSIVE}</option>
+                <option value={SkillType.ACTIVE}>{SkillType.ACTIVE}</option>
+                <option value={SkillType.COMMAND}>{SkillType.COMMAND}</option>
+              </select>
+            </Field>
+            <Field label="AP 消耗 ap">
+              <input type="text" value={skill.ap ?? ''} onChange={(e) => onChange({ ...skill, ap: e.target.value || undefined })} className="input-field" placeholder="—" />
+            </Field>
+            <Field label="冷卻回合 cd">
+              <input type="text" value={skill.cd ?? ''} onChange={(e) => onChange({ ...skill, cd: e.target.value || undefined })} className="input-field" placeholder="—" />
+            </Field>
+          </div>
+          <div className="p-2 bg-bg-card/40 rounded border border-border/40">
+            <p className="text-[13px] text-text-dim font-medium uppercase mb-1">效果說明（唯讀，由腳本管理）</p>
+            <p className="text-xs text-text-secondary leading-relaxed">{skill.description || '—'}</p>
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[13px] text-text-dim font-medium uppercase tracking-wider">可計算效果 effects</span>
+              <button
+                onClick={() => updateEffects([...effects, { stat: 'dmg', value: 0, scope: 'self', condition: null }])}
+                className="text-[13px] text-accent-cyan hover:text-accent-cyan/80 transition-colors"
+              >
+                + 新增效果
+              </button>
+            </div>
+            {effects.length === 0 ? (
+              <p className="text-xs text-text-dim py-2 text-center">尚未填入（計算器不計此技能）</p>
+            ) : (
+              <div className="space-y-2">
+                {effects.map((eff, effIdx) => (
+                  <SkillEffectItem
+                    key={effIdx}
+                    effect={eff}
+                    index={effIdx}
+                    onChange={(updated) => {
+                      const next = [...effects]; next[effIdx] = updated; updateEffects(next)
+                    }}
+                    onRemove={() => updateEffects(effects.filter((_, i) => i !== effIdx))}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+          <Field label="觸發 Buff ID buffIds（逗號分隔）">
+            <textarea
+              value={buffIds.join(', ')}
+              onChange={(e) => updateBuffIds(e.target.value)}
+              className="input-field min-h-[44px] resize-none text-xs"
+              placeholder="buff_001, buff_002"
+            />
+          </Field>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── 技能效果分頁 ──────────────────────────────────────────────────────────────
+function PilotSkillsTab({
+  skills,
+  onChange,
+}: {
+  skills: PilotSkill[]
+  onChange: (updated: PilotSkill[]) => void
+}) {
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
+
+  function updateSkill(idx: number, updated: PilotSkill) {
+    const next = [...skills]; next[idx] = updated; onChange(next)
+  }
+
+  if (skills.length === 0) {
+    return (
+      <p className="text-text-dim text-sm text-center py-8">
+        無技能資料（技能由爬蟲腳本寫入，效果欄位可在此填入）
+      </p>
+    )
+  }
+
+  return (
+    <div className="space-y-1.5">
+      {skills.map((skill, idx) => (
+        <PilotSkillItem
+          key={idx}
+          skill={skill}
+          expanded={expandedIdx === idx}
+          onToggle={() => setExpandedIdx(expandedIdx === idx ? null : idx)}
+          onChange={(updated) => updateSkill(idx, updated)}
+        />
+      ))}
+    </div>
+  )
+}
+
+// ─── 機師編輯面板 ──────────────────────────────────────────────────────────────
+type PilotEditTab = 'basic' | 'stats' | 'ap' | 'profile' | 'skills'
+
+const PILOT_EDIT_TABS: { id: PilotEditTab; label: string }[] = [
+  { id: 'basic',   label: '基本資訊' },
+  { id: 'stats',   label: '屬性數值' },
+  { id: 'ap',      label: 'AP 系統' },
+  { id: 'profile', label: '個人資料' },
+  { id: 'skills',  label: '技能效果' },
+]
+
+function PilotEditPanel({
+  pilot,
+  onSave,
+  onCancel,
+}: {
+  pilot: Pilot
+  onSave: (p: Pilot) => Promise<void>
+  onCancel: () => void
+}) {
+  const [form, setForm]       = useState<Pilot>({ ...pilot })
+  const [saving, setSaving]   = useState(false)
+  const [error, setError]     = useState<string | null>(null)
+  const [editTab, setEditTab] = useState<PilotEditTab>('basic')
+
+  useEffect(() => { setForm({ ...pilot }); setEditTab('basic') }, [pilot])
+
+  function update<K extends keyof Pilot>(key: K, value: Pilot[K]) { setForm((f) => ({ ...f, [key]: value })) }
+  function updateStats(key: keyof Pilot['stats'], value: number) { setForm((f) => ({ ...f, stats: { ...f.stats, [key]: value } })) }
+  function updateAp(key: 'init' | 'max' | 'recovery', value: number) { setForm((f) => ({ ...f, ap: { ...f.ap, [key]: value } })) }
+  function updateProfile(key: 'gender' | 'bloodType' | 'height', value: string) { setForm((f) => ({ ...f, profile: { ...f.profile, [key]: value } })) }
+
+  async function handleSubmit() {
+    setSaving(true); setError(null)
+    try { await onSave(form) }
+    catch (e) { setError(e instanceof Error ? e.message : '儲存失敗，請重試'); setSaving(false) }
+  }
+
+  return (
+    <AdminModal saving={saving} error={error} onSave={handleSubmit} onCancel={onCancel}>
+      <div className="flex items-start gap-3 mb-3 shrink-0">
+        {form.portrait && (
+          <img
+            src={form.portrait}
+            alt=""
+            className="w-12 h-12 rounded-lg object-cover shrink-0"
+            onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+          />
+        )}
+        <div className="flex-1 min-w-0">
+          <h3 className="text-lg font-bold flex items-center gap-2">
+            <span className="text-accent-orange">✎</span> 編輯機師
+            <span className="text-text-dim text-sm font-normal ml-1">{form.id}</span>
+          </h3>
+          <p className="text-[14px] text-text-dim mt-0.5">
+            技能 {form.skills?.length ?? 0}（效果可在「技能效果」分頁填入）· 天賦 {form.talents?.length ?? 0} · 神經驅動 {form.neuralDrive?.length ?? 0}（由爬蟲腳本管理）
+          </p>
+        </div>
+      </div>
+
+      {/* Tab 列 */}
+      <div className="flex gap-1 mb-4 shrink-0 flex-wrap">
+        {PILOT_EDIT_TABS.map((t) => {
+          const filledSkills = t.id === 'skills'
+            ? (form.skills ?? []).filter((s) => (s.effects ?? []).length > 0).length
+            : 0
+          const hasBadge = t.id === 'skills' && filledSkills > 0
+          return (
+            <button
+              key={t.id}
+              onClick={() => setEditTab(t.id)}
+              className={`relative px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                editTab === t.id
+                  ? 'bg-accent-orange text-black'
+                  : 'bg-bg-dark border border-border text-text-secondary hover:text-text-primary'
+              }`}
+            >
+              {t.label}
+              {hasBadge && (
+                <span className={`ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-[12px] font-bold ${editTab === t.id ? 'bg-black/20 text-black' : 'bg-accent-cyan/20 text-accent-cyan'}`}>
+                  {filledSkills}
+                </span>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="overflow-y-auto flex-1 pr-1">
+        {editTab === 'basic' && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="顯示名稱 name"><input value={form.name} onChange={(e) => update('name', e.target.value)} className="input-field" /></Field>
+              <Field label="全名 fullName"><input value={form.fullName || ''} onChange={(e) => update('fullName', e.target.value)} className="input-field" /></Field>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="稀有度 rarity">
+                <select value={form.rarity} onChange={(e) => update('rarity', e.target.value)} className="input-field">
+                  {Object.values(ItemRarity).map((r) => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </Field>
+              <Field label="職業 class">
+                <select value={form.class} onChange={(e) => update('class', e.target.value)} className="input-field">
+                  {Object.values(PilotClass).map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </Field>
+              <Field label="駕駛許可 license">
+                <select value={form.license} onChange={(e) => update('license', e.target.value)} className="input-field">
+                  {Object.values(MechLicense).map((l) => <option key={l} value={l}>{l}</option>)}
+                </select>
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="陣營 faction"><input value={form.faction || ''} onChange={(e) => update('faction', e.target.value)} className="input-field" /></Field>
+              <Field label="駕駛等級 masterLevel"><input value={form.masterLevel || ''} onChange={(e) => update('masterLevel', e.target.value)} className="input-field" /></Field>
+            </div>
+            <Field label="立繪路徑 portrait"><input value={form.portrait || ''} onChange={(e) => update('portrait', e.target.value)} className="input-field" /></Field>
+            <Field label="故事 lore（Markdown）">
+              <textarea value={form.lore || ''} onChange={(e) => update('lore', e.target.value)} className="input-field min-h-[100px] resize-y" />
+            </Field>
+          </div>
+        )}
+
+        {editTab === 'stats' && (
+          <div>
+            <p className="text-xs text-text-dim font-medium tracking-wider uppercase mb-3">六維屬性 stats</p>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <Field label="格鬥 melee"><input type="number" value={form.stats.melee} onChange={(e) => updateStats('melee', Number(e.target.value))} className="input-field" /></Field>
+              <Field label="突擊 assault"><input type="number" value={form.stats.assault} onChange={(e) => updateStats('assault', Number(e.target.value))} className="input-field" /></Field>
+              <Field label="射擊 shooting"><input type="number" value={form.stats.shooting} onChange={(e) => updateStats('shooting', Number(e.target.value))} className="input-field" /></Field>
+              <Field label="戰術 tactics"><input type="number" value={form.stats.tactics} onChange={(e) => updateStats('tactics', Number(e.target.value))} className="input-field" /></Field>
+              <Field label="防禦 defense"><input type="number" value={form.stats.defense} onChange={(e) => updateStats('defense', Number(e.target.value))} className="input-field" /></Field>
+              <Field label="工程 engineering"><input type="number" value={form.stats.engineering} onChange={(e) => updateStats('engineering', Number(e.target.value))} className="input-field" /></Field>
+            </div>
+            <div className="pt-3 border-t border-border/60">
+              <p className="text-xs text-text-dim font-medium tracking-wider uppercase mb-3">素質</p>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="攻擊素質 attack"><input type="number" value={form.attack ?? 0} onChange={(e) => update('attack', Number(e.target.value))} className="input-field" /></Field>
+                <Field label="防禦素質 defense (pilot)"><input type="number" value={form.defense ?? 0} onChange={(e) => update('defense', Number(e.target.value))} className="input-field" /></Field>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {editTab === 'ap' && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="初始 AP init"><input type="number" value={form.ap.init} onChange={(e) => updateAp('init', Number(e.target.value))} className="input-field" /></Field>
+              <Field label="AP 上限 max"><input type="number" value={form.ap.max} onChange={(e) => updateAp('max', Number(e.target.value))} className="input-field" /></Field>
+              <Field label="AP 回復 recovery"><input type="number" value={form.ap.recovery} onChange={(e) => updateAp('recovery', Number(e.target.value))} className="input-field" /></Field>
+            </div>
+            {form.apBase && (
+              <div className="p-3 bg-bg-dark rounded-lg border border-border/60">
+                <p className="text-[13px] text-text-dim font-medium tracking-wider uppercase mb-2">基礎值 apBase（參考，由爬蟲腳本管理）</p>
+                <div className="grid grid-cols-3 gap-2 text-xs text-text-dim">
+                  <div>初始：{form.apBase.init}</div>
+                  <div>上限：{form.apBase.max}</div>
+                  <div>回復：{form.apBase.recovery}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {editTab === 'profile' && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="性別 gender"><input value={form.profile?.gender || ''} onChange={(e) => updateProfile('gender', e.target.value)} className="input-field" /></Field>
+              <Field label="血型 bloodType"><input value={form.profile?.bloodType || ''} onChange={(e) => updateProfile('bloodType', e.target.value)} className="input-field" /></Field>
+              <Field label="身高 height"><input value={form.profile?.height || ''} onChange={(e) => updateProfile('height', e.target.value)} className="input-field" /></Field>
+            </div>
+            {Object.keys(form.profile?.additionalInfo ?? {}).length > 0 && (
+              <div className="p-3 bg-bg-dark rounded-lg border border-border/60">
+                <p className="text-[13px] text-text-dim font-medium tracking-wider uppercase mb-2">其他資料 additionalInfo（由爬蟲腳本管理）</p>
+                <div className="space-y-1">
+                  {Object.entries(form.profile?.additionalInfo ?? {}).map(([k, v]) => (
+                    <div key={k} className="flex gap-2 text-xs text-text-dim">
+                      <span className="text-text-secondary shrink-0">{k}：</span>
+                      <span>{v}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="p-3 bg-bg-dark/60 border border-border/40 rounded-lg">
+              <p className="text-[14px] text-text-dim">
+                天賦、神經驅動等複雜欄位由爬蟲腳本管理，請透過 <code className="text-accent-cyan">npm run migrate</code> 更新至 Firestore。<br />
+                技能的名稱與描述同樣由腳本管理，但可在「技能效果」分頁填入 effects 供計算器使用。
+              </p>
+            </div>
+          </div>
+        )}
+
+        {editTab === 'skills' && (
+          <PilotSkillsTab
+            skills={form.skills ?? []}
+            onChange={(updated) => update('skills', updated)}
+          />
+        )}
+      </div>
+    </AdminModal>
+  )
+}
+
+// ─── 機師管理列表 ──────────────────────────────────────────────────────────────
+export default function PilotAdmin({
+  pilots,
+  onPilotSave,
+}: {
+  pilots: Pilot[]
+  onPilotSave: (updated: Pilot) => Promise<void>
+}) {
+  const [search, setSearch]             = useState('')
+  const [filterRarity, setFilterRarity] = useState('all')
+  const [filterClass, setFilterClass]   = useState('all')
+  const [editing, setEditing]           = useState<Pilot | null>(null)
+
+  const filtered = useMemo(() => {
+    return pilots.filter((p) => {
+      const matchSearch  = !search || p.name.includes(search) || p.id.includes(search) || (p.fullName ?? '').includes(search)
+      const matchRarity  = filterRarity === 'all' || p.rarity === filterRarity
+      const matchClass   = filterClass  === 'all' || p.class  === filterClass
+      return matchSearch && matchRarity && matchClass
+    })
+  }, [pilots, search, filterRarity, filterClass])
+
+  async function handleSave(updated: Pilot) {
+    await onPilotSave(updated)
+    setEditing(null)
+  }
+
+  return (
+    <div>
+      <div className="flex flex-wrap gap-2 mb-3">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="搜尋名稱 / ID..."
+          className="flex-1 min-w-[180px] px-3 py-2 rounded-lg bg-bg-dark border border-border text-text-primary text-sm focus:outline-none focus:border-accent-orange"
+        />
+        <select value={filterRarity} onChange={(e) => setFilterRarity(e.target.value)} className="px-3 py-2 rounded-lg bg-bg-dark border border-border text-text-primary text-sm">
+          <option value="all">全部稀有度</option>
+          {Object.values(ItemRarity).map((r) => <option key={r} value={r}>{r}</option>)}
+        </select>
+        <select value={filterClass} onChange={(e) => setFilterClass(e.target.value)} className="px-3 py-2 rounded-lg bg-bg-dark border border-border text-text-primary text-sm">
+          <option value="all">全部職業</option>
+          {Object.values(PilotClass).map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+
+      <p className="text-text-dim text-xs mb-3">共 {filtered.length} / {pilots.length} 位機師</p>
+
+      <div className="space-y-1.5 max-h-[600px] overflow-y-auto pr-1">
+        {filtered.map((pilot) => (
+          <div
+            key={pilot.id}
+            className="bg-bg-dark border border-border rounded-lg px-3 py-2.5 flex items-center gap-3 hover:border-border-accent transition-colors cursor-pointer"
+            onClick={() => setEditing(pilot)}
+          >
+            {pilot.portrait && (
+              <img
+                src={pilot.portrait}
+                alt=""
+                className="w-10 h-10 rounded-lg object-cover shrink-0"
+                onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+              />
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-bold text-sm text-text-primary">{pilot.name}</span>
+                {pilot.fullName && pilot.fullName !== pilot.name && (
+                  <span className="text-xs text-text-dim truncate">{pilot.fullName}</span>
+                )}
+                <span className={`text-[13px] px-1.5 py-0.5 rounded border font-bold shrink-0 ${PILOT_RARITY_CLASS[pilot.rarity] ?? 'text-text-dim border-border bg-bg-card'}`}>
+                  {pilot.rarity}
+                </span>
+                <span className="text-[13px] px-1.5 py-0.5 rounded bg-bg-card border border-border text-text-dim shrink-0">{pilot.class}</span>
+                <span className="text-[13px] px-1.5 py-0.5 rounded bg-bg-card border border-border text-text-dim shrink-0">{pilot.license}</span>
+              </div>
+              <div className="text-[14px] text-text-dim mt-0.5">
+                格{pilot.stats.melee} · 突{pilot.stats.assault} · 射{pilot.stats.shooting} · 術{pilot.stats.tactics} · 防{pilot.stats.defense} · 工{pilot.stats.engineering}
+              </div>
+            </div>
+          </div>
+        ))}
+        {filtered.length === 0 && (
+          <p className="text-text-dim text-sm text-center py-8">找不到符合條件的機師</p>
+        )}
+      </div>
+
+      {editing && (
+        <PilotEditPanel
+          pilot={editing}
+          onSave={handleSave}
+          onCancel={() => setEditing(null)}
+        />
+      )}
+    </div>
+  )
+}

@@ -11,7 +11,7 @@ import {
   QueryConstraint,
 } from 'firebase/firestore'
 import { db } from './firebase'
-import type { Pilot, Mech, Module, Weapon, Backpack, Component, PilotResearch, GlobalResearch, GrayOpsRoster } from '../types'
+import type { Pilot, Mech, Module, Weapon, Backpack, Component, PilotResearch, GlobalResearch, GrayOpsRoster, GrayOpsMechEntry } from '../types'
 
 // ── 通用輔助 ──────────────────────────────────────────────────────────────────
 
@@ -101,14 +101,31 @@ export const updateComponent = async (component: Component): Promise<void> => {
   await setDoc(doc(db, 'components', id), data)
 }
 
-// ── 灰燼行動名單（單一文件，避免全集合讀取）────────────────────────────────────
+// ── 灰燼行動名單（每家公司一份文件）──────────────────────────────────────────────
 
-export const getGrayOpsRoster = async (): Promise<GrayOpsRoster | null> =>
-  fetchDocument<GrayOpsRoster>('grayOps', 'roster')
+export const getGrayOpsRoster = async (): Promise<GrayOpsRoster | null> => {
+  const snap = await getDocs(collection(db, 'grayOps'))
+  if (snap.empty) return null
+  const companies: Record<string, GrayOpsMechEntry[]> = {}
+  for (const d of snap.docs) {
+    if (d.id === 'roster') continue
+    const data = d.data()
+    if (Array.isArray(data.mechs)) companies[d.id] = data.mechs as GrayOpsMechEntry[]
+  }
+  if (Object.keys(companies).length === 0) {
+    // 舊格式 fallback
+    return fetchDocument<GrayOpsRoster>('grayOps', 'roster')
+  }
+  return { companies }
+}
 
 export const updateGrayOpsRoster = async (roster: GrayOpsRoster): Promise<void> => {
-  await setDoc(doc(db, 'grayOps', 'roster'), {
-    companies: roster.companies,
-    updatedAt: serverTimestamp(),
-  })
+  await Promise.all(
+    Object.entries(roster.companies).map(([company, mechs]) =>
+      setDoc(doc(db, 'grayOps', company), {
+        mechs: mechs.map((m) => (m.version ? m : { name: m.name })),
+        updatedAt: serverTimestamp(),
+      })
+    )
+  )
 }

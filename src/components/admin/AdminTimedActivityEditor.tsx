@@ -28,7 +28,7 @@ export function computeEndDate(startDate: string, weeks: number): string {
   if (!startDate || startDate.length < 10 || weeks < 1) return ''
   const d = new Date(toInputDate(startDate))
   if (isNaN(d.getTime())) return ''
-  d.setDate(d.getDate() + weeks * 7 - 1)
+  d.setDate(d.getDate() + weeks * 7)
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
   const dd = String(d.getDate()).padStart(2, '0')

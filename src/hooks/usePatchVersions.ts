@@ -4,6 +4,31 @@ import { db } from '../lib/firebase'
 import { PATCH_VERSIONS } from '../data/patchVersions'
 import type { PatchVersion } from '../data/patchVersions'
 
+function parseVersionDate(str: string): Date {
+  const cleaned = str.replace(/^[^0-9]+/, '')
+  const [y, m, d] = cleaned.split(/[\/\-]/).map(Number)
+  return new Date(y, m - 1, d)
+}
+
+// 若有任一版本手動設定 isTwCurrent，優先採用；否則依 twDate 自動標記
+function applyTwCurrent(versions: PatchVersion[]): PatchVersion[] {
+  if (versions.some(v => v.isTwCurrent === true)) {
+    return versions
+  }
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  let currentIdx = -1
+  for (let i = 0; i < versions.length; i++) {
+    const twDate = versions[i].upper.twDate
+    if (!twDate || versions[i].upper.twIsPredicted) continue
+    if (parseVersionDate(twDate) <= today) currentIdx = i
+  }
+
+  return versions.map((v, i) => ({ ...v, isTwCurrent: i === currentIdx }))
+}
+
 export interface PatchVersionsResult {
   data: PatchVersion[]
   loading: boolean
@@ -24,18 +49,18 @@ function _fetchOnce(): Promise<CacheEntry> {
   if (_promise !== null) return _promise
   _promise = getDocs(collection(db, 'patchVersions'))
     .then(snap => {
-      const data = snap.empty
+      const raw = snap.empty
         ? PATCH_VERSIONS
         : snap.docs
             .map(d => d.data() as PatchVersion)
             .sort((a, b) => parseFloat(a.version) - parseFloat(b.version))
-      _cache = { data, error: null }
+      _cache = { data: applyTwCurrent(raw), error: null }
       return _cache
     })
     .catch(err => {
       console.error('[usePatchVersions] Firestore error, using static fallback:', err)
       _cache = {
-        data: PATCH_VERSIONS,
+        data: applyTwCurrent(PATCH_VERSIONS),
         error: err instanceof Error ? err : new Error(String(err)),
       }
       _promise = null
@@ -52,7 +77,7 @@ export function invalidatePatchVersionsCache(): void {
 
 export function usePatchVersions(): PatchVersionsResult {
   const [result, setResult] = useState<CacheEntry>(
-    _cache ?? { data: PATCH_VERSIONS, error: null },
+    _cache ?? { data: applyTwCurrent(PATCH_VERSIONS), error: null },
   )
   const [loading, setLoading] = useState(_cache === null)
 
