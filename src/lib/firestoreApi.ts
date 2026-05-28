@@ -76,29 +76,41 @@ export const getGlobalResearch = async (): Promise<GlobalResearch | null> =>
 
 // ── 管理後台寫入 ──────────────────────────────────────────────────────────────
 
+function stripUndefined<T>(val: T): T {
+  if (Array.isArray(val)) return val.map(stripUndefined) as unknown as T
+  if (val !== null && typeof val === 'object') {
+    return Object.fromEntries(
+      Object.entries(val as Record<string, unknown>)
+        .filter(([, v]) => v !== undefined)
+        .map(([k, v]) => [k, stripUndefined(v)])
+    ) as T
+  }
+  return val
+}
+
 export const updateModule = async (module: Module): Promise<void> => {
   const { id, ...data } = module
-  await setDoc(doc(db, 'modules', id), data)
+  await setDoc(doc(db, 'modules', id), stripUndefined(data))
 }
 
 export const updateMech = async (mech: Mech): Promise<void> => {
   const { id, ...data } = mech
-  await setDoc(doc(db, 'mechs', id), data)
+  await setDoc(doc(db, 'mechs', id), stripUndefined(data))
 }
 
 export const updatePilot = async (pilot: Pilot): Promise<void> => {
   const { id, ...data } = pilot
-  await setDoc(doc(db, 'pilots', id), data)
+  await setDoc(doc(db, 'pilots', id), stripUndefined(data))
 }
 
 export const updateWeapon = async (weapon: Weapon): Promise<void> => {
   const { id, ...data } = weapon
-  await setDoc(doc(db, 'weapons', id), data)
+  await setDoc(doc(db, 'weapons', id), stripUndefined(data))
 }
 
 export const updateComponent = async (component: Component): Promise<void> => {
   const { id, ...data } = component
-  await setDoc(doc(db, 'components', id), data)
+  await setDoc(doc(db, 'components', id), stripUndefined(data))
 }
 
 // ── 灰燼行動名單（每家公司一份文件）──────────────────────────────────────────────

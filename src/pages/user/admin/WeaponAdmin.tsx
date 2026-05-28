@@ -91,6 +91,14 @@ function WeaponSkillItem({
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-2">
+            <Field label="圖示路徑 iconLocal（本地）">
+              <input value={skill.iconLocal ?? ''} onChange={(e) => onChange({ ...skill, iconLocal: e.target.value || undefined })} className="input-field" placeholder="/images/weapons/skills/..." />
+            </Field>
+            <Field label="圖示 URL icon（遠端，選填）">
+              <input value={skill.icon ?? ''} onChange={(e) => onChange({ ...skill, icon: e.target.value || undefined })} className="input-field" placeholder="https://..." />
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
             <Field label="生效方式 activation">
               <select
                 value={skill.activation}
