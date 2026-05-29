@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect, useRef } from 'react'
+import { useState, useLayoutEffect, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useBackpacks } from '../../hooks/useFirestore'
 import { BottomSheet } from '../../components/BottomSheet'
@@ -14,6 +14,8 @@ import { WeaponRarityBadge } from '../../components/WeaponRarityBadge'
 import { EQUIP_SLOT_LABELS } from '../../components/WeaponBadges'
 import { assetUrl } from '../../utils/assets'
 import type { Backpack } from '../../types'
+
+const PAGE_SIZE = 36
 
 const ALL_RARITIES = ['SS', 'S+', 'S', 'A', 'B']
 const ALL_BACKPACK_TYPES = [
@@ -207,6 +209,9 @@ export default function BackpacksPage() {
   const [rarityFilters, setRarityFilters] = useState<Set<string>>(new Set())
   const [typeFilters, setTypeFilters]     = useState<Set<string>>(new Set())
   const [armorFilter, setArmorFilter]     = useState<string | null>(null)
+  const [displayCount, setDisplayCount]   = useState(PAGE_SIZE)
+
+  useEffect(() => { setDisplayCount(PAGE_SIZE) }, [search, rarityFilters, typeFilters, armorFilter])
 
   const isMobile = useIsMobile()
   const [hoverTooltip, setHoverTooltip] = useState<TooltipState | null>(null)
@@ -236,6 +241,8 @@ export default function BackpacksPage() {
       return true
     })
     .sort((a, b) => (RARITY_ORDER[a.rarity] ?? 9) - (RARITY_ORDER[b.rarity] ?? 9))
+
+  const paginated = filtered.slice(0, displayCount)
 
   const computePos = (el: HTMLDivElement): { x: number; anchorTop: number } => {
     const rect = el.getBoundingClientRect()
@@ -355,7 +362,8 @@ export default function BackpacksPage() {
       {/* Count */}
       {!loading && (
         <p className="text-xs text-text-dim mb-4">
-          顯示 <Num className="text-xs">{filtered.length}</Num> / {backpacks.length} 件背包
+          顯示 <Num className="text-xs">{Math.min(displayCount, filtered.length)}</Num> / {filtered.length} 件背包
+          {filtered.length !== backpacks.length && <span className="ml-1">（全 {backpacks.length} 件）</span>}
         </p>
       )}
 
@@ -372,7 +380,7 @@ export default function BackpacksPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {filtered.map((bp) => (
+          {paginated.map((bp) => (
             <div
               key={bp.id}
               className="bg-bg-card border border-border rounded-xl p-3 cursor-default transition-all select-none hover:border-border-accent hover:bg-bg-card-hover"
@@ -424,6 +432,17 @@ export default function BackpacksPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {!loading && displayCount < filtered.length && (
+        <div className="mt-6 text-center">
+          <button
+            className="px-6 py-2.5 rounded-xl border border-border bg-bg-card text-text-secondary text-sm hover:border-border-accent hover:text-text-primary transition-colors cursor-pointer"
+            onClick={() => setDisplayCount((n) => n + PAGE_SIZE)}
+          >
+            載入更多（{filtered.length - displayCount} 件）
+          </button>
         </div>
       )}
     </div>

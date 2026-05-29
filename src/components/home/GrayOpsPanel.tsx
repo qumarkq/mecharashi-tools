@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useGameData } from '../../contexts/GameDataContext'
 import type { GrayOpsCompany } from '../../data/patchVersions'
 
@@ -11,7 +12,9 @@ const COMPANY_COLORS: Record<GrayOpsCompany, string> = {
 }
 
 export default function GrayOpsPanel() {
-  const { grayOpsRoster, loading } = useGameData()
+  const { grayOpsRoster, loadedKeys, ensureLoaded, reloadTick } = useGameData()
+  useEffect(() => { void ensureLoaded(['grayOpsRoster']) }, [ensureLoaded, reloadTick])
+  const loading = !loadedKeys.has('grayOpsRoster')
 
   return (
     <div className="bg-bg-dark/10 rounded-2xl p-4 backdrop-blur-sm">

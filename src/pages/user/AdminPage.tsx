@@ -13,6 +13,7 @@ import WeaponAdmin from './admin/WeaponAdmin'
 import ComponentAdmin from './admin/ComponentAdmin'
 import UserAdmin from './admin/UserAdmin'
 import GrayOpsAdmin from './admin/GrayOpsAdmin'
+import BackpackAdmin from './admin/BackpackAdmin'
 
 export default function AdminPage() {
   const { user, userProfile, loading: authLoading } = useAuth()
@@ -23,12 +24,19 @@ export default function AdminPage() {
     weapons: ctxWeapons,
     components: ctxComponents,
     grayOpsRoster: ctxGrayOpsRoster,
-    loading,
-    error: dataError,
+    loadedKeys,
+    errorMap,
+    ensureLoaded,
+    reloadTick,
   } = useGameData()
-  const loadError = dataError?.message ?? null
 
-  const [tab, setTab] = useState<'modules' | 'mechs' | 'pilots' | 'weapons' | 'components' | 'users' | 'grayops'>('modules')
+  const ADMIN_KEYS = ['modules', 'mechs', 'pilots', 'weapons', 'components', 'grayOpsRoster'] as const
+  useEffect(() => { void ensureLoaded([...ADMIN_KEYS]) }, [ensureLoaded, reloadTick])
+
+  const loading   = !ADMIN_KEYS.every(k => loadedKeys.has(k))
+  const loadError = ADMIN_KEYS.map(k => errorMap[k]).find(Boolean)?.message ?? null
+
+  const [tab, setTab] = useState<'modules' | 'mechs' | 'pilots' | 'weapons' | 'components' | 'backpacks' | 'users' | 'grayops'>('modules')
   const [modules, setModules]       = useState<Module[]>([])
   const [mechs, setMechs]           = useState<Mech[]>([])
   const [pilots, setPilots]         = useState<Pilot[]>([])
@@ -157,6 +165,7 @@ export default function AdminPage() {
         <TabButton active={tab === 'pilots'}     onClick={() => setTab('pilots')}>機師管理</TabButton>
         <TabButton active={tab === 'weapons'}    onClick={() => setTab('weapons')}>武器管理</TabButton>
         <TabButton active={tab === 'components'} onClick={() => setTab('components')}>元件管理</TabButton>
+        <TabButton active={tab === 'backpacks'}  onClick={() => setTab('backpacks')}>背包管理</TabButton>
         <TabButton active={tab === 'users'}      onClick={() => setTab('users')}>用戶管理</TabButton>
         <TabButton active={tab === 'grayops'}    onClick={() => setTab('grayops')}>灰燼行動</TabButton>
       </div>
@@ -178,6 +187,7 @@ export default function AdminPage() {
         {tab === 'components' && (
           <ComponentAdmin components={components} onComponentSave={handleComponentSave} />
         )}
+        {tab === 'backpacks' && <BackpackAdmin />}
         {tab === 'users' && <UserAdmin currentUid={user.uid} />}
         {tab === 'grayops' && (
           <GrayOpsAdmin roster={ctxGrayOpsRoster} onSave={handleGrayOpsSave} />
@@ -185,7 +195,7 @@ export default function AdminPage() {
       </div>
 
       {/* 統計資訊 */}
-      {tab !== 'users' && (
+      {tab !== 'users' && tab !== 'backpacks' && (
         <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
           {(tab === 'components' ? [
             { label: '元件總數',  value: components.length, color: 'text-accent-cyan' },

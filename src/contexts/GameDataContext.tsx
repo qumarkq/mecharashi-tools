@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from 'react'
 import type { Pilot, Mech, Module, Weapon, Backpack, Component, GlobalResearch, GrayOpsRoster } from '../types'
 import {
   getPilots, getMechs, getModules, getWeapons, getBackpacks, getComponents,
@@ -11,6 +11,15 @@ export const EMPTY_GLOBAL_RESEARCH: GlobalResearch = {
   weaponResearchByType: {},
 }
 
+export type CollectionKey =
+  | 'pilots' | 'mechs' | 'modules' | 'weapons'
+  | 'backpacks' | 'components' | 'globalResearch' | 'grayOpsRoster'
+
+export const ALL_COLLECTION_KEYS: CollectionKey[] = [
+  'pilots', 'mechs', 'modules', 'weapons',
+  'backpacks', 'components', 'globalResearch', 'grayOpsRoster',
+]
+
 export interface GameDataState {
   pilots:         Pilot[]
   mechs:          Mech[]
@@ -20,8 +29,10 @@ export interface GameDataState {
   components:     Component[]
   globalResearch: GlobalResearch
   grayOpsRoster:  GrayOpsRoster | null
-  loading:        boolean
-  error:          Error | null
+  loadedKeys:     ReadonlySet<CollectionKey>
+  errorMap:       Readonly<Partial<Record<CollectionKey, Error>>>
+  reloadTick:     number
+  ensureLoaded:   (keys: CollectionKey[]) => void
   reload:         () => void
 }
 
@@ -36,43 +47,57 @@ export function GameDataProvider({ children }: { children: ReactNode }) {
   const [components,     setComponents]     = useState<Component[]>([])
   const [globalResearch, setGlobalResearch] = useState<GlobalResearch>(EMPTY_GLOBAL_RESEARCH)
   const [grayOpsRoster,  setGrayOpsRoster]  = useState<GrayOpsRoster | null>(null)
-  const [loading,        setLoading]        = useState(true)
-  const [error,          setError]          = useState<Error | null>(null)
-  const [tick,           setTick]           = useState(0)
+  const [loadedKeys,     setLoadedKeys]     = useState<Set<CollectionKey>>(new Set())
+  const [errorMap,       setErrorMap]       = useState<Partial<Record<CollectionKey, Error>>>({})
+  const [reloadTick,     setReloadTick]     = useState(0)
 
-  const reload = useCallback(() => setTick(t => t + 1), [])
+  // Tracks keys that are already in-flight or done (synchronous check, prevents double-fetch)
+  const fetchedRef = useRef<Set<CollectionKey>>(new Set())
 
-  useEffect(() => {
-    setLoading(true)
-    setError(null)
-    Promise.all([
-      getPilots(),
-      getMechs(),
-      getWeapons(),
-      getBackpacks(),
-      getModules(),
-      getComponents(),
-      getGlobalResearch(),
-      getGrayOpsRoster(),
-    ])
-      .then(([p, m, w, b, mo, co, gr, gor]) => {
-        setPilots(p)
-        setMechs(m)
-        setWeapons(w)
-        setBackpacks(b)
-        setModules(mo)
-        setComponents(co)
-        setGlobalResearch(gr ?? EMPTY_GLOBAL_RESEARCH)
-        setGrayOpsRoster(gor)
-      })
-      .catch((e: unknown) => setError(e instanceof Error ? e : new Error(String(e))))
-      .finally(() => setLoading(false))
-  }, [tick])
+  const ensureLoaded = useCallback(async (keys: CollectionKey[]) => {
+    const toFetch = keys.filter(k => !fetchedRef.current.has(k))
+    if (toFetch.length === 0) return
+
+    toFetch.forEach(k => fetchedRef.current.add(k))
+
+    await Promise.all(toFetch.map(async (key) => {
+      try {
+        switch (key) {
+          case 'pilots':         setPilots(await getPilots()); break
+          case 'mechs':          setMechs(await getMechs()); break
+          case 'modules':        setModules(await getModules()); break
+          case 'weapons':        setWeapons(await getWeapons()); break
+          case 'backpacks':      setBackpacks(await getBackpacks()); break
+          case 'components':     setComponents(await getComponents()); break
+          case 'globalResearch': {
+            const gr = await getGlobalResearch()
+            setGlobalResearch(gr ?? EMPTY_GLOBAL_RESEARCH)
+            break
+          }
+          case 'grayOpsRoster':  setGrayOpsRoster(await getGrayOpsRoster()); break
+        }
+        setLoadedKeys(prev => new Set([...prev, key]))
+      } catch (e) {
+        fetchedRef.current.delete(key)
+        const err = e instanceof Error ? e : new Error(String(e))
+        setErrorMap(prev => ({ ...prev, [key]: err }))
+      }
+    }))
+  }, [])
+
+  const reload = useCallback(() => {
+    fetchedRef.current.clear()
+    setLoadedKeys(new Set())
+    setErrorMap({})
+    setReloadTick(t => t + 1)
+  }, [])
 
   return (
     <GameDataContext.Provider value={{
       pilots, mechs, weapons, backpacks, modules, components,
-      globalResearch, grayOpsRoster, loading, error, reload,
+      globalResearch, grayOpsRoster,
+      loadedKeys, errorMap, reloadTick,
+      ensureLoaded, reload,
     }}>
       {children}
     </GameDataContext.Provider>

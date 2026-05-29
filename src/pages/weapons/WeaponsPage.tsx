@@ -1,4 +1,4 @@
-﻿import { useState, useLayoutEffect, useRef } from 'react'
+﻿import { useState, useLayoutEffect, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import { BottomSheet } from '../../components/BottomSheet'
@@ -14,6 +14,8 @@ import {
 } from '../../components/WeaponBadges'
 import { assetUrl } from '../../utils/assets'
 import type { Weapon } from '../../types'
+
+const PAGE_SIZE = 36
 
 const RARITY_ORDER: Record<string, number> = { SS: 0, 'S+': 1, S: 2, A: 3, B: 4 }
 
@@ -257,6 +259,9 @@ export default function WeaponsPage() {
   const [typeFilters, setTypeFilters]         = useState<Set<string>>(new Set())
   const [kindFilters, setKindFilters]         = useState<Set<string>>(new Set())
   const [equipSlotFilter, setEquipSlotFilter] = useState<string | null>(null)
+  const [displayCount, setDisplayCount]       = useState(PAGE_SIZE)
+
+  useEffect(() => { setDisplayCount(PAGE_SIZE) }, [search, rarityFilters, typeFilters, kindFilters, equipSlotFilter])
 
   const isMobile = useIsMobile()
   const [hoverTooltip, setHoverTooltip] = useState<TooltipState | null>(null)
@@ -286,6 +291,8 @@ export default function WeaponsPage() {
       return true
     })
     .sort((a, b) => (RARITY_ORDER[a.rarity] ?? 9) - (RARITY_ORDER[b.rarity] ?? 9))
+
+  const paginated = filtered.slice(0, displayCount)
 
   const computePos = (cardEl: HTMLDivElement): { x: number; anchorTop: number } => {
     const rect = cardEl.getBoundingClientRect()
@@ -430,7 +437,8 @@ export default function WeaponsPage() {
       {/* Count */}
       {!loading && (
         <p className="text-xs text-text-dim mb-4">
-          顯示 <Num className="text-xs">{filtered.length}</Num> / {weapons.length} 把武器
+          顯示 <Num className="text-xs">{Math.min(displayCount, filtered.length)}</Num> / {filtered.length} 把武器
+          {filtered.length !== weapons.length && <span className="ml-1">（全 {weapons.length} 把）</span>}
         </p>
       )}
 
@@ -447,7 +455,7 @@ export default function WeaponsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {filtered.map((w) => {
+          {paginated.map((w) => {
             const pilotName = w.exclusiveFor ? pilotNameMap[w.exclusiveFor] : null
 
             return (
@@ -520,6 +528,17 @@ export default function WeaponsPage() {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {!loading && displayCount < filtered.length && (
+        <div className="mt-6 text-center">
+          <button
+            className="px-6 py-2.5 rounded-xl border border-border bg-bg-card text-text-secondary text-sm hover:border-border-accent hover:text-text-primary transition-colors cursor-pointer"
+            onClick={() => setDisplayCount((n) => n + PAGE_SIZE)}
+          >
+            載入更多（{filtered.length - displayCount} 把）
+          </button>
         </div>
       )}
     </div>

@@ -1,10 +1,10 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import type {
   Pilot, Mech, Module, Weapon, Backpack, Component,
   GlobalResearch,
 } from '../types'
 import { ModuleSlot } from '../types/enums'
-import { useGameData, EMPTY_GLOBAL_RESEARCH } from '../contexts/GameDataContext'
+import { useGameData, EMPTY_GLOBAL_RESEARCH, type CollectionKey } from '../contexts/GameDataContext'
 
 // ── 通用型別 ──────────────────────────────────────────────────────────────────
 
@@ -14,15 +14,28 @@ export interface HookResult<T> {
   error: Error | null
 }
 
+// ── 內部輔助 ──────────────────────────────────────────────────────────────────
+
+function useCollections(keys: CollectionKey[]) {
+  const { loadedKeys, errorMap, ensureLoaded, reloadTick } = useGameData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { void ensureLoaded(keys) }, [ensureLoaded, reloadTick])
+  const loading = !keys.every(k => loadedKeys.has(k))
+  const error   = keys.map(k => errorMap[k]).find(Boolean) ?? null
+  return { loading, error: error ?? null }
+}
+
 // ── 機師 ──────────────────────────────────────────────────────────────────────
 
 export function usePilots(): HookResult<Pilot[]> {
-  const { pilots, loading, error } = useGameData()
+  const { pilots } = useGameData()
+  const { loading, error } = useCollections(['pilots'])
   return { data: pilots, loading, error }
 }
 
 export function usePilotNameMap(): HookResult<Record<string, string>> {
-  const { pilots, loading, error } = useGameData()
+  const { pilots } = useGameData()
+  const { loading, error } = useCollections(['pilots'])
   const data = useMemo(
     () => Object.fromEntries(pilots.map((p) => [p.id, p.name])),
     [pilots],
@@ -31,7 +44,8 @@ export function usePilotNameMap(): HookResult<Record<string, string>> {
 }
 
 export function usePilot(id: string | undefined): HookResult<Pilot | null> {
-  const { pilots, loading, error } = useGameData()
+  const { pilots } = useGameData()
+  const { loading, error } = useCollections(['pilots'])
   const data = useMemo(
     () => (id ? (pilots.find((p) => p.id === id) ?? null) : null),
     [id, pilots],
@@ -42,12 +56,14 @@ export function usePilot(id: string | undefined): HookResult<Pilot | null> {
 // ── 機甲 ──────────────────────────────────────────────────────────────────────
 
 export function useMechs(): HookResult<Mech[]> {
-  const { mechs, loading, error } = useGameData()
+  const { mechs } = useGameData()
+  const { loading, error } = useCollections(['mechs'])
   return { data: mechs, loading, error }
 }
 
 export function useMech(id: string | undefined): HookResult<Mech | null> {
-  const { mechs, loading, error } = useGameData()
+  const { mechs } = useGameData()
+  const { loading, error } = useCollections(['mechs'])
   const data = useMemo(
     () => (id ? (mechs.find((m) => m.id === id) ?? null) : null),
     [id, mechs],
@@ -56,7 +72,8 @@ export function useMech(id: string | undefined): HookResult<Mech | null> {
 }
 
 export function useMechNameMap(): HookResult<Record<string, string>> {
-  const { mechs, loading, error } = useGameData()
+  const { mechs } = useGameData()
+  const { loading, error } = useCollections(['mechs'])
   const data = useMemo(
     () => Object.fromEntries(mechs.map((m) => [m.id, m.name])),
     [mechs],
@@ -73,7 +90,8 @@ export interface MechWithModules {
 }
 
 export function useMechWithModules(id: string | undefined): HookResult<MechWithModules | null> {
-  const { mechs, modules, loading, error } = useGameData()
+  const { mechs, modules } = useGameData()
+  const { loading, error } = useCollections(['mechs', 'modules'])
 
   const data = useMemo<MechWithModules | null>(() => {
     if (!id) return null
@@ -103,19 +121,22 @@ export function useMechWithModules(id: string | undefined): HookResult<MechWithM
 // ── 模組 ──────────────────────────────────────────────────────────────────────
 
 export function useModules(): HookResult<Module[]> {
-  const { modules, loading, error } = useGameData()
+  const { modules } = useGameData()
+  const { loading, error } = useCollections(['modules'])
   return { data: modules, loading, error }
 }
 
 // ── 武器 ──────────────────────────────────────────────────────────────────────
 
 export function useWeapons(): HookResult<Weapon[]> {
-  const { weapons, loading, error } = useGameData()
+  const { weapons } = useGameData()
+  const { loading, error } = useCollections(['weapons'])
   return { data: weapons, loading, error }
 }
 
 export function useWeapon(id: string | undefined): HookResult<Weapon | null> {
-  const { weapons, loading, error } = useGameData()
+  const { weapons } = useGameData()
+  const { loading, error } = useCollections(['weapons'])
   const data = useMemo(
     () => (id ? (weapons.find((w) => w.id === id) ?? null) : null),
     [id, weapons],
@@ -124,7 +145,8 @@ export function useWeapon(id: string | undefined): HookResult<Weapon | null> {
 }
 
 export function usePilotExclusiveWeapon(pilotId: string | undefined): HookResult<Weapon | null> {
-  const { weapons, loading, error } = useGameData()
+  const { weapons } = useGameData()
+  const { loading, error } = useCollections(['weapons'])
   const data = useMemo(
     () => (pilotId ? (weapons.find((w) => w.isExclusive && w.exclusiveFor === pilotId) ?? null) : null),
     [pilotId, weapons],
@@ -133,7 +155,8 @@ export function usePilotExclusiveWeapon(pilotId: string | undefined): HookResult
 }
 
 export function usePilotExclusiveWeapons(pilotId: string | undefined): HookResult<Weapon[]> {
-  const { weapons, loading, error } = useGameData()
+  const { weapons } = useGameData()
+  const { loading, error } = useCollections(['weapons'])
   const data = useMemo(
     () => (pilotId ? weapons.filter((w) => w.isExclusive && w.exclusiveFor === pilotId) : []),
     [pilotId, weapons],
@@ -144,21 +167,24 @@ export function usePilotExclusiveWeapons(pilotId: string | undefined): HookResul
 // ── 背包 ──────────────────────────────────────────────────────────────────────
 
 export function useBackpacks(): HookResult<Backpack[]> {
-  const { backpacks, loading, error } = useGameData()
+  const { backpacks } = useGameData()
+  const { loading, error } = useCollections(['backpacks'])
   return { data: backpacks, loading, error }
 }
 
 // ── 元件 ──────────────────────────────────────────────────────────────────────
 
 export function useComponents(): HookResult<Component[]> {
-  const { components, loading, error } = useGameData()
+  const { components } = useGameData()
+  const { loading, error } = useCollections(['components'])
   return { data: components, loading, error }
 }
 
 // ── 全域科研 ──────────────────────────────────────────────────────────────────
 
 export function useGlobalResearch(): HookResult<GlobalResearch> {
-  const { globalResearch, loading, error } = useGameData()
+  const { globalResearch } = useGameData()
+  const { loading, error } = useCollections(['globalResearch'])
   return { data: globalResearch, loading, error }
 }
 
@@ -174,8 +200,11 @@ export interface AllGameData {
   globalResearch: GlobalResearch
 }
 
+const SIMULATOR_KEYS: CollectionKey[] = ['pilots', 'mechs', 'modules', 'weapons', 'backpacks', 'components', 'globalResearch']
+
 export function useAllGameData(): HookResult<AllGameData | null> {
-  const { pilots, mechs, weapons, backpacks, modules, components, globalResearch, loading, error } = useGameData()
+  const { pilots, mechs, weapons, backpacks, modules, components, globalResearch } = useGameData()
+  const { loading, error } = useCollections(SIMULATOR_KEYS)
 
   const data = useMemo<AllGameData | null>(() => {
     if (loading) return null

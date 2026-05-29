@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useComponents } from '../../hooks/useFirestore'
 import { ComponentType, ComponentsWType, ItemRarity } from '../../types/enums'
 import type { Component, ConditionComponent, FunctionComponent } from '../../types'
@@ -17,6 +17,8 @@ import {
   CONDITION_TYPE_LABELS,
   EFFECT_TYPE_LABELS,
 } from '../../components/ComponentBadges'
+
+const PAGE_SIZE = 24
 
 type TypeFilter = 'all' | 'Condition' | 'Function'
 type WFilter = 'all' | 'W' | 'Normal'
@@ -143,6 +145,9 @@ export default function ComponentsPage() {
   const [stageFilter, setStageFilter]             = useState<number | null>(null)
   const [searchText, setSearchText]               = useState('')
   const [sheetComp, setSheetComp]                 = useState<Component | null>(null)
+  const [displayCount, setDisplayCount]           = useState(PAGE_SIZE)
+
+  useEffect(() => { setDisplayCount(PAGE_SIZE) }, [typeFilter, rarityFilter, conditionTypeFilter, effectTypeFilter, wTypeFilter, stageFilter, searchText])
 
   const showConditionFilter = typeFilter === 'all' || typeFilter === 'Condition'
   const showEffectFilter    = typeFilter === 'all' || typeFilter === 'Function'
@@ -165,6 +170,8 @@ export default function ComponentsPage() {
     }
     return true
   }).sort((a, b) => (RARITY_ORDER[a.rarity] ?? 99) - (RARITY_ORDER[b.rarity] ?? 99))
+
+  const paginated = filtered.slice(0, displayCount)
 
   const filterBtn = (active: boolean) =>
     `px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
@@ -323,10 +330,10 @@ export default function ComponentsPage() {
       ) : (
         <>
           <p className="text-xs text-text-dim mb-4">
-            共 {filtered.length} 筆{isMobile ? '，點擊卡片查看詳情' : ''}
+            顯示 {Math.min(displayCount, filtered.length)} / {filtered.length} 筆{filtered.length !== components.length ? `（全 ${components.length} 筆）` : ''}{isMobile ? '，點擊卡片查看詳情' : ''}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filtered.map((comp) => {
+            {paginated.map((comp) => {
               const hasRestriction =
                 comp.allowedWeaponTypes.length > 0 &&
                 comp.allowedWeaponTypes.length < ALL_WEAPON_TYPES.length
@@ -383,6 +390,17 @@ export default function ComponentsPage() {
               )
             })}
           </div>
+
+          {displayCount < filtered.length && (
+            <div className="mt-6 text-center">
+              <button
+                className="px-6 py-2.5 rounded-xl border border-border bg-bg-card text-text-secondary text-sm hover:border-border-accent hover:text-text-primary transition-colors cursor-pointer"
+                onClick={() => setDisplayCount((n) => n + PAGE_SIZE)}
+              >
+                載入更多（{filtered.length - displayCount} 筆）
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>
