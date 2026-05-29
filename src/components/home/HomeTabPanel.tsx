@@ -16,15 +16,17 @@ interface Props {
   versions: PatchVersion[]
   loading: boolean
   error: Error | null
+  expanded: boolean
+  onToggleExpand: () => void
 }
 
-export default function HomeTabPanel({ versions, loading, error }: Props) {
+export default function HomeTabPanel({ versions, loading, error, expanded, onToggleExpand }: Props) {
   const [activeTab, setActiveTab] = useState<TabId>('quick')
 
   return (
     <div className="flex flex-col h-full w-full">
       {/* Tab bar */}
-      <div className="flex border-b border-border shrink-0">
+      <div className="flex items-stretch border-b border-border shrink-0">
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -38,6 +40,18 @@ export default function HomeTabPanel({ versions, loading, error }: Props) {
             {tab.label}
           </button>
         ))}
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Expand / collapse toggle */}
+        <button
+          onClick={onToggleExpand}
+          title={expanded ? '收縮版面' : '展開版面'}
+          className="px-4 py-3 text-xs font-[Orbitron,sans-serif] tracking-widest text-text-dim hover:text-accent-orange transition-colors cursor-pointer border-b-2 border-transparent -mb-px select-none"
+        >
+          {expanded ? '◀◀' : '▶▶'}
+        </button>
       </div>
 
       {/* Tab content — scrolls independently, does not trigger page snap */}

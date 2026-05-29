@@ -31,8 +31,9 @@ function collectVersionNames(fd: PatchVersion): Record<IconCategory, string[]> {
     for (const n of half.battlePass?.pilots ?? []) pilots.add(n)
     for (const n of half.battlePass?.mechs  ?? []) mechs.add(n)
     for (const raid of half.armamentRaids ?? []) {
-      for (const n of raid.weapons   ?? []) weapons.add(n)
-      for (const n of raid.backpacks ?? []) backpacks.add(n)
+      for (const n of raid.weapons      ?? []) weapons.add(n)
+      for (const n of raid.weaponPilots ?? []) if (n) pilots.add(n)
+      for (const n of raid.backpacks    ?? []) backpacks.add(n)
     }
   }
   for (const n of fd.crisisShop ?? []) pilots.add(n)

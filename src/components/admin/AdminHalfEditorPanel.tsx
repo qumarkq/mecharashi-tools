@@ -67,18 +67,48 @@ function ArmamentRaidEditor({
     onChange(raids.filter((_, i) => i !== idx))
   }
 
-  function addSubItem(idx: number, field: 'weapons' | 'backpacks') {
+  function addWeapon(raidIdx: number) {
+    const raid = raids[raidIdx]
+    updateRaid(raidIdx, {
+      weapons: [...(raid.weapons ?? []), ''],
+      weaponPilots: [...(raid.weaponPilots ?? new Array(raid.weapons?.length ?? 0).fill('')), ''],
+    })
+  }
+
+  function updateWeapon(raidIdx: number, wi: number, val: string) {
+    const arr = (raids[raidIdx].weapons ?? []).map((v, i) => (i === wi ? val : v))
+    updateRaid(raidIdx, { weapons: arr })
+  }
+
+  function updateWeaponPilot(raidIdx: number, wi: number, val: string) {
+    const raid = raids[raidIdx]
+    const base = raid.weaponPilots ?? new Array(raid.weapons?.length ?? 0).fill('')
+    const arr = base.map((v: string, i: number) => (i === wi ? val : v))
+    updateRaid(raidIdx, { weaponPilots: arr.some((v: string) => v) ? arr : undefined })
+  }
+
+  function removeWeapon(raidIdx: number, wi: number) {
+    const raid = raids[raidIdx]
+    const newWeapons = (raid.weapons ?? []).filter((_, i) => i !== wi)
+    const newPilots = (raid.weaponPilots ?? []).filter((_, i) => i !== wi)
+    updateRaid(raidIdx, {
+      weapons: newWeapons.length ? newWeapons : undefined,
+      weaponPilots: newPilots.some(v => v) ? newPilots : undefined,
+    })
+  }
+
+  function addSubItem(idx: number, field: 'backpacks') {
     const raid = raids[idx]
     updateRaid(idx, { [field]: [...(raid[field] ?? []), ''] })
   }
 
-  function updateSubItem(raidIdx: number, field: 'weapons' | 'backpacks', itemIdx: number, val: string) {
+  function updateSubItem(raidIdx: number, field: 'backpacks', itemIdx: number, val: string) {
     const raid = raids[raidIdx]
     const arr = (raid[field] ?? []).map((v, i) => (i === itemIdx ? val : v))
     updateRaid(raidIdx, { [field]: arr })
   }
 
-  function removeSubItem(raidIdx: number, field: 'weapons' | 'backpacks', itemIdx: number) {
+  function removeSubItem(raidIdx: number, field: 'backpacks', itemIdx: number) {
     const raid = raids[raidIdx]
     updateRaid(raidIdx, { [field]: (raid[field] ?? []).filter((_, i) => i !== itemIdx) })
   }
@@ -106,29 +136,41 @@ function ArmamentRaidEditor({
           </div>
 
           <div className="grid grid-cols-2 gap-3 ml-1">
-            {/* 武器 */}
+            {/* 武器 + 專武機師 */}
             <div>
               <div className="text-[10px] text-text-dim mb-1 tracking-wider uppercase">武器掉落</div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {(raid.weapons ?? []).map((w, wi) => (
-                  <div key={wi} className="flex gap-1">
-                    <input
-                      type="text"
-                      value={w}
-                      onChange={e => updateSubItem(idx, 'weapons', wi, e.target.value)}
-                      placeholder="武器名稱"
-                      className="flex-1 bg-bg-card border border-border rounded px-2 py-0.5 text-[11px] text-text-primary placeholder-text-dim outline-none focus:border-accent-purple/50"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeSubItem(idx, 'weapons', wi)}
-                      className="text-text-dim hover:text-accent-red text-xs w-5"
-                    >✕</button>
+                  <div key={wi} className="border border-border/50 rounded-md p-2 bg-bg-card/30 space-y-1">
+                    <div className="flex gap-1">
+                      <input
+                        type="text"
+                        value={w}
+                        onChange={e => updateWeapon(idx, wi, e.target.value)}
+                        placeholder="武器名稱"
+                        className="flex-1 bg-bg-card border border-border rounded px-2 py-0.5 text-[11px] text-text-primary placeholder-text-dim outline-none focus:border-accent-purple/50"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeWeapon(idx, wi)}
+                        className="text-text-dim hover:text-accent-red text-xs w-5"
+                      >✕</button>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-text-dim shrink-0 w-12">專武機師</span>
+                      <input
+                        type="text"
+                        value={raid.weaponPilots?.[wi] ?? ''}
+                        onChange={e => updateWeaponPilot(idx, wi, e.target.value)}
+                        placeholder="機師名稱（選填）"
+                        className="flex-1 bg-bg-card border border-border/50 rounded px-2 py-0.5 text-[11px] text-accent-cyan placeholder-text-dim outline-none focus:border-accent-cyan/50"
+                      />
+                    </div>
                   </div>
                 ))}
                 <button
                   type="button"
-                  onClick={() => addSubItem(idx, 'weapons')}
+                  onClick={() => addWeapon(idx)}
                   className="text-[10px] text-accent-cyan hover:text-accent-cyan/80 transition-colors"
                 >+ 加武器</button>
               </div>

@@ -1,6 +1,7 @@
 export interface ArmamentRaid {
   name: string
   weapons?: string[]
+  weaponPilots?: string[]  // parallel to weapons[], index-aligned exclusive pilot names
   backpacks?: string[]
 }
 
