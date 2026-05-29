@@ -12,6 +12,7 @@
 
 ### ✨ 新功能
 
+- 優化time line甘特圖顯示 (`0ebf3c1`)
 - 按需載入資料 + 各頁分頁功能 + 背包管理 (`4eca044`)
 - admin page 新增 gray ops panel (`54a5f58`)
 - 優化page對firebase的讀取頻率，降低流量 (`e4d7f63`)
