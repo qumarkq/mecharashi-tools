@@ -221,6 +221,10 @@ function ActivityGanttRow({
           <div className="flex items-center">
             <div className={`w-3 h-3 rounded-full shrink-0 ${c.dot}`} />
             <div className={`flex-1 h-px ${c.line}`} />
+            <span className={`text-[11px] font-medium px-1.5 py-0.5 border rounded shrink-0 whitespace-nowrap ${c.text} border-current/50`}>
+              {act.name}
+            </span>
+            <div className={`flex-1 h-px ${c.line}`} />
             <div className={`w-3 h-3 rounded-full shrink-0 ${c.dot}`} />
           </div>
         )}
