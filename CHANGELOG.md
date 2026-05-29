@@ -4,7 +4,7 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [Unreleased] - 2026-05-28
+## [Unreleased] - 2026-05-29
 
 ### ⚠ 重大變更
 
@@ -12,6 +12,7 @@
 
 ### ✨ 新功能
 
+- 按需載入資料 + 各頁分頁功能 + 背包管理 (`4eca044`)
 - admin page 新增 gray ops panel (`54a5f58`)
 - 優化page對firebase的讀取頻率，降低流量 (`e4d7f63`)
 - 新增 PLAN-017 計畫、精細化 Firestore 權限、調整管理後台導覽 (`521b586`)
