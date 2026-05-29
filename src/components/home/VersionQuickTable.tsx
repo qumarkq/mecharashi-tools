@@ -4,16 +4,6 @@ import type { PatchVersion } from '../../data/patchVersions'
 
 // ── Data helpers ──────────────────────────────────────────────────────────────
 
-function getArmamentRaidNames(v: PatchVersion) {
-  const seen = new Set<string>()
-  const results: string[] = []
-  for (const half of [v.upper, v.lower]) {
-    for (const r of half.armamentRaids ?? []) {
-      if (!seen.has(r.name)) { seen.add(r.name); results.push(r.name) }
-    }
-  }
-  return results
-}
 
 interface WeaponPilotPair {
   weapon: string
@@ -193,19 +183,19 @@ function WeaponPilotCell({ pairs, isPredicted, isCurrent, weaponLookup, pilotLoo
 // ── Row definitions ───────────────────────────────────────────────────────────
 
 type SplitRow = {
-  key: string; label: string; split: true;
+  key: string; label: string; split: true; raid?: never;
   fnLeft: (v: PatchVersion) => string[];
   fnRight: (v: PatchVersion) => string[];
   lookupLeft?: LookupKey;
   lookupRight?: LookupKey;
 }
 type NormalRow = {
-  key: string; label: string; split?: false; raid?: false;
+  key: string; label: string; split?: never; raid?: never;
   fn: (v: PatchVersion) => string[];
   lookup?: LookupKey;
 }
 type RaidRow = {
-  key: string; label: string; raid: true;
+  key: string; label: string; raid: true; split?: never;
   fn: (v: PatchVersion) => WeaponPilotPair[];
 }
 type RowDef = SplitRow | NormalRow | RaidRow
