@@ -292,6 +292,10 @@ export default function VersionQuickTable({ versions, loading, error }: Props) {
         <span className="text-[10px] font-bold tracking-[3px] text-accent-orange uppercase font-[Orbitron,sans-serif]">
           版本濃縮資訊
         </span>
+        <span className="text-[10px] text-text-dim shrink-0">
+          <span className="text-accent-cyan">■</span> 預測值
+          <span className="ml-1.5 text-accent-green">■</span> 台服當前
+        </span>
         {loading && <span className="text-[9px] text-text-dim animate-pulse">同步中…</span>}
         <div className="h-px flex-1 bg-border" />
         <button
@@ -407,10 +411,6 @@ export default function VersionQuickTable({ versions, loading, error }: Props) {
         </table>
       </div>
 
-      <p className="text-[10px] text-text-dim mt-1.5 text-right">
-        <span className="text-accent-cyan">■</span> 預測值
-        <span className="text-accent-green">■</span> 台服當前
-      </p>
     </div>
   )
 }

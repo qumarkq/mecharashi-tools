@@ -24,7 +24,7 @@ export default function HomeTabPanel({ versions, loading, error, expanded, onTog
   const [activeTab, setActiveTab] = useState<TabId>('quick')
 
   return (
-    <div className="flex flex-col h-full w-full">
+    <div className="flex flex-col flex-1 min-h-0 w-full">
       {/* Tab bar */}
       <div className="flex items-stretch border-b border-border shrink-0">
         {TABS.map((tab) => (
