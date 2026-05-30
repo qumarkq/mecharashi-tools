@@ -4,7 +4,7 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [Unreleased] - 2026-05-29
+## [Unreleased] - 2026-05-30
 
 ### ⚠ 重大變更
 
@@ -12,6 +12,7 @@
 
 ### ✨ 新功能
 
+- 頭像上傳改用 Cloudinary，移除 Firebase Storage 依賴 (`0e3580d`)
 - 武裝生產支援專武機師欄位 + 版本表匯出圖片 + 首頁版面展開切換 (`6a58515`)
 - 優化time line甘特圖顯示 (`0ebf3c1`)
 - 按需載入資料 + 各頁分頁功能 + 背包管理 (`4eca044`)
