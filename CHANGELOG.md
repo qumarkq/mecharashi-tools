@@ -12,6 +12,7 @@
 
 ### ✨ 新功能
 
+- 首頁站點團隊區塊 + 頭像錯誤 fallback + Firestore ADMIN/OWNER 查詢 (`42f95b1`)
 - 頭像上傳改用 Cloudinary，移除 Firebase Storage 依賴 (`0e3580d`)
 - 武裝生產支援專武機師欄位 + 版本表匯出圖片 + 首頁版面展開切換 (`6a58515`)
 - 優化time line甘特圖顯示 (`0ebf3c1`)
