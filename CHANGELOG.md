@@ -114,6 +114,7 @@
 
 ### 🔧 維護
 
+- 觸發重新部署以套用 Cloudinary upload preset (`267911c`)
 - 觸發重新部署以修復頭像上傳問題 (`8b2a838`)
 - **layout**: 更新頁尾免責聲明文字 (`2a6abe7`)
 - 更新 .gitignore 並修正 pre-push hook CI 跳過問題 (`8dcddc6`)
