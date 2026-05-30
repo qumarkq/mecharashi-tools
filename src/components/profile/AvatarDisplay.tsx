@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { usePilot } from '../../hooks/useFirestore'
 import { assetUrl } from '../../utils/assets'
 import type { UserProfile } from '../../types'
@@ -32,44 +33,36 @@ interface Props {
 }
 
 export default function AvatarDisplay({ profile, size = 'md', className = '' }: Props) {
+  const [imgError, setImgError] = useState(false)
   const isPilotMode = profile.avatarType === 'pilot'
   const { data: pilot } = usePilot(isPilotMode ? (profile.avatarPilotId ?? undefined) : undefined)
 
   const sizeClass = SIZE[size] ?? SIZE.md
   const base = `${sizeClass} rounded-full object-cover shrink-0 ${className}`
   const displayLabel = profile.gameNickname || profile.displayName
+  const onError = () => setImgError(true)
 
-  // 優先順序：用戶自選頭像（上傳/機師）> 第三方登入頭像 > 縮寫
-  if (profile.avatarType === 'upload' && profile.avatarUrl) {
+  if (!imgError && profile.avatarType === 'upload' && profile.avatarUrl) {
     return (
-      <img
-        src={profile.avatarUrl}
-        alt={displayLabel}
+      <img src={profile.avatarUrl} alt={displayLabel}
         className={`${base} border-2 border-border`}
-        draggable={false}
-      />
+        onError={onError} draggable={false} />
     )
   }
 
-  if (profile.avatarType === 'pilot' && pilot?.portrait) {
+  if (!imgError && profile.avatarType === 'pilot' && pilot?.portrait) {
     return (
-      <img
-        src={assetUrl(pilot.portrait)}
-        alt={pilot.name}
+      <img src={assetUrl(pilot.portrait)} alt={pilot.name}
         className={`${base} border-2 border-border`}
-        draggable={false}
-      />
+        onError={onError} draggable={false} />
     )
   }
 
-  if (profile.photoURL && (profile.avatarType === 'google' || !profile.avatarType)) {
+  if (!imgError && profile.photoURL && (profile.avatarType === 'google' || !profile.avatarType)) {
     return (
-      <img
-        src={profile.photoURL}
-        alt={displayLabel}
+      <img src={profile.photoURL} alt={displayLabel}
         className={`${base} border-2 border-border`}
-        draggable={false}
-      />
+        onError={onError} draggable={false} />
     )
   }
 

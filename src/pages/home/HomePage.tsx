@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { usePatchVersions } from '../../hooks/usePatchVersions'
 import HomeTabPanel from '../../components/home/HomeTabPanel'
+import SiteTeamSection from '../../components/home/SiteTeamSection'
 
 export default function HomePage() {
   const { data: versions, loading, error } = usePatchVersions()
@@ -28,10 +29,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Feature summary */}
-          <p className="text-text-dim text-sm leading-loose">
-            機甲資料庫 · 機師資料庫 · 武器資料庫 · 傷害模擬器
-          </p>
+          {/* Site team */}
+          <SiteTeamSection />
 
           {/* Scroll hint */}
           <div className="flex items-center gap-2 text-text-dim text-xs animate-bounce w-fit">

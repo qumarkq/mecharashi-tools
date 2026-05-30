@@ -10,6 +10,7 @@ import {
   query,
   orderBy,
   limit,
+  where,
 } from 'firebase/firestore'
 import { db } from './firebase'
 import type { UserProfile, UserBuild, Build, UserResearchLevels } from '../types'
@@ -58,6 +59,13 @@ export async function getAllUsers(): Promise<{ users: UserProfile[]; hasMore: bo
     users: docs.map((d) => d.data() as UserProfile),
     hasMore: snap.docs.length > USERS_FETCH_LIMIT,
   }
+}
+
+export async function getSiteTeamProfiles(): Promise<UserProfile[]> {
+  const snap = await getDocs(
+    query(collectionGroup(db, 'profile'), where('role', 'in', ['ADMIN', 'OWNER']))
+  )
+  return snap.docs.map(d => d.data() as UserProfile)
 }
 
 export async function updateUserRole(uid: string, role: 'USER' | 'ADMIN' | 'OWNER'): Promise<void> {
