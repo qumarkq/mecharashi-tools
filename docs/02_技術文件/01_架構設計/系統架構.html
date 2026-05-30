@@ -24,7 +24,7 @@
   <div class="hero-badge blue">◆ Architecture</div>
   <h1>系統架構<span>SYSTEM ARCHITECTURE</span></h1>
   <p class="hero-sub">前後端架構、部署方式、技術選型</p>
-  <div class="version-badge" style="background:var(--accent-blue);">v2.0 — Firebase Firestore</div>
+  <div class="version-badge" style="background:var(--accent-blue);">v2.1 — Firebase Firestore + Cloudinary</div>
 </header>
 
 <main class="container">
@@ -81,7 +81,11 @@
   <div class="tech-row">
     <span class="tech-tag tertiary">Firebase Auth</span>
     <span class="tech-tag tertiary">Cloud Firestore</span>
-    <span class="tech-tag tertiary">Firebase Storage</span>
+  </div>
+
+  <div class="sub-h">圖片托管</div>
+  <div class="tech-row">
+    <span class="tech-tag tertiary">Cloudinary</span>
   </div>
 
   <div class="sub-h">其他工具</div>
@@ -166,7 +170,12 @@
     <div class="card orange">
       <div class="card-icon">🔥</div>
       <h3>Firebase</h3>
-      <p>Firestore、Auth、Storage 使用 Firebase Spark（免費方案）起步，流量成長後可升級至 Blaze 計費方案。</p>
+      <p>Firestore、Auth 使用 Firebase Spark（免費方案）起步，流量成長後可升級至 Blaze 計費方案。</p>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">☁️</div>
+      <h3>Cloudinary</h3>
+      <p>用戶頭像圖片上傳與托管。前端直接以 Unsigned Upload Preset 上傳至 Cloudinary，取得 <code>secure_url</code> 後寫入 Firestore；不使用 Firebase Storage。</p>
     </div>
   </div>
 </section>

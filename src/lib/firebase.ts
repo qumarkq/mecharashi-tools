@@ -30,7 +30,6 @@ export const db = isNewApp
     })
   : getFirestore(app)
 
-export const auth    = getAuth(app)
-const storageBucket = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET
-export const storage = getStorage(app, storageBucket ? `gs://${storageBucket}` : undefined)
+export const auth = getAuth(app)
+export const storage = getStorage(app)
 export default app

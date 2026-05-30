@@ -190,6 +190,12 @@
 <span class="env-key">VITE_FIREBASE_STORAGE_BUCKET</span>=<span class="env-val">your-project-id.firebasestorage.app</span>
 <span class="env-key">VITE_FIREBASE_MESSAGING_SENDER_ID</span>=<span class="env-val">123456789012</span>
 <span class="env-key">VITE_FIREBASE_APP_ID</span>=<span class="env-val">1:123456789012:web:abcdef1234567890</span>
+
+<span class="comment"># Cloudinary — 圖片上傳（用戶頭像）</span>
+<span class="comment"># Cloud Name：Cloudinary Console → Dashboard 左上角顯示</span>
+<span class="comment"># Upload Preset：Cloudinary Console → Settings → Upload → Upload presets → 新增 Unsigned preset</span>
+<span class="env-key">VITE_CLOUDINARY_CLOUD_NAME</span>=<span class="env-val">your-cloud-name</span>
+<span class="env-key">VITE_CLOUDINARY_UPLOAD_PRESET</span>=<span class="env-val">your-upload-preset</span>
   </div>
 
   <div class="flow-steps">
@@ -212,6 +218,47 @@
       <div class="flow-content">
         <div class="flow-title">複製並填入 .env.local</div>
         <div class="flow-desc">把 firebaseConfig 物件的各欄位值對應填入 .env.local.example 並另存為 .env.local</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub-h" style="margin-top:32px;">☁️ Cloudinary Upload Preset 設定（新手步驟）</div>
+
+  <div class="info-block">
+    <strong>📌 用途</strong>
+    用戶頭像上傳改用 Cloudinary，不再使用 Firebase Storage。前端以 <strong>Unsigned Upload Preset</strong> 直接將 WebP 圖片上傳至 Cloudinary CDN，取得 <code>secure_url</code> 後寫入 Firestore <code>users/{uid}/profile/main.avatarUrl</code>。
+  </div>
+
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div class="flow-content">
+        <div class="flow-title">建立 Cloudinary 帳號</div>
+        <div class="flow-desc">前往 <strong>cloudinary.com</strong> 免費註冊；免費方案提供 25 GB 儲存與 25 GB/月 流量，足夠初期使用。</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div class="flow-content">
+        <div class="flow-title">取得 Cloud Name</div>
+        <div class="flow-desc">登入後在 Dashboard 左上角可看到 <strong>Cloud name</strong>（例如 <code>dxxxxxx</code>），填入 <code>VITE_CLOUDINARY_CLOUD_NAME</code>。</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div class="flow-content">
+        <div class="flow-title">建立 Unsigned Upload Preset</div>
+        <div class="flow-desc">Cloudinary Console → Settings（齒輪）→ Upload → Upload presets → <strong>Add upload preset</strong><br>
+          Signing Mode 選 <strong>Unsigned</strong> → 儲存後取得 Preset name，填入 <code>VITE_CLOUDINARY_UPLOAD_PRESET</code>。<br>
+          <span style="color:var(--text-dim);font-size:12px;">可選：設定 Allowed formats 為 <code>webp,jpg,png</code>；設定 Folder 為 <code>avatars</code>。</span>
+        </div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div class="flow-content">
+        <div class="flow-title">填入 .env.local</div>
+        <div class="flow-desc">在 .env.local 加入 <code>VITE_CLOUDINARY_CLOUD_NAME</code> 與 <code>VITE_CLOUDINARY_UPLOAD_PRESET</code>，重啟 Vite dev server 即可生效。</div>
       </div>
     </div>
   </div>
@@ -651,7 +698,8 @@
       <div class="flow-content">
         <div class="flow-title">在 GitHub 設定 Secrets</div>
         <div class="flow-desc">GitHub repo → Settings → Secrets and variables → Actions → New repository secret<br>
-          依序新增：<code>VITE_FIREBASE_API_KEY</code>、<code>VITE_FIREBASE_AUTH_DOMAIN</code>、<code>VITE_FIREBASE_PROJECT_ID</code>、<code>VITE_FIREBASE_STORAGE_BUCKET</code>、<code>VITE_FIREBASE_MESSAGING_SENDER_ID</code>、<code>VITE_FIREBASE_APP_ID</code>
+          Firebase 相關：<code>VITE_FIREBASE_API_KEY</code>、<code>VITE_FIREBASE_AUTH_DOMAIN</code>、<code>VITE_FIREBASE_PROJECT_ID</code>、<code>VITE_FIREBASE_STORAGE_BUCKET</code>、<code>VITE_FIREBASE_MESSAGING_SENDER_ID</code>、<code>VITE_FIREBASE_APP_ID</code><br>
+          Cloudinary 相關：<code>VITE_CLOUDINARY_CLOUD_NAME</code>、<code>VITE_CLOUDINARY_UPLOAD_PRESET</code>
         </div>
       </div>
     </div>
@@ -675,6 +723,8 @@
     <span class="env-key">VITE_FIREBASE_STORAGE_BUCKET</span>: <span class="env-val">${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}</span>
     <span class="env-key">VITE_FIREBASE_MESSAGING_SENDER_ID</span>: <span class="env-val">${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}</span>
     <span class="env-key">VITE_FIREBASE_APP_ID</span>: <span class="env-val">${{ secrets.VITE_FIREBASE_APP_ID }}</span>
+    <span class="env-key">VITE_CLOUDINARY_CLOUD_NAME</span>: <span class="env-val">${{ secrets.VITE_CLOUDINARY_CLOUD_NAME }}</span>
+    <span class="env-key">VITE_CLOUDINARY_UPLOAD_PRESET</span>: <span class="env-val">${{ secrets.VITE_CLOUDINARY_UPLOAD_PRESET }}</span>
   </div>
 
   <div class="note-block">
@@ -721,6 +771,16 @@
         <td>build 時 Firebase 變數未注入（undefined）</td>
         <td>GitHub Actions Secrets 未設定或名稱不符</td>
         <td>確認 Settings → Secrets 有所有 VITE_FIREBASE_* 變數；確認 workflow env 中引用了正確 secret 名稱</td>
+      </tr>
+      <tr>
+        <td>頭像上傳失敗（HTTP 400）</td>
+        <td>Cloudinary Upload Preset 未建立、Signing Mode 設為 Signed 而非 Unsigned，或 VITE_CLOUDINARY_* 環境變數未填入</td>
+        <td>Cloudinary Console → Settings → Upload presets 確認 preset 存在且 Signing Mode 為 <strong>Unsigned</strong>；確認 .env.local 和 GitHub Secrets 有填入正確值</td>
+      </tr>
+      <tr>
+        <td>頭像上傳後 avatarUrl 為 undefined</td>
+        <td>Cloudinary 回傳 JSON 中 <code>secure_url</code> 不存在（通常是 preset 設定錯誤）</td>
+        <td>在 browser DevTools Network 查看 Cloudinary API 回傳的完整 JSON；確認 preset 設定允許圖片格式（webp）</td>
       </tr>
     </table>
   </div>

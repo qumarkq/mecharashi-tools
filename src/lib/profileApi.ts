@@ -1,7 +1,9 @@
 import { doc, updateDoc } from 'firebase/firestore'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { db, storage } from './firebase'
+import { db } from './firebase'
 import type { GameServer } from '../types/enums'
+
+const CLOUDINARY_CLOUD_NAME  = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME  as string
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET as string
 
 const profileDoc = (uid: string) => doc(db, 'users', uid, 'profile', 'main')
 
@@ -45,18 +47,28 @@ async function compressToWebP(file: File, quality = 0.85): Promise<Blob> {
 
 // ── 公開 API ──────────────────────────────────────────────────────────────────
 
-/** 上傳頭像：壓縮為 WebP → Storage → 更新 profile */
+/** 上傳頭像：壓縮為 WebP → Cloudinary → 更新 profile */
 export async function uploadAvatar(uid: string, file: File): Promise<void> {
   if (file.size >= 2 * 1024 * 1024) {
     throw new Error('圖片超過 2MB 限制')
   }
-  const webp        = await compressToWebP(file)
-  const storageRef  = ref(storage, `avatars/${uid}/avatar.webp`)
-  await uploadBytes(storageRef, webp, { contentType: 'image/webp' })
-  const url = await getDownloadURL(storageRef)
+  const webp = await compressToWebP(file)
+
+  const formData = new FormData()
+  formData.append('file', webp)
+  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET)
+  formData.append('folder', 'avatars')
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+    { method: 'POST', body: formData },
+  )
+  if (!res.ok) throw new Error('圖片上傳失敗，請重試')
+  const data = await res.json() as { secure_url: string }
+
   await updateDoc(profileDoc(uid), {
     avatarType:    'upload',
-    avatarUrl:     url,
+    avatarUrl:     data.secure_url,
     avatarPilotId: null,
   })
 }
