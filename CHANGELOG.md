@@ -57,6 +57,7 @@
 
 ### 🐛 修復
 
+- 新增 Cloudinary 環境變數至 GitHub Actions deploy workflow (`6bd9269`)
 - 修正無法上傳頭像的BUG (`95204f4`)
 - 修正Build bug (`2b6c079`)
 - 修正武器管理頁BUG (`760024b`)
