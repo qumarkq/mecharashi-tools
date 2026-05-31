@@ -74,7 +74,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUpWithEmail = async (email: string, password: string, displayName: string) => {
     const credential = await createUserWithEmailAndPassword(auth, email, password)
     await updateProfile(credential.user, { displayName })
-    // onAuthStateChanged 可能在 updateProfile 前已跑，用 patch 確保 displayName 正確
+    // 先確保 profile 文件存在（含 role: 'USER'），再 patch displayName
+    // 若 onAuthStateChanged 搶先跑過 initUserProfile，這裡會直接跳過 create；
+    // 後續 patchUserProfile 一律是 update（不觸發 create 規則的 role 檢查）
+    await initUserProfile(credential.user.uid, {
+      displayName,
+      email: credential.user.email ?? '',
+      photoURL: credential.user.photoURL ?? undefined,
+    })
     await patchUserProfile(credential.user.uid, { displayName })
     await sendEmailVerification(credential.user)
     // 寄出驗證信後登出，使用者必須點擊連結驗證後才能正式登入
