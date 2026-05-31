@@ -12,6 +12,7 @@
 
 ### ✨ 新功能
 
+- PLAN-018 彩甲升級規劃器核心算法、型別定義與圖片資源 (`1b5efe0`)
 - 首頁新增 Discord 社群連結 (`1175f35`)
 - 首頁新增網站更新履歷區塊，調整站點團隊頭像尺寸 (`5884132`)
 - 首頁站點團隊區塊 + 頭像錯誤 fallback + Firestore ADMIN/OWNER 查詢 (`42f95b1`)
@@ -59,6 +60,7 @@
 
 ### 🐛 修復
 
+- 修正無法用MAIL註冊的BUG (`fad6dfe`)
 - 新增 Cloudinary 環境變數至 GitHub Actions deploy workflow (`6bd9269`)
 - 修正無法上傳頭像的BUG (`95204f4`)
 - 修正Build bug (`2b6c079`)
