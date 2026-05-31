@@ -3,6 +3,7 @@ import type { ChangelogMonth } from './types'
 const may2026: ChangelogMonth = {
   month: '2026-05',
   entries: [
+    { date: '2026-05-31', type: 'feat',    summary: '首頁新增 Discord 社群連結' },
     { date: '2026-05-31', type: 'feat',    summary: '首頁新增網站更新履歷區塊（可展開檢視所有更新記錄）' },
     { date: '2026-05-31', type: 'fix',     summary: '修正頭像上傳失敗的問題（Cloudinary 環境變數補齊）' },
     { date: '2026-05-31', type: 'style',   summary: '首頁版面微調' },
