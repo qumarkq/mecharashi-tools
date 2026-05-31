@@ -62,6 +62,7 @@
 
 ### 🐛 修復
 
+- 更新首頁 Discord 社群邀請連結 (`3171c83`)
 - 強化密碼重設流程，避免揭露帳號是否存在並移除無效 UI (`8a6a9a3`)
 - 修正以 Email 註冊時 photoURL undefined 導致 Firestore setDoc 失敗 (`b2d5c64`)
 - 修正無法用MAIL註冊的BUG (`fad6dfe`)
