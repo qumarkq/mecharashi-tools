@@ -60,6 +60,7 @@
 
 ### 🐛 修復
 
+- 修正以 Email 註冊時 photoURL undefined 導致 Firestore setDoc 失敗 (`b2d5c64`)
 - 修正無法用MAIL註冊的BUG (`fad6dfe`)
 - 新增 Cloudinary 環境變數至 GitHub Actions deploy workflow (`6bd9269`)
 - 修正無法上傳頭像的BUG (`95204f4`)
