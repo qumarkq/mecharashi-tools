@@ -19,9 +19,10 @@ import GuidesPage from './pages/guides/GuidesPage'
 import ProfilePage from './pages/user/ProfilePage'
 import AdminPage from './pages/user/AdminPage'
 import ComponentsPage from './pages/components/ComponentsPage'
-const WeaponDetailPage     = lazy(() => import('./pages/weapons/WeaponDetailPage'))
-const AdminVersionListPage = lazy(() => import('./pages/admin/AdminVersionListPage'))
-const AdminVersionEditorPage = lazy(() => import('./pages/admin/AdminVersionEditorPage'))
+const WeaponDetailPage         = lazy(() => import('./pages/weapons/WeaponDetailPage'))
+const AdminVersionListPage     = lazy(() => import('./pages/admin/AdminVersionListPage'))
+const AdminVersionEditorPage   = lazy(() => import('./pages/admin/AdminVersionEditorPage'))
+const RainbowMechPlannerPage   = lazy(() => import('./pages/guides/tools/RainbowMechPlannerPage'))
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
             <Route path="research" element={<ResearchPage />} />
             <Route path="news" element={<NewsPage />} />
             <Route path="guides" element={<GuidesPage />} />
+            <Route path="guides/tools/rainbow-planner" element={<Suspense fallback={null}><RainbowMechPlannerPage /></Suspense>} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="admin" element={<AdminPage />} />
             <Route

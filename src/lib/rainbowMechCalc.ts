@@ -1,192 +1,225 @@
 import type {
-  PlannerInput,
+  SlotInventory,
+  SuperFactoryResources,
+  SlotApproach,
   PlannerResult,
   SlotPlan,
-  Gold3Node,
-  Gold2Node,
-  FertPair,
   Gold1Node,
-  SlotInventory,
+  Gold3Node,
+  FertPair,
+  BuyList,
 } from '../types/mechUpgrade'
 import type { MechPartPosition } from '../types/enums'
 
-// ─── 內部狀態 ─────────────────────────────────────────────────────────────────
+// ─── 規則摘要 ─────────────────────────────────────────────────────────────────
+//
+// 每部位需 2 個金三才能彩甲。一個金三可由以下方式取得：
+//   · 自有金三
+//   · 超級工廠 S++（萬能金三，免費但有限）
+//   · 自有金二 → 金三（+2 肥料）
+//   · 自有金一「錨點」+ 搭配（自有金一 / S零件 / 通用改進）→ 金二 → 金三（+2 肥料）
+//   · 核心金三：核心改進原始(金1) + 通用改進 → 核心金二 → +2 肥料 → 核心金三（每部位上限 1）
+//
+// 關鍵限制：
+//   1. 一次金二合成的兩個金一中至少一個是「真實零件」(自有 或 核心原始)；
+//      替代品(S零件 / 通用)不能彼此或自我配對 → 每個合成金三都要消耗 1 個自有金一當錨點。
+//   2. 核心金三每部位最多 1 個，且至少要有 1 個金三來自該部位自有材料，
+//      因此「完全沒有任何零件」的部位無法升級。
 
-/** 跨部位共用的可消耗資源池（mutable） */
-interface ResourcePool {
-  sfS:      number
-  sfSp:     number
-  sfSpp:    number
-  universal: number
-  coreGold3: number
-  fertPool:  number   // 跨部位散件金二，僅供肥料
-  // 使用量紀錄
-  sfSUsed:       number
-  sfSpUsed:      number
-  sfSppUsed:     number
-  universalUsed: number
-  coreGold3Used: number
+interface Pool {
+  sfS:     number
+  sfSp:    number
+  crossG2: number
+  sUsed:   number
+  spUsed:  number
+  sppUsed: number
 }
 
-/** 單部位消耗追蹤（mutable） */
-interface SlotState {
-  g1: number
-  g2: number
+/** 一個部位扣除 S++ 後的生產分解 */
+interface Breakdown {
+  ownG3:     number   // 自有金三（直接算入）
+  spp:       number   // 用 S++ 生產
+  g2targets: number   // 自有金二當目標
+  anchored:  number   // 自有金一錨定合成
+  gaps:      number   // 無錨點 → 核心 / 缺料
+  extraG1:   number   // 錨定後剩餘自有金一（可當搭配）
 }
 
-// ─── 節點規劃函式 ─────────────────────────────────────────────────────────────
-
-function planGold1(state: SlotState, pool: ResourcePool): Gold1Node {
-  if (state.g1 > 0)    { state.g1--;    return { source: 'owned' } }
-  if (pool.sfS > 0)    { pool.sfS--;    pool.sfSUsed++;    return { source: 'sf_s' } }
-  if (pool.universal > 0) { pool.universal--; pool.universalUsed++; return { source: 'universal' } }
-  return { source: 'shortage' }
+function breakdown(inv: SlotInventory, spp: number): Breakdown {
+  const ownG3 = Math.min(inv.gold3, 2)
+  const need = Math.max(0, 2 - ownG3)
+  const usedSpp = Math.min(spp, need)
+  const remaining = need - usedSpp
+  const g2targets = Math.min(remaining, inv.gold2)
+  const anchored = Math.min(remaining - g2targets, inv.gold1)
+  const gaps = remaining - g2targets - anchored
+  return { ownG3, spp: usedSpp, g2targets, anchored, gaps, extraG1: inv.gold1 - anchored }
 }
 
-function planTargetGold2(state: SlotState, pool: ResourcePool): Gold2Node {
-  if (state.g2 > 0) { state.g2--; return { source: 'owned' } }
-  // 需從金一合成
-  const gold1a = planGold1(state, pool)
-  const gold1b = planGold1(state, pool)
-  return { source: 'synth', gold1a, gold1b }
+// ─── 階段一：全域分配 S++ ──────────────────────────────────────────────────────
+//
+// 成本權重：1 通用 = 1；1 缺料(需核心) = 3（核心原始 + 通用 + 肥料，較貴）。
+
+const CORE_WEIGHT = 3
+
+function buyCost(inv: SlotInventory, spp: number): number {
+  const b = breakdown(inv, spp)
+  const wildcardPartners = Math.max(0, b.anchored - b.extraG1)  // 搭配無法以剩餘自有金一補的數量
+  return wildcardPartners + b.gaps * CORE_WEIGHT
 }
 
-function planFerts(state: SlotState, pool: ResourcePool): FertPair {
-  // S+ 優先（1個 S+ 涵蓋兩個肥料）
+/** 該部位最多能有意義地使用幾個 S++（需保留至少 1 個自有金三來源） */
+function maxSpp(inv: SlotInventory): number {
+  const ownG3 = Math.min(inv.gold3, 2)
+  const need = Math.max(0, 2 - ownG3)
+  if (need === 0) return 0
+  const ownBasedSources = inv.gold1 + inv.gold2
+  const requiredOwnBased = ownG3 > 0 ? 0 : 1
+  if (ownBasedSources < requiredOwnBased) return 0   // 完全無自有 → 不可行，不浪費 S++
+  return Math.max(0, need - requiredOwnBased)
+}
+
+function allocateSpp(parts: SlotInventory[], sppTotal: number): Record<MechPartPosition, number> {
+  const alloc: Record<string, number> = {}
+  for (const p of parts) alloc[p.slot] = 0
+  if (sppTotal <= 0) return alloc as Record<MechPartPosition, number>
+
+  const entries: { slot: MechPartPosition; benefit: number }[] = []
+  for (const inv of parts) {
+    const cap = maxSpp(inv)
+    for (let s = 0; s < cap; s++) {
+      entries.push({ slot: inv.slot, benefit: buyCost(inv, s) - buyCost(inv, s + 1) })
+    }
+  }
+  entries.sort((a, b) => b.benefit - a.benefit)
+  for (let i = 0; i < entries.length && i < sppTotal; i++) alloc[entries[i].slot]++
+  return alloc as Record<MechPartPosition, number>
+}
+
+// ─── 階段二：逐部位建構合成樹 ─────────────────────────────────────────────────
+
+function planFerts(state: { g2: number }, pool: Pool, buy: BuyList): FertPair {
   if (pool.sfSp > 0) {
-    pool.sfSp--; pool.sfSpUsed++
+    pool.sfSp--; pool.spUsed++
     return { usedSp: true, fert1: 'owned', fert2: 'owned' }
   }
-  const getFert = (): 'owned' | 'shortage' => {
-    if (state.g2 > 0)       { state.g2--;       return 'owned' }
-    if (pool.fertPool > 0)  { pool.fertPool--;   return 'owned' }
-    return 'shortage'
+  const getFert = (): 'owned' | 'buy' => {
+    if (state.g2 > 0)     { state.g2--;     return 'owned' }
+    if (pool.crossG2 > 0) { pool.crossG2--; return 'owned' }
+    buy.fertBuy++
+    return 'buy'
   }
   return { usedSp: false, fert1: getFert(), fert2: getFert() }
 }
 
-/**
- * 規劃部位的第 gold3Idx 個金三（0 或 1）。
- * 消耗順序：已擁有 → S++ → 核心金三 → 合成（目標金二 + 肥料）。
- */
-function planGold3(
-  gold3Idx:   number,
-  gold3Owned: number,
-  state:      SlotState,
-  pool:       ResourcePool,
-): Gold3Node {
-  if (gold3Owned > gold3Idx) return { source: 'owned' }
-  if (pool.sfSpp > 0)        { pool.sfSpp--;    pool.sfSppUsed++;    return { source: 'sf_spp' } }
-  if (pool.coreGold3 > 0)    { pool.coreGold3--; pool.coreGold3Used++; return { source: 'coreGold3' } }
+function processSlot(
+  inv:        SlotInventory,
+  approach:   SlotApproach,
+  sppForSlot: number,
+  pool:       Pool,
+): SlotPlan {
+  const state = { g2: inv.gold2 }
+  const buy: BuyList = { universal: 0, fertBuy: 0, coreRaw: 0 }
+  const before = { s: pool.sUsed, sp: pool.spUsed, spp: pool.sppUsed }
 
-  const targetGold2 = planTargetGold2(state, pool)
-  const ferts       = planFerts(state, pool)
-  return { source: 'synth', targetGold2, ferts }
-}
+  const b = breakdown(inv, sppForSlot)
+  const feasible = b.ownG3 > 0 || inv.gold1 + inv.gold2 > 0
+  let partnerOwn = b.extraG1   // 剩餘自有金一可當搭配
+  let shortage = 0
 
-// ─── 缺口分析 ─────────────────────────────────────────────────────────────────
+  const nodes: Gold3Node[] = []
 
-function gold3HasShortage(node: Gold3Node): boolean {
-  if (node.source !== 'synth') return false
-  const g2 = node.targetGold2!
-  if (g2.source === 'synth') {
-    if (g2.gold1a?.source === 'shortage' || g2.gold1b?.source === 'shortage') return true
+  // 自有金三
+  for (let i = 0; i < b.ownG3; i++) nodes.push({ source: 'owned' })
+
+  // 自有金二當目標
+  for (let i = 0; i < b.g2targets; i++) {
+    state.g2--
+    nodes.push({ source: 'synth', targetGold2: { source: 'owned' }, ferts: planFerts(state, pool, buy) })
   }
-  const f = node.ferts!
-  return !f.usedSp && (f.fert1 === 'shortage' || f.fert2 === 'shortage')
-}
 
-function countShortages(a: Gold3Node, b: Gold3Node): { gold1: number; fert: number } {
-  let gold1 = 0
-  let fert  = 0
-  for (const node of [a, b]) {
-    if (node.source !== 'synth') continue
-    const g2 = node.targetGold2!
-    if (g2.source === 'synth') {
-      if (g2.gold1a?.source === 'shortage') gold1++
-      if (g2.gold1b?.source === 'shortage') gold1++
-    }
-    const f = node.ferts!
-    if (!f.usedSp) {
-      if (f.fert1 === 'shortage') fert++
-      if (f.fert2 === 'shortage') fert++
+  // 自有金一錨定合成（錨點必為自有；搭配 = 剩餘自有 → S零件 → 通用）
+  for (let i = 0; i < b.anchored; i++) {
+    let partner: Gold1Node
+    if (partnerOwn > 0)    { partnerOwn--;  partner = { source: 'owned' } }
+    else if (pool.sfS > 0) { pool.sfS--; pool.sUsed++; partner = { source: 'sf_s' } }
+    else                   { buy.universal++; partner = { source: 'universal' } }
+    nodes.push({
+      source: 'synth',
+      targetGold2: { source: 'synth', gold1a: { source: 'owned' }, gold1b: partner },
+      ferts: planFerts(state, pool, buy),
+    })
+  }
+
+  // S++（萬能金三）
+  for (let i = 0; i < b.spp; i++) { pool.sppUsed++; nodes.push({ source: 'sf_spp' }) }
+
+  // 缺口：核心金三（上限 1）或缺料
+  for (let i = 0; i < b.gaps; i++) {
+    if (approach === 'core') {
+      buy.coreRaw++; buy.universal++
+      nodes.push({
+        source: 'core',
+        targetGold2: { source: 'synth', gold1a: { source: 'core_raw' }, gold1b: { source: 'universal' } },
+        ferts: planFerts(state, pool, buy),
+      })
+    } else {
+      shortage++
+      nodes.push({ source: 'shortage' })
     }
   }
-  return { gold1, fert }
-}
 
-function buildShortageMessages(a: Gold3Node, b: Gold3Node): string[] {
-  const { gold1, fert } = countShortages(a, b)
-  const msgs: string[] = []
-  if (gold1 > 0) msgs.push(`缺少金一 ×${gold1}`)
-  if (fert  > 0) msgs.push(`缺少金二肥料 ×${fert}`)
-  return msgs
+  pool.crossG2 += state.g2   // 剩餘自有金二供跨部位作肥料
+
+  return {
+    slot: inv.slot, approach,
+    gold3a: nodes[0] ?? { source: 'shortage' },
+    gold3b: nodes[1] ?? { source: 'shortage' },
+    buy,
+    sfUsed: { s: pool.sUsed - before.s, sp: pool.spUsed - before.sp, spp: pool.sppUsed - before.spp },
+    feasible, shortage,
+  }
 }
 
 // ─── 主計算函式 ───────────────────────────────────────────────────────────────
 
-function processSlot(inv: SlotInventory, pool: ResourcePool): SlotPlan {
-  const state: SlotState = { g1: inv.gold1, g2: inv.gold2 }
-
-  const gold3a = planGold3(0, inv.gold3, state, pool)
-  const gold3b = planGold3(1, inv.gold3, state, pool)
-
-  // 剩餘的同部位金二可作為其他部位的肥料
-  pool.fertPool += state.g2
-
-  const canRainbow = !gold3HasShortage(gold3a) && !gold3HasShortage(gold3b)
-  const shortages  = canRainbow ? [] : buildShortageMessages(gold3a, gold3b)
-
-  return { slot: inv.slot, gold3a, gold3b, canRainbow, shortages }
-}
-
-/**
- * 彩甲升級最優路線計算。
- *
- * 策略優先序：
- * 1. S++ / 核心金三 優先分給「已有 1 個金三」的部位（一步達成彩甲）
- * 2. S+ 優先用於肥料需求（S+ 用完才用散件金二）
- * 3. S / 通用模組 補充金一缺口
- * 4. 同部位剩餘金二自動流入肥料池供其他部位使用
- */
-export function calculateRainbowPlan(input: PlannerInput): PlannerResult {
-  const sf = input.superFactory
-  const pool: ResourcePool = {
-    sfS:      sf.enabled ? sf.sCount   : 0,
-    sfSp:     sf.enabled ? sf.spCount  : 0,
-    sfSpp:    sf.enabled ? sf.sppCount : 0,
-    universal:  input.modules.universal,
-    coreGold3:  input.modules.coreGold3,
-    fertPool:   input.gold2FertPool,
-    sfSUsed:       0,
-    sfSpUsed:      0,
-    sfSppUsed:     0,
-    universalUsed: 0,
-    coreGold3Used: 0,
+export function calculateRainbowPlan(
+  parts:      SlotInventory[],
+  sf:         SuperFactoryResources,
+  approaches: Record<MechPartPosition, SlotApproach>,
+): PlannerResult {
+  const pool: Pool = {
+    sfS:     sf.enabled ? sf.sCount  : 0,
+    sfSp:    sf.enabled ? sf.spCount : 0,
+    crossG2: 0,
+    sUsed: 0, spUsed: 0, sppUsed: 0,
   }
 
-  // 排序：gold3===1 的部位優先（S++/核心金三 效益最高）
-  const sortPriority = (inv: SlotInventory): number =>
-    inv.gold3 === 1 ? 0 : inv.gold3 === 0 ? 1 : 2
+  const sppAlloc = allocateSpp(parts, sf.enabled ? sf.sppCount : 0)
 
-  const sorted = [...input.parts].sort((a, b) => sortPriority(a) - sortPriority(b))
+  // 先處理會釋出剩餘金二的部位，讓跨部位肥料池盡早可用
+  const order = [...parts].sort((a, b) => {
+    const surplus = (p: SlotInventory) => p.gold2 - 2 * Math.max(0, 2 - Math.min(p.gold3, 2))
+    return surplus(b) - surplus(a)
+  })
 
-  // 記錄原始順序，結果按原順序輸出
-  const originalOrder = input.parts.map(p => p.slot)
   const slotMap = new Map<MechPartPosition, SlotPlan>()
-
-  for (const inv of sorted) {
-    slotMap.set(inv.slot, processSlot(inv, pool))
+  for (const inv of order) {
+    const approach = approaches[inv.slot] ?? 'universal'
+    slotMap.set(inv.slot, processSlot(inv, approach, sppAlloc[inv.slot] ?? 0, pool))
   }
 
-  const slots = originalOrder
-    .filter(slot => slotMap.has(slot))
-    .map(slot => slotMap.get(slot)!)
+  const slots = parts.map(p => slotMap.get(p.slot)!).filter(Boolean)
+
+  const totalBuy: BuyList = {
+    universal: slots.reduce((s, p) => s + p.buy.universal, 0),
+    fertBuy:   slots.reduce((s, p) => s + p.buy.fertBuy, 0),
+    coreRaw:   slots.reduce((s, p) => s + p.buy.coreRaw, 0),
+  }
 
   return {
     slots,
-    rainbowCount: slots.filter(p => p.canRainbow).length,
-    sfUsed:      { s: pool.sfSUsed, sp: pool.sfSpUsed, spp: pool.sfSppUsed },
-    modulesUsed: { universal: pool.universalUsed, coreGold3: pool.coreGold3Used },
+    totalBuy,
+    sfUsed: { s: pool.sUsed, sp: pool.spUsed, spp: pool.sppUsed },
   }
 }
