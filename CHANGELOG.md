@@ -4,7 +4,7 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.0.0/)，版本號遵循 [Semantic Versioning](https://semver.org/lang/zh-TW/)。
 
-## [Unreleased] - 2026-05-30
+## [Unreleased] - 2026-05-31
 
 ### ⚠ 重大變更
 
@@ -12,6 +12,7 @@
 
 ### ✨ 新功能
 
+- 首頁新增網站更新履歷區塊，調整站點團隊頭像尺寸 (`5884132`)
 - 首頁站點團隊區塊 + 頭像錯誤 fallback + Firestore ADMIN/OWNER 查詢 (`42f95b1`)
 - 頭像上傳改用 Cloudinary，移除 Firebase Storage 依賴 (`0e3580d`)
 - 武裝生產支援專武機師欄位 + 版本表匯出圖片 + 首頁版面展開切換 (`6a58515`)
