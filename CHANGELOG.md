@@ -12,6 +12,7 @@
 
 ### ✨ 新功能
 
+- 首頁新增 Discord 社群連結 (`1175f35`)
 - 首頁新增網站更新履歷區塊，調整站點團隊頭像尺寸 (`5884132`)
 - 首頁站點團隊區塊 + 頭像錯誤 fallback + Firestore ADMIN/OWNER 查詢 (`42f95b1`)
 - 頭像上傳改用 Cloudinary，移除 Firebase Storage 依賴 (`0e3580d`)
