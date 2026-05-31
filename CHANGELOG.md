@@ -13,6 +13,7 @@
 ### ✨ 新功能
 
 - PLAN-018 彩甲升級規劃器工具頁完成（規劃器 UI、計算結果展示與路由整合） (`79e3051`)
+- **ui**: 新增 Email 密碼重設功能 (`3a6bb24`)
 - PLAN-018 彩甲升級規劃器核心算法、型別定義與圖片資源 (`1b5efe0`)
 - 首頁新增 Discord 社群連結 (`1175f35`)
 - 首頁新增網站更新履歷區塊，調整站點團隊頭像尺寸 (`5884132`)
@@ -61,6 +62,7 @@
 
 ### 🐛 修復
 
+- 強化密碼重設流程，避免揭露帳號是否存在並移除無效 UI (`8a6a9a3`)
 - 修正以 Email 註冊時 photoURL undefined 導致 Firestore setDoc 失敗 (`b2d5c64`)
 - 修正無法用MAIL註冊的BUG (`fad6dfe`)
 - 新增 Cloudinary 環境變數至 GitHub Actions deploy workflow (`6bd9269`)
