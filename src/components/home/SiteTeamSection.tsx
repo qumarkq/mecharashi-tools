@@ -6,7 +6,7 @@ function TeamCard({ profile }: { profile: UserProfile }) {
   return (
     <div className="relative group cursor-default">
       <div className="rounded-full ring-2 ring-transparent group-hover:ring-accent-orange/60 transition-all duration-200">
-        <AvatarDisplay profile={profile} size="lg" />
+        <AvatarDisplay profile={profile} size="md" />
       </div>
       <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-20 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-150">
         <div className="bg-bg-dark border border-border rounded-lg px-3 py-2 text-xs text-left whitespace-nowrap shadow-lg">

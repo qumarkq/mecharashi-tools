@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { usePatchVersions } from '../../hooks/usePatchVersions'
 import HomeTabPanel from '../../components/home/HomeTabPanel'
 import SiteTeamSection from '../../components/home/SiteTeamSection'
+import SiteChangelog from '../../components/home/SiteChangelog'
 
 export default function HomePage() {
   const { data: versions, loading, error } = usePatchVersions()
@@ -28,6 +29,9 @@ export default function HomePage() {
               獾迎你的到來！
             </p>
           </div>
+
+          {/* Site changelog */}
+          <SiteChangelog />
 
           {/* Site team */}
           <SiteTeamSection />
