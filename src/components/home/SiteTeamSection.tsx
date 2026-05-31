@@ -43,7 +43,7 @@ const COMMUNITY_LINKS: CommunityLink[] = [
   },
   {
     label: 'Discord 社群',
-    href: 'https://discord.gg/7d2YcYd',
+    href: 'https://discord.gg/bgQP4RDrKC',
     accentColor: '#5865F2',
     icon: (
       <svg viewBox="0 0 20 20" className="w-5 h-5 shrink-0" fill="none">
