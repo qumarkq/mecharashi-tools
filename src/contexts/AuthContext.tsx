@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const profile = await initUserProfile(u.uid, {
           displayName: u.displayName ?? u.email ?? 'User',
           email: u.email ?? '',
-          photoURL: u.photoURL ?? undefined,
+          ...(u.photoURL ? { photoURL: u.photoURL } : {}),
         })
         if (!cancelled) {
           setUserProfile(profile)
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await initUserProfile(credential.user.uid, {
       displayName,
       email: credential.user.email ?? '',
-      photoURL: credential.user.photoURL ?? undefined,
+      ...(credential.user.photoURL ? { photoURL: credential.user.photoURL } : {}),
     })
     await patchUserProfile(credential.user.uid, { displayName })
     await sendEmailVerification(credential.user)
