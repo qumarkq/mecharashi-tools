@@ -8,6 +8,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendEmailVerification,
+  sendPasswordResetEmail,
   updateProfile,
 } from 'firebase/auth'
 import { auth } from '../lib/firebase'
@@ -23,6 +24,7 @@ interface AuthContextValue {
   signOut: () => Promise<void>
   signUpWithEmail: (email: string, password: string, displayName: string) => Promise<void>
   signInWithEmail: (email: string, password: string) => Promise<void>
+  sendPasswordReset: (email: string) => Promise<void>
   openAuthModal: () => void
   refreshProfile: () => Promise<void>
 }
@@ -97,6 +99,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const sendPasswordReset = async (email: string) => {
+    await sendPasswordResetEmail(auth, email)
+  }
+
   const openAuthModal = () => setModalOpen(true)
 
   const refreshProfile = async () => {
@@ -107,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, userProfile, loading, signIn, signOut, signUpWithEmail, signInWithEmail, openAuthModal, refreshProfile }}
+      value={{ user, userProfile, loading, signIn, signOut, signUpWithEmail, signInWithEmail, sendPasswordReset, openAuthModal, refreshProfile }}
     >
       {children}
       <AuthModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />

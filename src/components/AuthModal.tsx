@@ -23,9 +23,9 @@ function parseFirebaseError(e: unknown): string {
 }
 
 export default function AuthModal({ isOpen, onClose }: Props) {
-  const { signIn, signInWithEmail, signUpWithEmail } = useAuth()
+  const { signIn, signInWithEmail, signUpWithEmail, sendPasswordReset } = useAuth()
   const [tab, setTab] = useState<'google' | 'email'>('google')
-  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [mode, setMode] = useState<'login' | 'register' | 'reset'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -34,6 +34,7 @@ export default function AuthModal({ isOpen, onClose }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [verifyPending, setVerifyPending] = useState(false)
   const [pendingEmail, setPendingEmail] = useState('')
+  const [resetSent, setResetSent] = useState(false)
 
   if (!isOpen) return null
 
@@ -45,16 +46,19 @@ export default function AuthModal({ isOpen, onClose }: Props) {
     setError(null)
     setVerifyPending(false)
     setPendingEmail('')
+    setResetSent(false)
   }
 
   function switchTab(t: 'google' | 'email') {
     setTab(t)
     setError(null)
+    setResetSent(false)
   }
 
-  function switchMode(m: 'login' | 'register') {
+  function switchMode(m: 'login' | 'register' | 'reset') {
     setMode(m)
     setError(null)
+    setResetSent(false)
   }
 
   async function handleGoogle() {
@@ -63,6 +67,25 @@ export default function AuthModal({ isOpen, onClose }: Props) {
     try {
       await signIn()
       onClose()
+    } catch (e) {
+      setError(parseFirebaseError(e))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handlePasswordReset() {
+    setError(null)
+    setResetSent(false)
+    const targetEmail = email.trim()
+    if (!targetEmail) {
+      setError('請先輸入 Email')
+      return
+    }
+    setSubmitting(true)
+    try {
+      await sendPasswordReset(targetEmail)
+      setResetSent(true)
     } catch (e) {
       setError(parseFirebaseError(e))
     } finally {
@@ -177,31 +200,79 @@ export default function AuthModal({ isOpen, onClose }: Props) {
             {/* Email */}
             {tab === 'email' && (
               <div>
-                {/* Login / Register toggle */}
-                <div className="flex gap-1 mb-4 border-b border-border pb-3">
-                  <button
-                    onClick={() => switchMode('login')}
-                    className={`px-3 py-1 rounded-md text-xs transition-colors ${
-                      mode === 'login'
-                        ? 'text-accent-orange bg-accent-orange/10 font-medium'
-                        : 'text-text-dim hover:text-text-secondary'
-                    }`}
-                  >
-                    已有帳號，直接登入
-                  </button>
-                  <button
-                    onClick={() => switchMode('register')}
-                    className={`px-3 py-1 rounded-md text-xs transition-colors ${
-                      mode === 'register'
-                        ? 'text-accent-orange bg-accent-orange/10 font-medium'
-                        : 'text-text-dim hover:text-text-secondary'
-                    }`}
-                  >
-                    建立新帳號
-                  </button>
-                </div>
+                {mode !== 'reset' && (
+                  <div className="flex gap-1 mb-4 border-b border-border pb-3">
+                    <button
+                      onClick={() => switchMode('login')}
+                      className={`px-3 py-1 rounded-md text-xs transition-colors ${
+                        mode === 'login'
+                          ? 'text-accent-orange bg-accent-orange/10 font-medium'
+                          : 'text-text-dim hover:text-text-secondary'
+                      }`}
+                    >
+                      已有帳號，直接登入
+                    </button>
+                    <button
+                      onClick={() => switchMode('register')}
+                      className={`px-3 py-1 rounded-md text-xs transition-colors ${
+                        mode === 'register'
+                          ? 'text-accent-orange bg-accent-orange/10 font-medium'
+                          : 'text-text-dim hover:text-text-secondary'
+                      }`}
+                    >
+                      建立新帳號
+                    </button>
+                  </div>
+                )}
 
-                <form onSubmit={handleEmailSubmit} className="space-y-3">
+                {mode === 'reset' && (
+                  <div className="mb-4 border-b border-border pb-4">
+                    <button
+                      onClick={() => switchMode('login')}
+                      className="text-xs text-text-dim hover:text-accent-orange transition-colors mb-3"
+                    >
+                      ← 返回登入
+                    </button>
+                    <h3 className="text-base font-bold text-text-primary mb-1">重設密碼</h3>
+                    <p className="text-xs text-text-dim">
+                      輸入註冊 Email，我們會寄送密碼重設連結到你的信箱。
+                    </p>
+                  </div>
+                )}
+
+                {mode === 'reset' ? (
+                  <div className="space-y-3">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Email"
+                      required
+                      autoComplete="email"
+                      className="w-full px-3 py-2 rounded-lg bg-bg-dark border border-border text-text-primary text-sm focus:outline-none focus:border-accent-orange placeholder:text-text-dim"
+                    />
+
+                    {error && <p className="text-xs text-accent-red">{error}</p>}
+                    {resetSent && (
+                      <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-3">
+                        <p className="text-sm font-medium text-green-400 mb-1">重設密碼信已寄出</p>
+                        <p className="text-xs text-text-dim">
+                          請前往信箱查收連結，完成後回來用新密碼登入。
+                        </p>
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={handlePasswordReset}
+                      disabled={submitting}
+                      className="w-full py-2.5 bg-accent-orange text-black font-bold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 text-sm"
+                    >
+                      {submitting ? '寄送中...' : '寄送重設密碼信'}
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleEmailSubmit} className="space-y-3">
                   {mode === 'register' && (
                     <input
                       type="text"
@@ -226,7 +297,7 @@ export default function AuthModal({ isOpen, onClose }: Props) {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="密碼（至少 6 個字元）"
+                    placeholder={mode === 'register' ? '密碼（至少 6 個字元）' : '密碼'}
                     required
                     minLength={6}
                     autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
@@ -245,6 +316,11 @@ export default function AuthModal({ isOpen, onClose }: Props) {
                   )}
 
                   {error && <p className="text-xs text-accent-red">{error}</p>}
+                  {resetSent && (
+                    <p className="text-xs text-green-400">
+                      重設密碼信已寄出，請前往信箱查收。
+                    </p>
+                  )}
 
                   <button
                     type="submit"
@@ -253,7 +329,18 @@ export default function AuthModal({ isOpen, onClose }: Props) {
                   >
                     {submitting ? '處理中...' : mode === 'register' ? '建立帳號' : '登入'}
                   </button>
-                </form>
+                  {mode === 'login' && (
+                    <button
+                      type="button"
+                      onClick={() => switchMode('reset')}
+                      disabled={submitting}
+                      className="w-full text-xs text-text-dim hover:text-accent-orange transition-colors disabled:opacity-50"
+                    >
+                      忘記密碼？
+                    </button>
+                  )}
+                  </form>
+                )}
               </div>
             )}
           </>
