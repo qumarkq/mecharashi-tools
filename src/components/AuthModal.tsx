@@ -53,6 +53,7 @@ export default function AuthModal({ isOpen, onClose }: Props) {
     setTab(t)
     setError(null)
     setResetSent(false)
+    if (mode === 'reset') setMode('login')
   }
 
   function switchMode(m: 'login' | 'register' | 'reset') {
@@ -85,12 +86,17 @@ export default function AuthModal({ isOpen, onClose }: Props) {
     setSubmitting(true)
     try {
       await sendPasswordReset(targetEmail)
-      setResetSent(true)
     } catch (e) {
-      setError(parseFirebaseError(e))
+      // 帳號不存在時不揭露（避免 email enumeration），其餘錯誤才提示
+      const code = (e as { code?: string }).code
+      if (code !== 'auth/user-not-found') {
+        setError(parseFirebaseError(e))
+        return
+      }
     } finally {
       setSubmitting(false)
     }
+    setResetSent(true)
   }
 
   async function handleEmailSubmit(e: React.FormEvent) {
@@ -316,11 +322,6 @@ export default function AuthModal({ isOpen, onClose }: Props) {
                   )}
 
                   {error && <p className="text-xs text-accent-red">{error}</p>}
-                  {resetSent && (
-                    <p className="text-xs text-green-400">
-                      重設密碼信已寄出，請前往信箱查收。
-                    </p>
-                  )}
 
                   <button
                     type="submit"
