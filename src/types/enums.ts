@@ -232,6 +232,18 @@ export const BuffType = {
 } as const;
 export type BuffType = typeof BuffType[keyof typeof BuffType];
 
+// ─── 關卡（PLAN-019 Layer 3）─────────────────────────────────────────────────
+
+// 高難度關卡分類（用於 Stage.category）
+export const StageCategory = {
+  CRISIS: '危境',   // 危境重構
+  ABYSS:  '深淵',   // 深淵 / 高難度挑戰
+  EVENT:  '活動',   // 限時活動關卡
+  RAID:   '討伐',   // 武裝討伐
+  OTHER:  '其他',
+} as const;
+export type StageCategory = typeof StageCategory[keyof typeof StageCategory];
+
 // ─── 元件 ────────────────────────────────────────────────────────────────────
 
 // 對應 WIKI mQuery ModuleType

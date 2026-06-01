@@ -5,7 +5,7 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import { db, storage } from '../../lib/firebase'
 import type { PatchVersion, PatchHalf, VersionIconUrls } from '../../data/patchVersions/types'
 import type { Pilot, Mech, Weapon, Backpack } from '../../types'
-import { assetUrl } from '../../utils/assets'
+import { resolveIconSrc } from '../../utils/assets'
 import { invalidatePatchVersionsCache } from '../../hooks/usePatchVersions'
 import AdminHalfEditorPanel from '../../components/admin/AdminHalfEditorPanel'
 
@@ -178,11 +178,12 @@ export default function AdminVersionEditorPage() {
         getDocs(collection(db, 'backpacks')),
       ])
 
+      // 一律優先採用本地圖檔路徑（/images/...），無本地圖時才退回遠端 CDN
       const pilots: Record<string, string> = {}
       for (const d of pilotSnap.docs) {
         const p = d.data() as Pilot
         if (!pSet.has(p.name)) continue
-        const url = p.portraitUrl ?? (p.portrait ? assetUrl(p.portrait) : undefined)
+        const url = p.portrait || p.portraitUrl
         if (url) pilots[p.name] = url
       }
 
@@ -191,7 +192,7 @@ export default function AdminVersionEditorPage() {
         const m = d.data() as Mech
         if (!mSet.has(m.name)) continue
         const url = m.portrait
-          ? assetUrl(m.portrait)
+          ? m.portrait
           : m.parts.torso.mechaIcon
             ? `${CDN_BASE}/waparts/${m.parts.torso.mechaIcon}.png`
             : undefined
@@ -203,7 +204,7 @@ export default function AdminVersionEditorPage() {
         const w = d.data() as Weapon
         if (!wSet.has(w.name)) continue
         const filename = w.icon?.split('/').pop()
-        if (filename) weapons[w.name] = `${CDN_BASE}/weapons/${filename}`
+        if (filename) weapons[w.name] = `/images/weapons/${filename}`
       }
 
       const backpacks: Record<string, string> = {}
@@ -211,7 +212,7 @@ export default function AdminVersionEditorPage() {
         const b = d.data() as Backpack
         if (!bSet.has(b.name)) continue
         const filename = b.icon?.split('/').pop()
-        if (filename) backpacks[b.name] = `${CDN_BASE}/pack/${filename}`
+        if (filename) backpacks[b.name] = `/images/backpacks/${filename}`
       }
 
       const iconUrls: VersionIconUrls = {}
@@ -572,7 +573,7 @@ export default function AdminVersionEditorPage() {
                           <div key={name} className="flex items-center gap-3">
                             {url ? (
                               <img
-                                src={url}
+                                src={resolveIconSrc(url)}
                                 alt={name}
                                 className="w-8 h-8 rounded border border-border object-cover object-top shrink-0"
                                 onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}

@@ -1,6 +1,7 @@
 import { Fragment, useMemo, useRef, useState } from 'react'
 import { toPng } from 'html-to-image'
 import type { PatchVersion } from '../../data/patchVersions'
+import { resolveIconSrc } from '../../utils/assets'
 
 // ── Data helpers ──────────────────────────────────────────────────────────────
 
@@ -68,7 +69,7 @@ function ThumbnailItem({ name, imageUrl, isPredicted }: {
   return (
     <div className="relative group inline-flex shrink-0">
       <img
-        src={imageUrl}
+        src={resolveIconSrc(imageUrl)}
         alt={name}
         className="w-9 h-9 object-cover object-top rounded border border-border/50 group-hover:border-accent-orange transition-colors cursor-default"
         onError={() => setBroken(true)}

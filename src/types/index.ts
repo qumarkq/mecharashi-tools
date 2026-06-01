@@ -1,3 +1,29 @@
+// ─── 實體引用層（PLAN-019 Layer 1）──────────────────────────────────────────
+
+/** 可被引用的實體類型。'stat' 指向屬性 key（如 'dmg'）；'term' 指向 glossaryTerms 詞條 */
+export type RefType =
+  | 'buff' | 'skill' | 'pilot' | 'mech' | 'weapon'
+  | 'module' | 'backpack' | 'component' | 'stat' | 'term'
+
+/**
+ * 對另一個實體的型別化、可解析引用。
+ * 用於 description 內 [xxx] 詞條，以及 BOSS 機制文字等跨實體連結。
+ */
+export interface EntityRef {
+  refType: RefType
+  /** 目標 ID：buffs/{id}、pilots/{id}、glossaryTerms/{id}，或 stat key 如 'dmg' */
+  refId: string
+  /** 顯示文字；預設取目標 name，可覆寫（原文用別名時） */
+  label?: string
+}
+
+/**
+ * description 內 [xxx] 標記 → 對應實體的側錄表。
+ * key = 括號內文字（如 "虛粒子形態"）；顯示層據此把 [xxx] 渲染為可點擊引用。
+ * 未命中的 [xxx] 原樣顯示，向後相容、優雅降級。
+ */
+export type DescriptionRefs = Record<string, EntityRef>
+
 // ─── 技能 / Buff 共用型別（PLAN-001）────────────────────────────────────────
 
 /**
@@ -61,10 +87,17 @@ export interface GameBuff {
   id:          string
   name:        string
   description: string
+  /** 描述內 [xxx] 引用側錄（PLAN-019 Layer 1）；buff 也可引用其他 buff */
+  descriptionRefs?: DescriptionRefs
   icon?:       string
   buffType:    string
   maxStack?:   number
   duration?:   number
+  /**
+   * 互斥群組（PLAN-019 Layer 2）：同 group 的形態/狀態一次只能存在一個。
+   * 例：虛粒子形態 ⟷ 實粒子形態，填同一個 group key（如 '<pilotId>_forms'）。
+   */
+  mutexGroup?: string
   effects:     SkillEffect[]
 }
 
@@ -91,6 +124,8 @@ export interface PilotSkill {
   /** 限定武器需求；武器技能（type=武器技能）才有 */
   weapon?: WeaponRequirement | string
   description: string
+  /** 描述內 [xxx] 引用側錄（PLAN-019 Layer 1） */
+  descriptionRefs?: DescriptionRefs
   icon: string
   iconLocal: string
   effects:  SkillEffect[]
@@ -102,6 +137,8 @@ export interface PilotTalent {
   type: string
   description: string
   descriptionMax: string
+  /** 描述內 [xxx] 引用側錄（PLAN-019 Layer 1）；適用 description 與 descriptionMax */
+  descriptionRefs?: DescriptionRefs
   icon: string
   iconLocal: string
   effects:          SkillEffect[]
@@ -261,6 +298,13 @@ export interface Module {
   dmg_counter?: number
   dmg_enemy_phase?: number
   description: string
+  /** 描述內 [xxx] 引用側錄（PLAN-019 Layer 1） */
+  descriptionRefs?: DescriptionRefs
+  /**
+   * 此模組可賦予的 buff ID 列表（PLAN-019 Layer 2）。
+   * 模擬器以此建立反向索引：可用 buff = 當前配裝所有實體 buffIds[] 的聯集。
+   */
+  buffIds?: string[]
   /** ModuleRarity enum：'S' / 'A' */
   rarity: string
   /** 本地圖示路徑 /images/modules/{iconKey}.png */
@@ -368,6 +412,8 @@ export interface WeaponSkill {
   /** 生效方式："carry" 攜帶即生效 / "equip" 裝備中生效 / "use" 僅使用時生效 */
   activation: 'carry' | 'equip' | 'use'
   description: string
+  /** 描述內 [xxx] 引用側錄（PLAN-019 Layer 1） */
+  descriptionRefs?:            DescriptionRefs
   effects:                     SkillEffect[]
   buffIds:                     string[]
   enhancesTalentName?:         string
@@ -621,4 +667,68 @@ export interface GrayOpsMechEntry {
 
 export interface GrayOpsRoster {
   companies: Record<string, GrayOpsMechEntry[]>
+}
+
+// ─── BOSS / 關卡（PLAN-019 Layer 3）──────────────────────────────────────────
+
+/** BOSS 技能（複用 SkillEffect 與引用層） */
+export interface BossSkill {
+  name: string
+  description: string
+  /** 描述內 [xxx] 引用側錄（PLAN-019 Layer 1） */
+  descriptionRefs?: DescriptionRefs
+  effects?: SkillEffect[]
+  icon?: string
+}
+
+/** bosses Collection 文件 */
+export interface Boss {
+  id: string
+  name: string
+  icon?: string
+  portrait?: string
+  /** 複用 ArmorType enum 值（輕型 / 中甲 / 重型） */
+  armorType?: string
+  /** 各部件耐久 / 裝甲（複用 MechPart 概念，僅取數值面） */
+  parts?: Partial<Record<'torso' | 'leftArm' | 'rightArm' | 'legs', { durable: number; armor: number }>>
+  skills: BossSkill[]
+  description?: string
+  descriptionRefs?: DescriptionRefs
+  /** 弱點標籤 */
+  weakness?: string[]
+  /** 後台資料維護標記（複用 Module.managedBy 慣例） */
+  managedBy?: string
+  updatedBy?: string
+  updatedAt?: string
+}
+
+/** 關卡掉落條目（取代 src/data/bossDrops.ts 的靜態索引） */
+export interface StageDropEntry {
+  /** → components Collection 的元件 ID */
+  componentId?: string
+  /** 掉落該物的 BOSS 在 bossIds 中的索引（對應遊戲關卡第幾個 BOSS） */
+  bossIndex?: number
+  note?: string
+}
+
+/** stages Collection 文件（高難度關卡） */
+export interface Stage {
+  id: string
+  name: string
+  /** StageCategory enum：危境 / 深淵 / 活動… */
+  category: string
+  recommendedPower?: number
+  /** → bosses Collection */
+  bossIds: string[]
+  /** 關卡機制文字 */
+  mechanics?: string
+  /** 機制文字內的 [xxx] 引用側錄（PLAN-019 Layer 1） */
+  mechanicsRefs?: DescriptionRefs
+  /** 掉落表（取代 bossDrops.ts） */
+  drops?: StageDropEntry[]
+  /** → guides Collection（PLAN-010 攻略） */
+  guideIds?: string[]
+  managedBy?: string
+  updatedBy?: string
+  updatedAt?: string
 }

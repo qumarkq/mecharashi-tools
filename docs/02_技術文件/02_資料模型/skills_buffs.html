@@ -129,6 +129,8 @@
       <tr><td>buffType</td><td>BuffType (Enum)</td><td>✅ PLAN-001</td><td>Buff 類型：statBoost / resource / state / debuff / control</td></tr>
       <tr><td>maxStack</td><td>number?</td><td>✅ PLAN-001</td><td>最大疊加層數；resource 類型用，省略表示不可疊加</td></tr>
       <tr><td>duration</td><td>number?</td><td>✅ PLAN-001</td><td>持續回合數；null = 持續到消耗 / 手動關閉</td></tr>
+      <tr><td>mutexGroup</td><td>string?</td><td>🆕 PLAN-019</td><td>形態互斥群組；同 group 的形態/狀態一次只能存在一個（虛粒子形態 ⟷ 實粒子形態）</td></tr>
+      <tr><td>descriptionRefs</td><td>DescriptionRefs?</td><td>🆕 PLAN-019</td><td>描述內 [xxx] 引用側錄；buff 也可引用其他 buff</td></tr>
       <tr><td>effects</td><td>SkillEffect[]</td><td>✅ PLAN-001</td><td>Buff active 時提供的效果列表</td></tr>
     </table>
   </div>
@@ -137,9 +139,40 @@
     <strong>BuffType 枚舉值說明</strong>
     <code>statBoost</code> — 純數值增益（最常見）<br>
     <code>resource</code> — 可堆疊資源（如彈潮蓄能、連擊層數），搭配 maxStack 使用<br>
-    <code>state</code> — 特殊狀態（如過熱、強化模式）<br>
+    <code>state</code> — 特殊狀態（如過熱、強化模式）；<strong>形態切換</strong>用 <code>state</code> + <code>mutexGroup</code> 表達<br>
     <code>debuff</code> — 對敵減益<br>
     <code>control</code> — 控制效果
+  </div>
+</section>
+
+<!-- EntityRef / DescriptionRefs（PLAN-019 Layer 1）-->
+<section class="section">
+  <div class="section-label purple">PLAN-019</div>
+  <div class="section-title">共用引用型別 — EntityRef / DescriptionRefs</div>
+
+  <div class="changed-block">
+    <strong>🆕 PLAN-019 Layer 1：把描述內 [xxx] 跨實體引用結構化</strong>
+    <code>description</code> 維持遊戲原文字串（[xxx] 標記原樣保留），外掛一份 <code>descriptionRefs</code> 側錄表把每個
+    [xxx] 對應到目標實體。顯示層的 &lt;RefText&gt; tokenize 後查表，命中渲染為可點擊引用、未命中原樣顯示（優雅降級）。
+    此型別跨 pilots / weapons / modules / buffs / bosses / stages 共用。
+  </div>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <tr><th>欄位</th><th>型別</th><th>說明</th></tr>
+      <tr><td>EntityRef.refType</td><td>RefType</td><td>buff / skill / pilot / mech / weapon / module / backpack / component / stat / term</td></tr>
+      <tr><td>EntityRef.refId</td><td>string</td><td>目標 ID（buffs/{id}、pilots/{id}、glossaryTerms/{id}），或 stat key 如 'dmg'</td></tr>
+      <tr><td>EntityRef.label</td><td>string?</td><td>顯示文字；預設取目標 name，可覆寫</td></tr>
+      <tr><td>DescriptionRefs</td><td>Record&lt;string, EntityRef&gt;</td><td>key = 括號內文字（如 "虛粒子形態"）→ 對應實體</td></tr>
+    </table>
+  </div>
+
+  <div class="note-block">
+    <strong>refType 分派原則（混合策略）</strong>
+    增傷/加子彈/加暴傷等既有屬性 → <code>stat</code>；特殊增益/狀態/形態 → <code>buff</code>；
+    [海莉絲] → <code>pilot</code>/<code>mech</code>；無數值歸宿的機制關鍵字（如 固定傷害）→ <code>term</code>（glossaryTerms）。
+    glossaryTerms 只收「無專屬集合可放」的關鍵字。詳見
+    <a href="../../05_階段性開發計畫/執行中/PLAN-019_實體引用與模擬基礎_總綱/計畫書.html" style="color:var(--accent-purple);text-decoration:none;">PLAN-019 總綱</a>。
   </div>
 </section>
 
